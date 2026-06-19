@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Finding Astro",
+    "slug": "finding-astro",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "findingastro",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#F5F1E8"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.findingastro.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#F5F1E8"
+      },
+      "package": "com.findingastro.app"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+"extra": {
+       "apiUrl": "http://localhost:4000/api/v1",
+       "eas": {
+         "projectId": "YOUR_EAS_PROJECT_ID"
+       }
+     },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Finding Astro needs your location to show nearby animals and alert responders.",
+          "locationAlwaysPermission": "Finding Astro uses background location only during active rescues."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Finding Astro accesses photos to attach evidence to emergency reports.",
+          "cameraPermission": "Finding Astro uses the camera to photograph injured animals for emergency reports."
+        }
+      ]
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "finding-astro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Finding Astro — civic animal welfare platform for Chennai",
+  "workspaces": [
+    "backend",
+    "apps/mobile",
+    "apps/admin-dashboard"
+  ],
+  "scripts": {
+    "dev": "npm run dev:backend",
+    "dev:backend": "npm --workspace backend run dev",
+    "dev:mobile": "npm --workspace apps/mobile run dev",
+    "dev:dashboard": "npm --workspace apps/admin-dashboard run dev",
+    "build": "npm run build:backend && npm run build:dashboard",
+    "build:backend": "npm --workspace backend run build",
+    "build:dashboard": "npm --workspace apps/admin-dashboard run build",
+    "start": "npm --workspace backend run start",
+    "install:all": "npm install",
+    "seed": "sh ./scripts/seed.sh"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

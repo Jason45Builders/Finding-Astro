@@ -1,0 +1,3 @@
+-- !! SUPERSEDED — DO NOT RUN !!
+-- This migration has been replaced by the unified Supabase schema files.
+-- Run the files in database/supabase/ instead, in numbered order.

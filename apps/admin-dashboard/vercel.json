@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "buildCommand": "cd apps/admin-dashboard && npm install && npm run build",
+  "outputDirectory": "apps/admin-dashboard/.next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://finding-astro-backend.railway.app/api/$1"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://finding-astro-backend.railway.app/api/v1"
+  }
+}

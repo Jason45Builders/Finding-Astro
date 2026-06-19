@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+
+  backend:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.backend
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      NODE_ENV: production
+      PORT: ${BACKEND_PORT}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      CORS_ORIGIN: http://localhost:${DASHBOARD_PORT}
+      SHOW_MOCK_OTP: ${SHOW_MOCK_OTP}
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+
+  admin-dashboard:
+    image: node:20-alpine
+    working_dir: /workspace
+    depends_on:
+      - backend
+    volumes:
+      - ./:/workspace
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:${BACKEND_PORT}/api/v1
+    command: sh -c "npm install && npm run dev:dashboard"
+    ports:
+      - "${DASHBOARD_PORT:-3000}:3000"
+
+volumes:
+  postgres_data:

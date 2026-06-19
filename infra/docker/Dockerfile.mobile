@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+WORKDIR /workspace
+
+COPY package.json ./
+COPY apps/mobile/package.json ./apps/mobile/package.json
+
+RUN npm install --workspace apps/mobile --include-workspace-root=false
+
+COPY apps/mobile ./apps/mobile
+
+WORKDIR /workspace/apps/mobile
+
+EXPOSE 8081
+CMD ["npm", "run", "dev"]
