@@ -228,18 +228,18 @@ const getStoredToken = (): string | null => {
   if (typeof window === "undefined") {
     return null;
   }
-  return window.localStorage.getItem(TOKEN_STORAGE_KEY);
+  return window.sessionStorage.getItem(TOKEN_STORAGE_KEY);
 };
 
 export const setStoredToken = (token: string): void => {
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    window.sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
   }
 };
 
 export const clearStoredToken = (): void => {
   if (typeof window !== "undefined") {
-    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+    window.sessionStorage.removeItem(TOKEN_STORAGE_KEY);
   }
 };
 
@@ -272,16 +272,19 @@ const apiRequest = async <T>(
 export const dashboardApi = {
   getToken: (): string | null => getStoredToken(),
 
-  requestOtp: async (phone: string, fullName: string): Promise<{ phone: string; code?: string }> =>
-    apiRequest("/auth/request-otp", {
+  login: async (email: string, password: string): Promise<AuthSession> => {
+    const session = await apiRequest<AuthSession>("/auth/login", {
       method: "POST",
-      body: { phone, fullName }
-    }),
+      body: { email, password }
+    });
+    setStoredToken(session.token);
+    return session;
+  },
 
-  verifyOtp: async (phone: string, code: string): Promise<AuthSession> => {
-    const session = await apiRequest<AuthSession>("/auth/verify-otp", {
+  signup: async (email: string, password: string, fullName: string): Promise<AuthSession> => {
+    const session = await apiRequest<AuthSession>("/auth/signup", {
       method: "POST",
-      body: { phone, code }
+      body: { email, password, fullName }
     });
     setStoredToken(session.token);
     return session;

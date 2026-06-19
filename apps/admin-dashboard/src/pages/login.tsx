@@ -3,40 +3,20 @@ import { useState } from "react";
 import { dashboardApi } from "../services/api";
 
 const LoginPage = () => {
-  const [fullName, setFullName] = useState("Blue Paws Coordinator");
-  const [phone, setPhone] = useState("+919999000002");
-  const [code, setCode] = useState("");
-  const [requestedPhone, setRequestedPhone] = useState<string | null>(null);
-  const [mockCode, setMockCode] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const requestOtp = async () => {
+  const handleSubmit = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const result = await dashboardApi.requestOtp(phone, fullName);
-      setRequestedPhone(result.phone);
-      setMockCode(result.code ?? null);
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to request OTP.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verifyOtp = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      await dashboardApi.verifyOtp(requestedPhone ?? phone, code);
+      await dashboardApi.login(email, password);
       window.location.replace("/dashboard");
-    } catch (verificationError) {
-      setError(
-        verificationError instanceof Error ? verificationError.message : "Unable to verify OTP."
-      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to log in.");
     } finally {
       setLoading(false);
     }
@@ -48,44 +28,27 @@ const LoginPage = () => {
         <p style={styles.eyebrow}>Ops access</p>
         <h1 style={styles.title}>Finding Astro Dashboard Login</h1>
         <p style={styles.subtitle}>
-          OTP-based access for NGO, municipal, and admin workflows.
+          Email/password access for NGO, municipal, and admin workflows.
         </p>
 
-        {!requestedPhone ? (
-          <>
-            <input
-              value={fullName}
-              onChange={(event) => setFullName(event.target.value)}
-              placeholder="Full name"
-              style={styles.input}
-            />
-            <input
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              placeholder="Phone number"
-              style={styles.input}
-            />
-            <button onClick={() => void requestOtp()} style={styles.primaryButton} disabled={loading}>
-              {loading ? "Sending..." : "Request OTP"}
-            </button>
-          </>
-        ) : (
-          <>
-            <div style={styles.notice}>
-              <strong>Code sent to:</strong> {requestedPhone}
-              {mockCode ? <div>Mock OTP: {mockCode}</div> : null}
-            </div>
-            <input
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-              placeholder="6-digit OTP"
-              style={styles.input}
-            />
-            <button onClick={() => void verifyOtp()} style={styles.primaryButton} disabled={loading}>
-              {loading ? "Verifying..." : "Verify OTP"}
-            </button>
-          </>
-        )}
+        <input
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="Email address"
+          style={styles.input}
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="Password"
+          style={styles.input}
+        />
+
+        <button onClick={() => void handleSubmit()} style={styles.primaryButton} disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
 
         {error ? <p style={styles.error}>{error}</p> : null}
       </section>
@@ -137,22 +100,6 @@ const styles: Record<string, CSSProperties> = {
     background: "#F8F4EC",
     color: "#2E2A24",
     fontSize: 15
-  },
-  notice: {
-    background: "#EFE7D9",
-    borderRadius: 14,
-    padding: 14,
-    color: "#2E2A24",
-    lineHeight: 1.6
-  },
-  primaryButton: {
-    border: "none",
-    background: "#D96C3F",
-    color: "#FFFFFF",
-    borderRadius: 14,
-    padding: "14px 18px",
-    fontWeight: 700,
-    cursor: "pointer"
   },
   error: {
     margin: 0,
