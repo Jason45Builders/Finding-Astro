@@ -1,3 +1,10 @@
+export const formatCurrency = (value: number | string): string =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0
+  }).format(Number(value));
+
 export const formatDateTime = (value: string): string =>
   new Date(value).toLocaleString(undefined, {
     dateStyle: "medium",
