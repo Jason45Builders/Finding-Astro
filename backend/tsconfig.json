@@ -19,6 +19,6 @@
     "noUnusedParameters": false,
     "exactOptionalPropertyTypes": false
   },
-  "include": ["src/**/*.ts", "api/**/*.js"],
+  "include": ["src/**/*.ts"],
   "exclude": ["dist", "node_modules"]
 }
