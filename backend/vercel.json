@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "framework": null
+  "buildCommand": "node scripts/copy-api.js && npm run build",
+  "installCommand": "npm install"
 }

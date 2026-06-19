@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "node scripts/build.js && tsc -p tsconfig.json",
+    "build": "node scripts/copy-api.js && tsc -p tsconfig.json",
     "start": "node dist/server.js"
   },
   "dependencies": {
