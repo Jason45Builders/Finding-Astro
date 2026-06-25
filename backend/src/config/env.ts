@@ -32,6 +32,10 @@ const envSchema = z.object({
 
   // SMS
   SMS_PROVIDER:         z.enum(["exotel", "fast2sms", "mock", "none"]).default("mock"),
+  EXOTEL_API_KEY:       z.string().optional(),
+  EXOTEL_API_TOKEN:     z.string().optional(),
+  EXOTEL_SID:           z.string().optional(),
+  FAST2SMS_API_KEY:     z.string().optional(),
 
   // Aadhaar / Identity
   AADHAAR_PROVIDER:     z.enum(["digilocker", "mock"]).default("mock"),

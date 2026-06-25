@@ -85,7 +85,7 @@ export const signToken = (user: UserRecord): string =>
 
 export const verifyToken = (token: string): AuthenticatedUser => {
   const decoded = jwt.verify(token, env.JWT_SECRET) as AuthTokenPayload;
-  return { id: decoded.sub, phone: decoded.email, role: decoded.role };
+  return { id: decoded.sub, phone: decoded.email, email: decoded.email, role: decoded.role };
 };
 
 class AuthService {
