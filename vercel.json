@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "buildCommand": "cd backend && npm install && npm run build",
+  "installCommand": "cd backend && npm install",
+  "functions": {
+    "backend/api/index.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/backend/api/index.js"
+    }
+  ]
+}
