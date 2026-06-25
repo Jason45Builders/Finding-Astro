@@ -1,5 +1,16 @@
 {
   "version": 2,
-  "buildCommand": "node scripts/copy-api.js && npm run build",
-  "installCommand": "npm install"
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "functions": {
+    "api/index.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.js"
+    }
+  ]
 }

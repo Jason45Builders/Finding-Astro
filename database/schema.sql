@@ -103,20 +103,16 @@ $$;
 
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  phone TEXT NOT NULL UNIQUE,
+  email TEXT UNIQUE,
+  password_hash TEXT NOT NULL DEFAULT '',
   full_name TEXT,
   role user_role NOT NULL DEFAULT 'citizen',
-  
+
   -- Identity tiers
   identity_tier INT NOT NULL DEFAULT 0,
   aadhaar_hash TEXT,
   aadhaar_verified_at TIMESTAMPTZ,
-  
-  -- OTP
-  otp_code TEXT,
-  otp_expires_at TIMESTAMPTZ,
-  otp_attempts INT NOT NULL DEFAULT 0,
-  
+
   -- Reputation & credibility
   reputation_score INT NOT NULL DEFAULT 50,
   report_credibility_score INT NOT NULL DEFAULT 100,
@@ -145,7 +141,7 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_is_available ON users(is_available) WHERE is_available = TRUE;
 CREATE INDEX IF NOT EXISTS idx_users_home_location ON users USING GIST(home_location) WHERE home_location IS NOT NULL;

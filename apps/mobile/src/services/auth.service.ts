@@ -5,7 +5,7 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiRequest } from "./api";
-import { SESSION_STORAGE_KEY } from "../utils/constants";
+import { EXPO_PROJECT_ID, SESSION_STORAGE_KEY } from "../utils/constants";
 import * as Notifications from "expo-notifications";
 import { AuthSession } from "../types/user.types";
 
@@ -64,8 +64,11 @@ class AuthService {
       }
 
       if (!finalStatus) return;
+      if (!EXPO_PROJECT_ID) return;
 
-      const pushToken = await Notifications.getExpoPushTokenAsync();
+      const pushToken = await Notifications.getExpoPushTokenAsync({
+        projectId: EXPO_PROJECT_ID,
+      });
 
       await apiRequest("/auth/push-token", {
         method: "POST",

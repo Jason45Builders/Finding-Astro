@@ -3,25 +3,24 @@
 -- ══════════════════════════════════════════════════════════════════════════════
 
 -- Default admin user (for initial setup only — change password in production)
--- Phone: +919999999999, OTP: 123456 (dev only)
-INSERT INTO users (phone, full_name, role, identity_tier, is_available, reputation_score, active_case_limit, service_radius_km) VALUES
-('+919999999999', 'Platform Admin', 'admin', 5, FALSE, 100, 10, 50)
-ON CONFLICT (phone) DO NOTHING;
+INSERT INTO users (email, password_hash, full_name, role, identity_tier, is_available, reputation_score, active_case_limit, service_radius_km) VALUES
+('admin@findingastro.local', '$2b$10$TdIBz6ygwLzvKPUx5YXu3.b2JwrAuWGyWi4BabaA0vKTXNkCNCza.', 'Platform Admin', 'admin', 5, FALSE, 100, 10, 50)
+ON CONFLICT (email) DO NOTHING;
 
 -- Default NGO user
-INSERT INTO users (phone, full_name, role, identity_tier, is_available, reputation_score, active_case_limit, service_radius_km) VALUES
-('+919988776655', 'Test NGO', 'ngo', 3, TRUE, 80, 5, 15)
-ON CONFLICT (phone) DO NOTHING;
+INSERT INTO users (email, password_hash, full_name, role, identity_tier, is_available, reputation_score, active_case_limit, service_radius_km) VALUES
+('ngo@findingastro.local', '$2b$10$X3xkPyTOIiH7852vjeY2WOIEnMwm.Wobim2APBoFtErOAEB5PUg/K', 'Test NGO', 'ngo', 3, TRUE, 80, 5, 15)
+ON CONFLICT (email) DO NOTHING;
 
 -- Default hospital user
-INSERT INTO users (phone, full_name, role, identity_tier, is_available, reputation_score, active_case_limit, service_radius_km) VALUES
-('+919977665544', 'Test Hospital', 'hospital', 3, TRUE, 75, 5, 20)
-ON CONFLICT (phone) DO NOTHING;
+INSERT INTO users (email, password_hash, full_name, role, identity_tier, is_available, reputation_score, active_case_limit, service_radius_km) VALUES
+('hospital@findingastro.local', '$2b$10$iOXMb/4HWOEv1sLzahHDoOdD1CsCrxK8Hx3/hKzxAdRZQztCGSaS6', 'Test Hospital', 'hospital', 3, TRUE, 75, 5, 20)
+ON CONFLICT (email) DO NOTHING;
 
 -- Default citizen user
-INSERT INTO users (phone, full_name, role, identity_tier, is_available, reputation_score, active_case_limit, service_radius_km) VALUES
-('+919966554433', 'Test Citizen', 'citizen', 2, FALSE, 60, 3, 10)
-ON CONFLICT (phone) DO NOTHING;
+INSERT INTO users (email, password_hash, full_name, role, identity_tier, is_available, reputation_score, active_case_limit, service_radius_km) VALUES
+('citizen@findingastro.local', '$2b$10$3m5usrSeIyOQD1YuIjH0rO92rAlldEkBlMagK0OFzk8gniEy66Efe', 'Test Citizen', 'citizen', 2, FALSE, 60, 3, 10)
+ON CONFLICT (email) DO NOTHING;
 
 -- Sample animals (Chennai area)
 INSERT INTO animals (name, species, breed, color, gender, approx_age_months, status, is_sterilized, location, territory_label, last_seen_text, description) VALUES

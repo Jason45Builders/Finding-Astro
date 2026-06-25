@@ -1,10 +1,30 @@
 import Constants from "expo-constants";
 
+const expoExtra = Constants.expoConfig?.extra as
+  | {
+      apiUrl?: string;
+      eas?: {
+        projectId?: string;
+      };
+    }
+  | undefined;
+
+const expoConstants = Constants as typeof Constants & {
+  easConfig?: {
+    projectId?: string;
+  } | null;
+};
+
 // API base URL — set EXPO_PUBLIC_API_URL in your EAS build profile for production
 export const API_BASE_URL: string =
-  (Constants.expoConfig?.extra?.apiUrl as string | undefined) ??
+  expoExtra?.apiUrl ??
   process.env.EXPO_PUBLIC_API_URL ??
   "http://localhost:4000/api/v1";
+
+export const EXPO_PROJECT_ID: string | null =
+  expoConstants.easConfig?.projectId ??
+  expoExtra?.eas?.projectId ??
+  null;
 
 // Storage keys
 export const SESSION_STORAGE_KEY       = "@finding_astro/session";

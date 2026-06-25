@@ -11,8 +11,6 @@ const envSchema = z.object({
 
   JWT_SECRET:           z.string().min(32, "JWT_SECRET must be at least 32 chars. Run: openssl rand -hex 32"),
   JWT_EXPIRES_IN:       z.string().min(2).default("7d"),
-  OTP_TTL_MINUTES:      z.coerce.number().int().positive().default(10),
-  SHOW_MOCK_OTP:        z.coerce.boolean().default(false),
 
   CORS_ORIGIN:          z.string().default("http://localhost:3000"),
 
@@ -26,19 +24,14 @@ const envSchema = z.object({
   R2_BUCKET_NAME:       z.string().default("finding-astro-media"),
   R2_PUBLIC_CDN_URL:    z.string().optional(),
 
-  // SMS
-  SMS_PROVIDER:         z.enum(["exotel", "fast2sms", "mock", "none"]).default("mock"),
-  EXOTEL_API_KEY:       z.string().optional(),
-  EXOTEL_API_TOKEN:     z.string().optional(),
-  EXOTEL_SID:           z.string().optional(),
-  EXOTEL_CALLER_ID:     z.string().optional(),
-  FAST2SMS_API_KEY:     z.string().optional(),
-
   // Payment
   PAYMENT_PROVIDER:     z.enum(["razorpay", "stripe", "mock"]).default("mock"),
   RAZORPAY_KEY_ID:      z.string().optional(),
   RAZORPAY_SECRET:      z.string().optional(),
   STRIPE_SECRET_KEY:    z.string().optional(),
+
+  // SMS
+  SMS_PROVIDER:         z.enum(["exotel", "fast2sms", "mock", "none"]).default("mock"),
 
   // Aadhaar / Identity
   AADHAAR_PROVIDER:     z.enum(["digilocker", "mock"]).default("mock"),
@@ -60,14 +53,8 @@ if (!parsed.success) {
   process.exit(1);
 }
 
-if (parsed.data.NODE_ENV === "production" && parsed.data.SHOW_MOCK_OTP) {
-  console.error("❌  SHOW_MOCK_OTP cannot be true in production.");
-  process.exit(1);
-}
-
 if (parsed.data.NODE_ENV === "production") {
   if (!parsed.data.R2_ACCOUNT_ID)               console.warn("⚠️  R2_ACCOUNT_ID not set — file uploads disabled");
-  if (parsed.data.SMS_PROVIDER === "none")       console.warn("⚠️  SMS_PROVIDER is 'none' — OTP delivery will fail");
   if (!parsed.data.EXPO_ACCESS_TOKEN)            console.warn("⚠️  EXPO_ACCESS_TOKEN not set — push notifications disabled");
   if (parsed.data.AADHAAR_HASH_SALT.startsWith("dev-")) console.warn("⚠️  AADHAAR_HASH_SALT is using the dev default — set a real value in production");
   if (parsed.data.PAYMENT_PROVIDER === "mock")   console.warn("⚠️  PAYMENT_PROVIDER is 'mock' — no real payments will be processed");

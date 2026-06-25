@@ -6,16 +6,19 @@
   "workspaces": [
     "backend",
     "apps/mobile",
-    "apps/admin-dashboard"
+    "apps/admin-dashboard",
+    "apps/web"
   ],
   "scripts": {
     "dev": "npm run dev:backend",
     "dev:backend": "npm --workspace backend run dev",
     "dev:mobile": "npm --workspace apps/mobile run dev",
     "dev:dashboard": "npm --workspace apps/admin-dashboard run dev",
-    "build": "npm run build:backend && npm run build:dashboard",
+    "dev:web": "npm --workspace apps/web run dev",
+    "build": "npm run build:backend && npm run build:dashboard && npm run build:web",
     "build:backend": "npm --workspace backend run build",
     "build:dashboard": "npm --workspace apps/admin-dashboard run build",
+    "build:web": "npm --workspace apps/web run build",
     "start": "npm --workspace backend run start",
     "install:all": "npm install",
     "seed": "sh ./scripts/seed.sh"
@@ -23,5 +26,10 @@
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
+  },
+  "overrides": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.74.5"
   }
 }

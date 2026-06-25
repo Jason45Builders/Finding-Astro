@@ -86,6 +86,7 @@ router.post("/funding/:id/release-payout", validateParams(idParams), asyncHandle
 router.get("/partners", validateQuery(z.object({ type: partnerType, limit: z.coerce.number().int().positive().max(500).optional() })), asyncHandler(async (request, response) => {
   const type = typeof request.query.type === "string" ? request.query.type as AdminPartner["type"] : undefined;
   const partners = await adminService.listPartners(type, request.query.limit as number | undefined);
+  sendSuccess(response, partners, "Partners loaded", { count: partners.length });
 }));
 
 router.post("/partners/:id/verify", validateParams(idParams), validateBody(z.object({ status: z.enum(["approved", "rejected"]) })), asyncHandler(async (request, response) => {

@@ -24,6 +24,7 @@ export type CsrCommitmentType = "pooled" | "ward" | "module" | "matching";
 export interface AuthenticatedUser {
   id: string;
   phone: string;
+  email: string;
   role: UserRole;
   identityTier?: number;
 }

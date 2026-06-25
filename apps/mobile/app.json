@@ -24,12 +24,9 @@
     "web": {
       "bundler": "metro"
     },
-"extra": {
-       "apiUrl": "http://localhost:4000/api/v1",
-       "eas": {
-         "projectId": "YOUR_EAS_PROJECT_ID"
-       }
-     },
+    "extra": {
+      "apiUrl": "https://finding-astro-backend.vercel.app/api/v1"
+    },
     "plugins": [
       [
         "expo-location",

@@ -5,18 +5,19 @@ import { sendSuccess } from "../../utils/response";
 import { authService } from "./auth.service";
 
 class AuthController {
-  async requestOtp(request: AuthenticatedRequest, response: Response): Promise<void> {
-    const payload = await authService.requestOtp(
-      request.body.phone,
+  async signup(request: AuthenticatedRequest, response: Response): Promise<void> {
+    const payload = await authService.signup(
+      request.body.email,
+      request.body.password,
       request.body.fullName
     );
 
-    sendSuccess(response, payload, "OTP generated", undefined, 202);
+    sendSuccess(response, payload, "Account created", undefined, 201);
   }
 
-  async verifyOtp(request: AuthenticatedRequest, response: Response): Promise<void> {
-    const payload = await authService.verifyOtp(request.body.phone, request.body.code);
-    sendSuccess(response, payload, "OTP verified");
+  async login(request: AuthenticatedRequest, response: Response): Promise<void> {
+    const payload = await authService.login(request.body.email, request.body.password);
+    sendSuccess(response, payload, "Login successful");
   }
 
   async getMe(request: AuthenticatedRequest, response: Response): Promise<void> {

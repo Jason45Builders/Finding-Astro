@@ -1,230 +1,281 @@
-import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { AbcEvent, Animal, CaseRecord, dashboardApi } from "../services/api";
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Alert,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemText,
+  Chip
+} from "@mui/material";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from "recharts";
+import Layout from "../components/Layout";
+import {
+  dashboardApi,
+  Animal,
+  CaseRecord,
+  AbcEvent,
+  AlertNotification,
+  MonthlyResolvedCases
+} from "../services/api";
 import { formatDateTime, toTitleCase } from "../utils/format";
 
-const DashboardPage = () => {
+export default function DashboardPage() {
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [cases, setCases] = useState<CaseRecord[]>([]);
   const [abcEvents, setAbcEvents] = useState<AbcEvent[]>([]);
+  const [alerts, setAlerts] = useState<AlertNotification[]>([]);
+  const [monthlyCases, setMonthlyCases] = useState<MonthlyResolvedCases[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = dashboardApi.getToken();
-    if (!token && typeof window !== "undefined") {
+    if (!dashboardApi.getToken() && typeof window !== "undefined") {
       window.location.replace("/login");
       return;
     }
 
-    const load = async () => {
+    const loadData = async () => {
       try {
-        const [animalData, caseData, abcData] = await Promise.all([
+        const [animalData, caseData, abcData, alertData, monthlyData] = await Promise.all([
           dashboardApi.listAnimals(),
           dashboardApi.listCases(),
-          dashboardApi.listAbcTracking()
+          dashboardApi.listAbcTracking(),
+          dashboardApi.listAlerts().catch(() => [] as AlertNotification[]),
+          dashboardApi.monthlyResolvedCases().catch(() => [] as MonthlyResolvedCases[])
         ]);
         setAnimals(animalData);
         setCases(caseData);
         setAbcEvents(abcData);
-      } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : "Unable to load dashboard.");
+        setAlerts(alertData);
+        setMonthlyCases(monthlyData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unable to load dashboard data");
+      } finally {
+        setLoading(false);
       }
     };
 
-    void load();
+    void loadData();
   }, []);
+
+  if (loading) {
+    return (
+      <Layout>
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+          <CircularProgress />
+        </Box>
+      </Layout>
+    );
+  }
 
   const openCases = cases.filter((item) => item.status !== "closed" && item.status !== "resolved").length;
   const lostAnimals = animals.filter((item) => item.status === "lost").length;
   const pendingAbc = abcEvents.filter((item) => item.eventType !== "return").length;
 
+  const severityColor = (severity: string) => {
+    switch (severity) {
+      case "critical":
+        return "error";
+      case "warning":
+        return "warning";
+      default:
+        return "info";
+    }
+  };
+
   return (
-    <main style={styles.page}>
-      <header style={styles.header}>
-        <div>
-          <p style={styles.eyebrow}>Operations dashboard</p>
-          <h1 style={styles.title}>Finding Astro overview</h1>
-        </div>
-        <nav style={styles.nav}>
-          <Link href="/cases" style={styles.navLink}>
-            Cases
-          </Link>
-          <Link href="/animals" style={styles.navLink}>
-            Animals
-          </Link>
-          <Link href="/abc" style={styles.navLink}>
-            ABC
-          </Link>
-          <button
-            style={styles.logoutButton}
-            onClick={() => {
-              dashboardApi.logout();
-              window.location.replace("/login");
-            }}
-          >
-            Logout
-          </button>
-        </nav>
-      </header>
+    <Layout>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <Box>
+          <Typography variant="caption" sx={{ textTransform: "uppercase", letterSpacing: 1.5, color: "#A4472A", fontWeight: 700 }}>
+            Operations Dashboard
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 700, mt: 0.5, color: "#2E2A24" }}>
+            Finding Astro Overview
+          </Typography>
+        </Box>
 
-      {error ? <p style={styles.error}>{error}</p> : null}
+        {error && <Alert severity="error">{error}</Alert>}
 
-      <section style={styles.metricGrid}>
-        <article style={styles.metricCard}>
-          <span style={styles.metricLabel}>Animals tracked</span>
-          <strong style={styles.metricValue}>{animals.length}</strong>
-        </article>
-        <article style={styles.metricCard}>
-          <span style={styles.metricLabel}>Open cases</span>
-          <strong style={styles.metricValue}>{openCases}</strong>
-        </article>
-        <article style={styles.metricCard}>
-          <span style={styles.metricLabel}>Lost animals</span>
-          <strong style={styles.metricValue}>{lostAnimals}</strong>
-        </article>
-        <article style={styles.metricCard}>
-          <span style={styles.metricLabel}>ABC in progress</span>
-          <strong style={styles.metricValue}>{pendingAbc}</strong>
-        </article>
-      </section>
+        {/* Metrics Grid */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ borderRadius: 4, boxShadow: "0 12px 24px rgba(46, 42, 36, 0.05)" }}>
+              <CardContent>
+                <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                  Animals Tracked
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                  {animals.length}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ borderRadius: 4, boxShadow: "0 12px 24px rgba(46, 42, 36, 0.05)" }}>
+              <CardContent>
+                <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                  Open Cases
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: "#D96C3F" }}>
+                  {openCases}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ borderRadius: 4, boxShadow: "0 12px 24px rgba(46, 42, 36, 0.05)" }}>
+              <CardContent>
+                <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                  Lost Animals
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: "#B94A48" }}>
+                  {lostAnimals}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ borderRadius: 4, boxShadow: "0 12px 24px rgba(46, 42, 36, 0.05)" }}>
+              <CardContent>
+                <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                  ABC in Progress
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: "#1E7B68" }}>
+                  {pendingAbc}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
 
-      <section style={styles.columns}>
-        <div style={styles.panel}>
-          <h2 style={styles.panelTitle}>Recent cases</h2>
-          {cases.slice(0, 6).map((item) => (
-            <div key={item.id} style={styles.listItem}>
-              <div>
-                <strong>{item.title}</strong>
-                <div style={styles.listMeta}>
-                  {toTitleCase(item.caseType)} • {toTitleCase(item.status)}
-                </div>
-              </div>
-              <span style={styles.timeText}>{formatDateTime(item.updatedAt)}</span>
-            </div>
-          ))}
-        </div>
+        {/* Charts & Alerts */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} lg={8}>
+            <Card sx={{ borderRadius: 6, boxShadow: "0 12px 24px rgba(46, 42, 36, 0.08)", p: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                Monthly Cases Trend
+              </Typography>
+              <Box sx={{ width: "100%", height: 350 }}>
+                {monthlyCases.length > 0 ? (
+                  <ResponsiveContainer>
+                    <LineChart data={monthlyCases} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="opened" stroke="#D96C3F" strokeWidth={2} name="Opened Cases" />
+                      <Line type="monotone" dataKey="resolved" stroke="#1E7B68" strokeWidth={2} name="Resolved Cases" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                    <Typography color="textSecondary">No case history available.</Typography>
+                  </Box>
+                )}
+              </Box>
+            </Card>
+          </Grid>
 
-        <div style={styles.panel}>
-          <h2 style={styles.panelTitle}>Latest ABC events</h2>
-          {abcEvents.slice(0, 6).map((item) => (
-            <div key={item.id} style={styles.listItem}>
-              <div>
-                <strong>{toTitleCase(item.eventType)}</strong>
-                <div style={styles.listMeta}>
-                  {item.animalName ?? item.animalId.slice(0, 8)} • {item.status}
-                </div>
-              </div>
-              <span style={styles.timeText}>{formatDateTime(item.createdAt)}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-    </main>
+          <Grid item xs={12} lg={4}>
+            <Card sx={{ borderRadius: 6, boxShadow: "0 12px 24px rgba(46, 42, 36, 0.08)", p: 3, height: "100%", display: "flex", flexDirection: "column" }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                System Alerts
+              </Typography>
+              <Box sx={{ flexGrow: 1, overflowY: "auto", maxLength: 350 }}>
+                {alerts.length > 0 ? (
+                  <List disablePadding>
+                    {alerts.map((alert) => (
+                      <ListItem key={alert.id} sx={{ px: 0, py: 1.5, borderBottom: "1px solid #EFE7D9", gap: 1 }} alignItems="flex-start">
+                        <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
+                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
+                            <Chip label={alert.severity} size="small" color={severityColor(alert.severity)} sx={{ fontWeight: 700, fontSize: 10 }} />
+                            <Typography variant="caption" color="textSecondary">
+                              {formatDateTime(alert.createdAt)}
+                            </Typography>
+                          </Box>
+                          <ListItemText
+                            primary={alert.title}
+                            secondary={alert.body}
+                            primaryTypographyProps={{ fontWeight: 600, fontSize: 14 }}
+                            secondaryTypographyProps={{ fontSize: 12, mt: 0.5 }}
+                          />
+                        </Box>
+                      </ListItem>
+                    ))}
+                  </List>
+                ) : (
+                  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                    <Typography color="textSecondary">No recent alerts.</Typography>
+                  </Box>
+                )}
+              </Box>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Detailed Logs Columns */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Card sx={{ borderRadius: 6, boxShadow: "0 12px 24px rgba(46, 42, 36, 0.08)", p: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                Recent Cases
+              </Typography>
+              <List>
+                {cases.slice(0, 5).map((item) => (
+                  <ListItem key={item.id} sx={{ px: 0, py: 1.5, borderBottom: "1px solid #EFE7D9" }}>
+                    <ListItemText
+                      primary={item.title}
+                      secondary={`${toTitleCase(item.caseType)} • ${toTitleCase(item.status)}`}
+                      primaryTypographyProps={{ fontWeight: 600 }}
+                    />
+                    <Typography variant="caption" color="textSecondary">
+                      {formatDateTime(item.updatedAt)}
+                    </Typography>
+                  </ListItem>
+                ))}
+              </List>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card sx={{ borderRadius: 6, boxShadow: "0 12px 24px rgba(46, 42, 36, 0.08)", p: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                Latest ABC Events
+              </Typography>
+              <List>
+                {abcEvents.slice(0, 5).map((item) => (
+                  <ListItem key={item.id} sx={{ px: 0, py: 1.5, borderBottom: "1px solid #EFE7D9" }}>
+                    <ListItemText
+                      primary={toTitleCase(item.eventType)}
+                      secondary={`${item.animalName || `Animal ${item.animalId.slice(0, 8)}`} • ${item.status}`}
+                      primaryTypographyProps={{ fontWeight: 600 }}
+                    />
+                    <Typography variant="caption" color="textSecondary">
+                      {formatDateTime(item.createdAt)}
+                    </Typography>
+                  </ListItem>
+                ))}
+              </List>
+            </Card>
+          </Grid>
+        </Grid>
+      </Box>
+    </Layout>
   );
-};
-
-const styles: Record<string, CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    background: "#F5F1E8",
-    padding: 32,
-    color: "#2E2A24"
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 16,
-    marginBottom: 24
-  },
-  eyebrow: {
-    margin: 0,
-    textTransform: "uppercase",
-    letterSpacing: 1.5,
-    color: "#A4472A",
-    fontWeight: 700,
-    fontSize: 12
-  },
-  title: {
-    margin: "8px 0 0",
-    fontSize: 38
-  },
-  nav: {
-    display: "flex",
-    gap: 12,
-    alignItems: "center",
-    flexWrap: "wrap"
-  },
-  navLink: {
-    textDecoration: "none",
-    color: "#2E2A24",
-    background: "#FFFFFF",
-    padding: "10px 14px",
-    borderRadius: 12
-  },
-  logoutButton: {
-    border: "none",
-    background: "#D96C3F",
-    color: "#FFFFFF",
-    padding: "10px 14px",
-    borderRadius: 12,
-    cursor: "pointer"
-  },
-  error: {
-    color: "#B94A48"
-  },
-  metricGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 16,
-    marginBottom: 24
-  },
-  metricCard: {
-    background: "#FFFFFF",
-    borderRadius: 24,
-    padding: 20,
-    boxShadow: "0 12px 24px rgba(46, 42, 36, 0.08)"
-  },
-  metricLabel: {
-    display: "block",
-    color: "#6B6257",
-    marginBottom: 8
-  },
-  metricValue: {
-    fontSize: 34
-  },
-  columns: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-    gap: 16
-  },
-  panel: {
-    background: "#FFFFFF",
-    borderRadius: 24,
-    padding: 22
-  },
-  panelTitle: {
-    marginTop: 0,
-    marginBottom: 18
-  },
-  listItem: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 12,
-    alignItems: "center",
-    padding: "14px 0",
-    borderBottom: "1px solid #EFE7D9"
-  },
-  listMeta: {
-    marginTop: 4,
-    color: "#6B6257",
-    fontSize: 14
-  },
-  timeText: {
-    fontSize: 13,
-    color: "#6B6257"
-  }
-};
-
-export default DashboardPage;
+}

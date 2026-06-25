@@ -1,28 +1,16 @@
-/**
- * auth.service.ts — SECURED
- * Role removed from OTP signup. OTP attempt lockout after 5 wrong tries.
- * Mock OTP never leaks in production.
- */
-
-import crypto from "node:crypto";
+import bcrypt from "bcrypt";
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 import { query } from "../../config/db";
 import { env } from "../../config/env";
 import { AppError } from "../../middleware/error.middleware";
 import { AuthenticatedUser, UserRecord, UserRole } from "../../types/global.types";
-import { notificationService } from "../notifications/notification.service";
-import { getSmsAdapter } from "../../integrations";
-
-const MAX_OTP_ATTEMPTS = 5;
 
 interface UserRow {
   id: string;
-  phone: string;
+  email: string;
+  password_hash: string;
   full_name: string | null;
   role: UserRole;
-  otp_code: string | null;
-  otp_expires_at: Date | null;
-  otp_attempts: number;
   last_login_at: Date | null;
   reputation_score: string | number;
   active_case_limit: number;
@@ -41,15 +29,13 @@ interface UserRow {
 
 interface AuthTokenPayload extends JwtPayload {
   sub: string;
-  phone: string;
+  email: string;
   role: UserRole;
 }
 
 const userSelect = `
   SELECT
-    u.id, u.phone, u.full_name, u.role,
-    u.otp_code, u.otp_expires_at,
-    COALESCE(u.otp_attempts, 0) AS otp_attempts,
+    u.id, u.email, u.password_hash, u.full_name, u.role,
     u.last_login_at, u.reputation_score, u.active_case_limit,
     u.is_available, u.vehicle_type, u.vehicle_capacity, u.service_radius_km,
     ST_Y(u.home_location::geometry) AS home_latitude,
@@ -61,7 +47,7 @@ const userSelect = `
 
 const mapUser = (row: UserRow): UserRecord => ({
   id: row.id,
-  phone: row.phone,
+  phone: row.email,
   fullName: row.full_name,
   role: row.role,
   reputationScore: Number(row.reputation_score),
@@ -82,114 +68,69 @@ const mapUser = (row: UserRow): UserRecord => ({
   updatedAt: row.updated_at,
 });
 
-const normalizePhone = (phone: string): string => {
-  const digits = phone.replace(/[^\d]/g, "");
-  if (digits.length === 10) return `+91${digits}`;
-  return `+${digits}`;
+export const hashPassword = async (password: string): Promise<string> => {
+  return bcrypt.hash(password, 10);
 };
 
-const generateOtp = (): string => crypto.randomInt(100_000, 1_000_000).toString();
+export const comparePassword = async (password: string, hash: string): Promise<boolean> => {
+  return bcrypt.compare(password, hash);
+};
 
 export const signToken = (user: UserRecord): string =>
   jwt.sign(
-    { sub: user.id, phone: user.phone, role: user.role },
+    { sub: user.id, email: user.phone, role: user.role },
     env.JWT_SECRET,
     { expiresIn: env.JWT_EXPIRES_IN as SignOptions["expiresIn"] }
   );
 
 export const verifyToken = (token: string): AuthenticatedUser => {
   const decoded = jwt.verify(token, env.JWT_SECRET) as AuthTokenPayload;
-  return { id: decoded.sub, phone: decoded.phone, role: decoded.role };
+  return { id: decoded.sub, phone: decoded.email, role: decoded.role };
 };
 
 class AuthService {
-  async requestOtp(
-    phone: string,
+  async signup(
+    email: string,
+    password: string,
     fullName?: string
-  ): Promise<{ phone: string; expiresInMinutes: number; code?: string }> {
-    const normalizedPhone = normalizePhone(phone);
-    const otpCode = generateOtp();
+  ): Promise<{ email: string }> {
+    const normalizedEmail = email.toLowerCase().trim();
+    const passwordHash = await hashPassword(password);
 
-    // Role is NEVER accepted from the client — all new accounts are citizens.
-    // Existing accounts keep their current role.
     await query(
       `
-        INSERT INTO users (phone, full_name, role, otp_code, otp_expires_at, otp_attempts, last_active_at)
-        VALUES ($1, $2, 'citizen', $3, NOW() + ($4 || ' minutes')::interval, 0, NOW())
-        ON CONFLICT (phone)
-        DO UPDATE SET
-          full_name      = COALESCE(EXCLUDED.full_name, users.full_name),
-          otp_code       = EXCLUDED.otp_code,
-          otp_expires_at = EXCLUDED.otp_expires_at,
-          otp_attempts   = 0,
-          last_active_at = NOW(),
-          updated_at     = NOW()
+        INSERT INTO users (email, password_hash, full_name, role, identity_tier, last_active_at)
+        VALUES ($1, $2, $3, 'citizen', 0, NOW())
+        ON CONFLICT (email) DO NOTHING
       `,
-      [normalizedPhone, fullName ?? null, otpCode, env.OTP_TTL_MINUTES]
+      [normalizedEmail, passwordHash, fullName ?? null]
     );
 
-    const isDev = env.NODE_ENV !== "production" && env.SHOW_MOCK_OTP;
-
-    // Send OTP via SMS adapter (mock in dev, real provider in production)
-    try {
-      const smsAdapter = getSmsAdapter();
-      await smsAdapter.sendOtp(normalizedPhone, otpCode);
-    } catch (err) {
-      // Log but don't fail the request — the user can still receive OTP via dev console
-      console.warn("[AuthService] SMS delivery failed:", err);
-    }
-
-    return {
-      phone: normalizedPhone,
-      expiresInMinutes: env.OTP_TTL_MINUTES,
-      ...(isDev ? { code: otpCode } : {}),
-    };
+    return { email: normalizedEmail };
   }
 
-  async verifyOtp(phone: string, code: string): Promise<{ token: string; user: UserRecord }> {
-    const normalizedPhone = normalizePhone(phone);
+  async login(email: string, password: string): Promise<{ token: string; user: UserRecord }> {
+    const normalizedEmail = email.toLowerCase().trim();
 
-    const result = await query<UserRow>(`${userSelect} WHERE u.phone = $1 LIMIT 1`, [normalizedPhone]);
+    const result = await query<UserRow>(`${userSelect} WHERE u.email = $1 LIMIT 1`, [normalizedEmail]);
     const row = result.rows[0];
 
-    if (!row || !row.otp_code || !row.otp_expires_at) {
-      throw new AppError("OTP request not found", 404, "OTP_NOT_FOUND");
+    if (!row) {
+      throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
     }
 
-    // Lockout after MAX_OTP_ATTEMPTS
-    if (row.otp_attempts >= MAX_OTP_ATTEMPTS) {
-      throw new AppError(
-        "Too many incorrect attempts. Request a new OTP.",
-        429,
-        "OTP_LOCKED"
-      );
-    }
-
-    if (row.otp_expires_at.getTime() < Date.now()) {
-      throw new AppError("OTP has expired", 401, "OTP_EXPIRED");
-    }
-
-    if (row.otp_code !== code) {
-      await query(
-        `UPDATE users SET otp_attempts = otp_attempts + 1, updated_at = NOW() WHERE id = $1`,
-        [row.id]
-      );
-      const remaining = MAX_OTP_ATTEMPTS - (row.otp_attempts + 1);
-      throw new AppError(
-        `Invalid OTP. ${remaining} attempt(s) remaining.`,
-        401,
-        "INVALID_OTP"
-      );
+    const isValid = await comparePassword(password, row.password_hash);
+    if (!isValid) {
+      throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
     }
 
     const updated = await query<UserRow>(
       `
         UPDATE users
-        SET otp_code = NULL, otp_expires_at = NULL, otp_attempts = 0,
-            last_login_at = NOW(), last_active_at = NOW(), updated_at = NOW()
+        SET last_login_at = NOW(), last_active_at = NOW(), updated_at = NOW()
         WHERE id = $1
         RETURNING
-          id, phone, full_name, role, otp_code, otp_expires_at, 0 AS otp_attempts,
+          id, email, password_hash, full_name, role,
           last_login_at, reputation_score, active_case_limit, is_available,
           vehicle_type, vehicle_capacity, service_radius_km,
           ST_Y(home_location::geometry) AS home_latitude,
@@ -200,15 +141,12 @@ class AuthService {
     );
 
     const user = mapUser(updated.rows[0]);
-    const token = signToken(user);
+    const { password_hash: _, ...userWithoutPassword } = updated.rows[0];
+    const userRecord = mapUser({ ...updated.rows[0], ...userWithoutPassword });
 
-    await notificationService.notifyUser(
-      user.id, "auth", "Login successful",
-      "Welcome to Finding Astro.",
-      { phone: user.phone, role: user.role }
-    );
+    const token = signToken(userRecord);
 
-    return { token, user };
+    return { token, user: userRecord };
   }
 
   async getProfile(userId: string): Promise<UserRecord> {
