@@ -1,14 +1,9 @@
 import { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { JWT_SECRET } from "@/lib/env";
-import { ok, unauthorized, serverError } from "@/lib/api-response";
+import { ok, serverError } from "@/lib/api-response";
 
 const hashPassword = async (pw: string) => bcrypt.hash(pw, 10);
-const comparePassword = async (pw: string, hash: string) => bcrypt.compare(pw, hash);
-const signToken = (userId: string, email: string, role: string) =>
-  jwt.sign({ sub: userId, email, role }, JWT_SECRET, { expiresIn: "7d" });
 
 const mapUser = (row: Record<string, unknown>) => ({
   id: row.id as string,

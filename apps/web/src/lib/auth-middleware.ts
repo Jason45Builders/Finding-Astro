@@ -1,6 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { NextRequest } from "next/server";
-import { verifyToken } from "@/lib/jwt";
 
 export interface AuthenticatedUser {
   id: string;
@@ -23,12 +22,16 @@ export async function authMiddleware(req: NextRequest): Promise<{ user: Authenti
   const token = authHeader.replace("Bearer ", "").trim();
 
   try {
-    const decoded = verifyToken(token);
+    const { data: { user: supabaseUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !supabaseUser) {
+      return { error: new Response(JSON.stringify({ success: false, code: "INVALID_TOKEN", message: "Invalid or expired token" }), { status: 401, headers: { "Content-Type": "application/json" } }) };
+    }
 
     const { data: userRow, error: userError } = await supabaseAdmin
       .from("users")
-      .select("is_banned, ban_reason, identity_tier")
-      .eq("id", decoded.sub)
+      .select("is_banned, ban_reason, identity_tier, role")
+      .eq("id", supabaseUser.id)
       .single();
 
     if (userError || !userRow) {
@@ -47,9 +50,9 @@ export async function authMiddleware(req: NextRequest): Promise<{ user: Authenti
 
     return {
       user: {
-        id: decoded.sub,
-        email: decoded.email,
-        role: decoded.role,
+        id: supabaseUser.id,
+        email: supabaseUser.email ?? "",
+        role: (userRow as { role: string }).role,
         identityTier: userRow.identity_tier ?? 0,
       },
     };
@@ -64,20 +67,22 @@ export async function optionalAuth(req: NextRequest): Promise<AuthenticatedUser 
 
   const token = authHeader.replace("Bearer ", "").trim();
   try {
-    const decoded = verifyToken(token);
+    const { data: { user: supabaseUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    if (authError || !supabaseUser) return null;
+
     const { data: userRow } = await supabaseAdmin
       .from("users")
-      .select("is_banned, identity_tier")
-      .eq("id", decoded.sub)
+      .select("is_banned, identity_tier, role")
+      .eq("id", supabaseUser.id)
       .single();
 
     if (userRow?.is_banned) {
       return null;
     }
     if (userRow) {
-      return { id: decoded.sub, email: decoded.email, role: decoded.role, identityTier: userRow.identity_tier ?? 0 };
+      return { id: supabaseUser.id, email: supabaseUser.email ?? "", role: userRow.role, identityTier: userRow.identity_tier ?? 0 };
     }
-    return { id: decoded.sub, email: decoded.email, role: decoded.role };
+    return { id: supabaseUser.id, email: supabaseUser.email ?? "", role: "citizen" };
   } catch {
     return null;
   }

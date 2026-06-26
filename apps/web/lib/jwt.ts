@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "./env";
 
 export interface TokenPayload {
   sub: string;
