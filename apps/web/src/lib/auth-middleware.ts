@@ -47,7 +47,9 @@ export async function authMiddleware(req: NextRequest): Promise<{ user: Authenti
 
     return {
       user: {
-        ...decoded,
+        id: decoded.sub,
+        email: decoded.email,
+        role: decoded.role,
         identityTier: userRow.identity_tier ?? 0,
       },
     };
@@ -73,9 +75,9 @@ export async function optionalAuth(req: NextRequest): Promise<AuthenticatedUser 
       return null;
     }
     if (userRow) {
-      return { ...decoded, identityTier: userRow.identity_tier as number };
+      return { id: decoded.sub, email: decoded.email, role: decoded.role, identityTier: userRow.identity_tier ?? 0 };
     }
-    return { ...decoded };
+    return { id: decoded.sub, email: decoded.email, role: decoded.role };
   } catch {
     return null;
   }
