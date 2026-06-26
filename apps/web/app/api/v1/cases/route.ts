@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware, requireTier, AuthenticatedUser } from "@/lib/auth-middleware";
-import { ok, badRequest, serverError } from "@/lib/api-response";
+import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 
 const TIER_REQUIREMENTS: Record<string, number> = {
   claim_rescue_case: 1, add_animal_record: 1, view_case_details: 1,
