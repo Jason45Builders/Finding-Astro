@@ -27,7 +27,7 @@ export async function authMiddleware(req: NextRequest): Promise<{ user: Authenti
 
     const { data: userRow, error: userError } = await supabaseAdmin
       .from("users")
-      .select("is_banned, ban_reason, COALESCE(identity_tier, 0) AS identity_tier")
+      .select("is_banned, ban_reason, identity_tier")
       .eq("id", decoded.sub)
       .single();
 
@@ -48,7 +48,7 @@ export async function authMiddleware(req: NextRequest): Promise<{ user: Authenti
     return {
       user: {
         ...decoded,
-        identityTier: userRow.identity_tier as number,
+        identityTier: userRow.identity_tier ?? 0,
       },
     };
   } catch {
@@ -65,7 +65,7 @@ export async function optionalAuth(req: NextRequest): Promise<AuthenticatedUser 
     const decoded = verifyToken(token);
     const { data: userRow } = await supabaseAdmin
       .from("users")
-      .select("is_banned, COALESCE(identity_tier, 0) AS identity_tier")
+      .select("is_banned, identity_tier")
       .eq("id", decoded.sub)
       .single();
 
