@@ -14,8 +14,12 @@ export async function GET(req: NextRequest, { params }: { params: { type: string
   let query = supabaseAdmin.from("partners").select("*");
 
   const typeMap: Record<string, string> = {
-    clinics: "clinic", "abc-centres": "abc_centre", stores: "store",
-    welfare-orgs: "ngo", helplines: "helpline", wildlife-centres: "wildlife_centre",
+    clinics: "clinic",
+    "abc-centres": "abc_centre",
+    stores: "store",
+    "welfare-orgs": "ngo",
+    helplines: "helpline",
+    "wildlife-centres": "wildlife_centre",
   };
   const dbType = typeMap[type] ?? type;
 
