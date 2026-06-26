@@ -119,7 +119,7 @@ function NewCaseForm() {
           description: description || `Emergency Stray Rescue: ${severity} condition`,
           latitude,
           longitude,
-          evidenceUrl: publicImageUrl,
+          evidenceUrls: publicImageUrl ? [publicImageUrl] : undefined,
           guestEmail: guestEmail || undefined,
         });
         setSuccessCase(emergencyCase);
@@ -135,7 +135,7 @@ function NewCaseForm() {
           description,
           latitude,
           longitude,
-          evidenceUrl: publicImageUrl,
+          evidenceUrls: publicImageUrl ? [publicImageUrl] : undefined,
         });
         setSuccessCase(regularCase);
       }
