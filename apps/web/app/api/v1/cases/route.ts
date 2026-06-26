@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { authMiddleware, requireTier } from "@/lib/auth-middleware";
+import { authMiddleware, requireTier, AuthenticatedUser } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError } from "@/lib/api-response";
 
 const TIER_REQUIREMENTS: Record<string, number> = {
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function handleCase(req: NextRequest, user: { id: string; role: string; identityTier?: number }, caseType: string) {
+async function handleCase(req: NextRequest, user: AuthenticatedUser, caseType: string) {
   if (TIER_REQUIREMENTS[`${caseType}_report`]) {
     try { requireTier(user, TIER_REQUIREMENTS[`${caseType}_report`]!); } catch (e) {
       if (e instanceof Error) return new NextResponse(JSON.stringify({ success: false, code: "IDENTITY_TIER_REQUIRED", message: e.message.replace("IDENTITY_TIER_REQUIRED: ", "") }), { status: 403, headers: { "Content-Type": "application/json" } });
@@ -63,7 +63,7 @@ async function handleCase(req: NextRequest, user: { id: string; role: string; id
   return createCaseRecord(req, user, caseType);
 }
 
-async function handleEmergency(req: NextRequest, user: { id: string; role: string; identityTier?: number }) {
+async function handleEmergency(req: NextRequest, user: AuthenticatedUser) {
   // Emergency path — no tier requirement (tier 0)
   return createCaseRecord(req, user, "emergency");
 }
