@@ -1,5 +1,7 @@
 {
   "version": 2,
-  "framework": null,
-  "regions": ["iad1"]
+  "framework": "nextjs",
+  "buildCommand": "npm --workspace finding-astro-web run build",
+  "outputDirectory": "apps/web/.next",
+  "installCommand": "npm install"
 }

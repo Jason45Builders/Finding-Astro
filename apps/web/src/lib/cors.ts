@@ -1,3 +1,5 @@
+import { NextRequest, NextResponse } from "next/server";
+
 export function corsHeaders(origin: string | null): Record<string, string> {
   const corsOrigin = process.env.CORS_ORIGIN ?? "";
   const allowed = corsOrigin.split(",").map(o => o.trim()).filter(Boolean);
