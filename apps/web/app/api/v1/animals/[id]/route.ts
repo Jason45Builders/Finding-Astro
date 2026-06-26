@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       territory_label: (body as { territoryLabel?: string }).territoryLabel ?? null,
       primary_photo_url: (body as { primaryPhotoUrl?: string }).primaryPhotoUrl ?? null,
       photo_urls: (body as { photoUrls?: string[] }).photoUrls ?? [],
-      Created_by_user_id: authResult.user.id,
+      created_by_user_id: authResult.user.id,
     };
 
     const { data, error } = await supabaseAdmin.from("animals").insert(payload).select("*").single();
