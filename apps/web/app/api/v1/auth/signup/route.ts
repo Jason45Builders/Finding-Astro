@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { JWT_SECRET } from "@/lib/env";
