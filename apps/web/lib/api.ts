@@ -296,8 +296,8 @@ class ApiClient {
   private baseUrl: string;
   private token: string | null = null;
 
-  constructor(baseUrl: string) {
-    this.baseUrl = baseUrl;
+  constructor(baseUrl?: string) {
+    this.baseUrl = baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/v1";
     if (typeof window !== "undefined") {
       this.token = window.localStorage.getItem("fa_token");
     }
@@ -687,19 +687,25 @@ class ApiClient {
   }
 
   // ── Media ─────────────────────────────────────────────────────────────────
-  async getUploadUrl(filename: string, contentType: string): Promise<{ uploadUrl: string; publicUrl: string }> {
-    return this.request<{ uploadUrl: string; publicUrl: string }>("/media/presign", {
-      method: "POST",
-      body: JSON.stringify({ originalName: filename, mimeType: contentType, sizeBytes: 1024, purpose: "evidence" }),
-    });
+  async uploadMedia(file: File, purpose: string, linkedCaseId?: string, linkedAnimalId?: string): Promise<{ uploadUrl: string; publicUrl: string }> {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("originalName", file.name);
+    fd.append("mimeType", file.type);
+    fd.append("sizeBytes", String(file.size));
+    fd.append("purpose", purpose);
+    if (linkedCaseId) fd.append("linkedCaseId", linkedCaseId);
+    if (linkedAnimalId) fd.append("linkedAnimalId", linkedAnimalId);
+
+    const res = await fetch(`${this.baseUrl}/media/upload`, { method: "POST", body: fd });
+    if (!res.ok) throw new Error(`Upload failed (${res.status})`);
+    const data = await res.json();
+    return data.data as { uploadUrl: string; publicUrl: string };
   }
 
-  async uploadFile(file: File, uploadUrl: string): Promise<void> {
-    const res = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
-    if (!res.ok) throw new Error(`Upload failed (${res.status})`);
+  async logout(): Promise<void> {
+    this.setToken(null);
   }
 }
 
-export const api = new ApiClient(
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api/v1"
-);
+export const api = new ApiClient(process.env.NEXT_PUBLIC_API_BASE_URL);

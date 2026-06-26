@@ -3,14 +3,5 @@
   "buildCommand": "npm install && npm run build",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://finding-astro-backend.vercel.app/api/$1"
-    }
-  ],
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://finding-astro-backend.vercel.app/api/v1"
-  }
+  "framework": "nextjs"
 }

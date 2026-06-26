@@ -1,15 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
   images: {
-    unoptimized: true,
     remotePatterns: [
-      { protocol: "https", hostname: "**" }
-    ]
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+      },
+    ],
   },
-  env: {
-    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL
-  }
+  experimental: { serverActions: { bodySizeLimit: '10mb' } },
 };
 
 module.exports = nextConfig;

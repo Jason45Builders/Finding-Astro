@@ -49,8 +49,7 @@ export default function CrueltyPage() {
       const evidenceUrls: string[] = [];
       for (const file of files) {
         try {
-          const { uploadUrl, publicUrl } = await api.getUploadUrl(file.name, file.type);
-          await api.uploadFile(file, uploadUrl);
+          const { publicUrl } = await api.uploadMedia(file, "evidence");
           evidenceUrls.push(publicUrl);
         } catch { /* ignore individual upload failures */ }
       }

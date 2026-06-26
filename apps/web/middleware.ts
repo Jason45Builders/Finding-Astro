@@ -1,48 +1,43 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get("fa_token")?.value;
-  const { pathname } = request.nextUrl;
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request: { headers: request.headers },
+  });
 
-  // Root landing page is public
-  if (pathname === "/") {
-    return NextResponse.next();
-  }
-
-  // Auth pages (login, signup)
-  const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
-  
-  if (isAuthPage) {
-    if (token) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(key: string) {
+          return request.cookies.get(key)?.value;
+        },
+        set(key: string, value: string, options: Record<string, unknown>) {
+          request.cookies.set({ name: key, value, ...options });
+          response = NextResponse.next({
+            request: { headers: request.headers },
+          });
+          response.cookies.set({ name: key, value, ...options });
+        },
+        remove(key: string, options: Record<string, unknown>) {
+          request.cookies.set({ name: key, value: "", ...options });
+          response = NextResponse.next({
+            request: { headers: request.headers },
+          });
+          response.cookies.set({ name: key, value: "", ...options });
+        },
+      },
     }
-    return NextResponse.next();
-  }
+  );
 
-  // Allow guest access for reporting cases
-  if (pathname === "/cases/new") {
-    return NextResponse.next();
-  }
+  await supabase.auth.getUser();
 
-  // If no token exists and visiting a protected route, redirect to login
-  if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
-// 

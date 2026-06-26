@@ -60,8 +60,7 @@ function WildlifePageInner() {
       let photoUrls: string[] = [];
       if (file) {
         try {
-          const { uploadUrl, publicUrl } = await api.getUploadUrl(file.name, file.type);
-          await api.uploadFile(file, uploadUrl);
+          const { publicUrl } = await api.uploadMedia(file, "evidence");
           photoUrls = [publicUrl];
         } catch { /* ignore */ }
       }

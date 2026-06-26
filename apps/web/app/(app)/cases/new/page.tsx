@@ -89,15 +89,12 @@ function NewCaseForm() {
     if (!file) return undefined;
     setUploadingFile(true);
     try {
-      // 1. Get presigned R2 upload URL
-      const { uploadUrl, publicUrl } = await api.getUploadUrl(file.name, file.type);
-      // 2. Upload file directly to R2
-      await api.uploadFile(file, uploadUrl);
+      const { publicUrl } = await api.uploadMedia(file, "evidence");
       return publicUrl;
     } catch (err) {
-      console.warn("Real upload failed, using fallback mock URL", err);
-      // In dev mode, return a fallback mock url
-      return `http://localhost:4000/mock-uploads/${Date.now()}-${file.name}`;
+      console.warn("Upload failed, using fallback mock URL", err);
+      const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+      return `${base}${base ? "/" : ""}mock-uploads/${Date.now()}-${file.name}`;
     } finally {
       setUploadingFile(false);
     }

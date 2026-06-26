@@ -1,66 +1,130 @@
 # Finding Astro
 
-Finding Astro is a citizen platform for animal welfare and accountability. It combines a geospatial backend, a React Native mobile app, and a Next.js admin dashboard to support animal memory records, lost-and-found matching, rescue and abuse case management, ABC tracking, conflict resolution, and citizen notifications.
+Civic animal welfare platform for Chennai — deployed on **one Vercel project** with **one Supabase project**.
 
-## Monorepo Structure
+**Stack:** Next.js 15 (web + API routes), Supabase (Auth + Database + Storage + PostGIS)
 
-- `backend`: Express + TypeScript API with PostgreSQL and PostGIS
-- `apps/mobile`: React Native mobile client
-- `apps/admin-dashboard`: Next.js admin dashboard
-- `database`: schema and seed scripts
-- `infra`: Docker and Nginx configuration
-- `docs`: API, system design, and database references
-
-## Core Capabilities
-
-- Animal memory system with duplicate detection and geo search
-- Lost and found reporting with match suggestions
-- Rescue, abuse, conflict, and lost-pet case workflows
-- ABC request and tracking flow with geo-return validation
-- OTP authentication with JWT sessions
-- Event notifications
-- Legal knowledge hub
-
-## Quick Start
-
-1. Start PostgreSQL with PostGIS:
+## Quick Start (local)
 
 ```bash
-docker compose up -d db
-```
-
-2. Apply schema and seed data:
-
-```bash
-sh ./scripts/seed.sh
-```
-
-3. Install dependencies:
-
-```bash
+# 1. Install dependencies
 npm install
+
+# 2. Copy env template
+cp apps/web/.env.local.example apps/web/.env.local
+
+# 3. Start dev server
+npm --workspace apps/web run dev
+# → http://localhost:3000
+# → API at http://localhost:3000/api/v1/*
 ```
 
-4. Run the services you need:
+## Deploy to Vercel + Supabase
+
+### 1. Supabase (one project)
+
+1. Go to [supabase.com](https://supabase.com), create a project
+2. In **SQL Editor**, paste and run the contents of `supabase/migrations/20260626105700_initial_schema.sql`
+3. In **Storage**, create a bucket named `finding-astro-media` (set to Public)
+4. From **Settings → API**, note down:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+5. From **Settings → API → Service Role**, copy `SUPABASE_SERVICE_ROLE_KEY`
+
+### 2. Vercel (one project)
+
+1. Go to [vercel.com/new](https://vercel.com/new), import this repo
+2. **Root Directory:** `apps/web`
+3. Framework: **Next.js** (auto-detected)
+4. Add these three environment variables:
+
+| Key | Value |
+|-----|-------|
+| `NEXT_PUBLIC_SUPABASE_URL` | ← your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ← Supabase anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | ← Supabase service role key (server-only) |
+| `JWT_SECRET` | run `openssl rand -hex 32` and paste output |
+| `DATABASE_URL` | Supabase Postgres URI (Settings → Database → Connection String → URI format) |
+| `CORS_ORIGIN` | `https://your-project.vercel.app` |
+| `NODE_ENV` | `production` |
+
+5. Deploy
+
+### 3. After first deploy
+
+- Your frontend is live at `https://your-project.vercel.app`
+- API is at `https://your-project.vercel.app/api/v1/*`
+- Update `CORS_ORIGIN` to include the actual Vercel URL and redeploy
+
+## Admin Dashboard
+
+The admin dashboard lives at `apps/admin-dashboard/`. Deploy it as a **second Vercel project** with root directory `apps/admin-dashboard` and env var:
+- `NEXT_PUBLIC_API_BASE_URL` = `https://your-main-project.vercel.app/api/v1`
+
+## Mobile
+
+The Expo app at `apps/mobile/` uses `NEXT_PUBLIC_API_BASE_URL` from EAS build profiles (see `apps/mobile/eas.json`).
+
+## Architecture
+
+Everything runs in **one Vercel project**:
+
+```
+vercel project (apps/web root)
+├── Next.js pages  →  http://your-app.vercel.app/
+├── Next.js API routes  →  /api/v1/auth/*, /api/v1/animals/*, ...
+│                            backed by Supabase (service role key, bypasses RLS)
+└── Supabase Storage  →  file uploads (replaces old Cloudflare R2)
+        └── Bucket: finding-astro-media (public)
+
+Supabase project (database)
+├── PostgreSQL 15 + PostGIS 3.4
+├── 53 tables, enums, views, triggers
+└── Auth (optional — currently using JWT)
+```
+
+## File Uploads
+
+The old Express backend used Cloudflare R2 (AWS S3 SDK). It now uses **Supabase Storage** (bucket: `finding-astro-media`). Upload flow:
+
+1. Client sends file to `POST /api/v1/media/presign`
+2. API route uploads to Supabase Storage and returns public URL
+3. File is accessible at `https://<project>.supabase.co/storage/v1/object/public/finding-astro-media/...`
+
+No presigned-URL dance needed — direct upload via server-side service role key.
+
+## Environment Variables
+
+### Required (Vercel)
+
+| Variable | Used In | Description |
+|----------|---------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Client + API | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client + API | Supabase anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | API only | Supabase service role (bypasses RLS) |
+| `JWT_SECRET` | API only | Generate with `openssl rand -hex 32` |
+| `DATABASE_URL` | API only | Supabase Postgres connection URI |
+| `CORS_ORIGIN` | API only | Your Vercel domain |
+
+## Local Development
+
+Run the dev server which serves both the web app and API routes:
 
 ```bash
-npm run dev:backend
-npm run dev:dashboard
-npm run dev:mobile
+npm --workspace apps/web run dev
 ```
 
-## Environment
+## Project Structure
 
-Root `.env` provides local development defaults for Docker and service startup. `backend/.env` contains runtime values consumed by the API. Update `JWT_SECRET`, database credentials, and CORS origin before production deployment.
+| Path | Description |
+|------|-------------|
+| `apps/web/app/api/v1/` | All backend API routes (Next.js Serverless) |
+| `apps/web/app/` | Next.js App Router pages |
+| `apps/web/lib/` | Supabase clients, JWT, auth middleware |
+| `supabase/migrations/` | Database schema (53 tables + PostGIS) |
+| `apps/admin-dashboard/` | Admin panel (separate Vercel deployment) |
+| `apps/mobile/` | Expo React Native app |
 
-## API Base URL
+## Switching Back to the Old Express Backend
 
-- Local backend: `http://localhost:4000/api/v1`
-- Health check: `http://localhost:4000/health`
-
-## Production Notes
-
-- Use a managed PostgreSQL instance with PostGIS enabled
-- Rotate `JWT_SECRET`
-- Replace mock OTP delivery with a real SMS provider
-- Point mobile and dashboard clients at the deployed backend URL
+The old Express backend is archived. To restore it, check the git history before the migration commit.
