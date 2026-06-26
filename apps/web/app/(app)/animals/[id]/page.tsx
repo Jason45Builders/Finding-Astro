@@ -213,7 +213,7 @@ export default function AnimalProfilePage() {
           </div>
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm h-72">
             {animal.location?.latitude && animal.location?.longitude ? (
-              <SingleAnimalMap lat={animal.location.latitude} lng={animal.location.longitude} name={animal.name ?? "Animal"} status={animal.status} />
+              <SingleAnimalMap latitude={animal.location.latitude} longitude={animal.location.longitude} />
             ) : (
               <div className="h-full flex items-center justify-center text-slate-400 text-sm">No location data</div>
             )}
