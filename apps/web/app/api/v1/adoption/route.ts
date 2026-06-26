@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { authMiddleware } from "@/lib/auth-middleware";
+import { authMiddleware, AuthenticatedUser } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 
 export async function GET(req: NextRequest) {
@@ -56,7 +56,7 @@ async function handleApply(req: NextRequest, user: { id: string }) {
   }
 }
 
-async function handleGetApplications(req: NextRequest, user: { id: string }) {
+async function handleGetApplications(req: NextRequest, user: AuthenticatedUser) {
   let query = supabaseAdmin.from("adoption_applications").select("*");
   if (user.role !== "admin") query = query.eq("applicant_user_id", user.id);
   const { data, error } = await query;
