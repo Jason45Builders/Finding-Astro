@@ -3,9 +3,10 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, serverError } from "@/lib/api-response";
 
-export async function GET(req: NextRequest, { params }: { params: { type: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ type: string }> }) {
+  const { type: routeType } = await params;
   const url = new URL(req.url);
-  const type = url.searchParams.get("type") ?? params.type;
+  const type = url.searchParams.get("type") ?? routeType;
   const lat = url.searchParams.get("latitude");
   const lng = url.searchParams.get("longitude");
   const radiusKm = parseFloat(url.searchParams.get("radiusKm") ?? "5");
