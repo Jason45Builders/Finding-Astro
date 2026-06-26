@@ -36,7 +36,7 @@ npm --workspace apps/web run dev
 1. Go to [vercel.com/new](https://vercel.com/new), import this repo
 2. **Root Directory:** `apps/web`
 3. Framework: **Next.js** (auto-detected)
-4. Add these three environment variables:
+4. Add these environment variables:
 
 | Key | Value |
 |-----|-------|
@@ -44,7 +44,7 @@ npm --workspace apps/web run dev
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ← Supabase anon/public key |
 | `SUPABASE_SERVICE_ROLE_KEY` | ← Supabase service role key (server-only) |
 | `JWT_SECRET` | run `openssl rand -hex 32` and paste output |
-| `DATABASE_URL` | Supabase Postgres URI (Settings → Database → Connection String → URI format) |
+| `DATABASE_URL` | *(optional)* — only needed for direct SQL; find it at Supabase → Settings → Database → **Direct connection** → URI format |
 | `CORS_ORIGIN` | `https://your-project.vercel.app` |
 | `NODE_ENV` | `production` |
 
