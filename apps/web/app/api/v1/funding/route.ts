@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "50", 10), 200);
   const status = url.searchParams.get("status");
 
-  const authResult = authMiddleware(req);
-  if ("error" in (await authResult)) return await authResult.error;
+  const authResult = await authMiddleware(req);
+  if ("error" in authResult) return authResult.error;
 
   try {
     let query = supabaseAdmin.from("funding_cases").select("*");

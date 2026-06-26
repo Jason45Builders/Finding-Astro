@@ -3,7 +3,7 @@ import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, serverError } from "@/lib/api-response";
 
 export async function GET(req: NextRequest) {
-  const authResult = authMiddleware(req);
+  const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 
   try {
