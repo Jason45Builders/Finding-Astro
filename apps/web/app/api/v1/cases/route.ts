@@ -114,7 +114,7 @@ async function PATCH(req: NextRequest) {
     if (!caseId) return badRequest("VALIDATION_ERROR", "caseId is required");
 
     const body = await req.json();
-    const { status, priority, resolutionNotes } = body as Record<string, unknown>;
+    const { status, priority, resolutionNotes } = body as { status?: string; priority?: string; resolutionNotes?: string };
 
     const { data: existing } = await supabaseAdmin.from("cases").select("status").eq("id", caseId).single();
     if (!existing) return notFound("Case not found");
