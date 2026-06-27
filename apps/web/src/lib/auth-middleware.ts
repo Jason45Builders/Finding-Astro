@@ -20,15 +20,16 @@ export async function authMiddleware(req: NextRequest): Promise<{ user: Authenti
   }
 
   const token = authHeader.replace("Bearer ", "").trim();
+  const admin = supabaseAdmin();
 
   try {
-    const { data: { user: supabaseUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const { data: { user: supabaseUser }, error: authError } = await admin.auth.getUser(token);
 
     if (authError || !supabaseUser) {
       return { error: new Response(JSON.stringify({ success: false, code: "INVALID_TOKEN", message: "Invalid or expired token" }), { status: 401, headers: { "Content-Type": "application/json" } }) };
     }
 
-    const { data: userRow, error: userError } = await supabaseAdmin
+    const { data: userRow, error: userError } = await admin
       .from("users")
       .select("is_banned, ban_reason, identity_tier, role")
       .eq("id", supabaseUser.id)
@@ -66,11 +67,12 @@ export async function optionalAuth(req: NextRequest): Promise<AuthenticatedUser 
   if (!authHeader?.startsWith("Bearer ")) return null;
 
   const token = authHeader.replace("Bearer ", "").trim();
+  const admin = supabaseAdmin();
   try {
-    const { data: { user: supabaseUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const { data: { user: supabaseUser }, error: authError } = await admin.auth.getUser(token);
     if (authError || !supabaseUser) return null;
 
-    const { data: userRow } = await supabaseAdmin
+    const { data: userRow } = await admin
       .from("users")
       .select("is_banned, identity_tier, role")
       .eq("id", supabaseUser.id)
