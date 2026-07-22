@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
+
+
 function getAdminClient() {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === "your-project-url") {
     throw new Error("NEXT_PUBLIC_SUPABASE_URL is not configured. Please set it in your environment variables.");

@@ -194,6 +194,61 @@ export interface SafetyReport {
   createdAt: string;
 }
 
+export interface ConflictReport {
+  id: string;
+  reporterUserId: string;
+  conflictType: string;
+  description: string;
+  location: { latitude: number; longitude: number };
+  locationText: string | null;
+  severity: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface TransportRequest {
+  id: string;
+  caseId: string;
+  animalId: string | null;
+  requestedByUserId: string;
+  assignedToUserId: string | null;
+  vehicleTypeRequired: string;
+  patientCondition: string;
+  status: string;
+  slabAmountInr: number;
+  fundingSource: string;
+  createdAt: string;
+}
+
+export interface EducationContent {
+  id: string;
+  topicKey: string;
+  title: string;
+  audience: string;
+  summary: string;
+  actionPoints: string[];
+  triggerCaseType: string | null;
+  triggerAnimalStatus: string | null;
+  languageCode: string;
+  createdAt: string;
+}
+
+export interface QrCode {
+  id: string;
+  code: string;
+  qrType: string;
+  linkedAnimalId: string | null;
+  linkedZoneId: string | null;
+  linkedCaseId: string | null;
+  location: { latitude: number; longitude: number } | null;
+  locationText: string | null;
+  displayLabel: string | null;
+  scanCount: number;
+  lastScannedAt: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
 export interface PublicOutcome {
   id: string;
   caseId: string | null;
@@ -374,6 +429,18 @@ class ApiClient {
     if (params?.species)   sp.append("species",   params.species);
     const qs = sp.toString();
     return this.request<Animal[]>(`/animals${qs ? `?${qs}` : ""}`);
+  }
+
+  async createAnimal(data: {
+    species: string; location: { latitude: number; longitude: number };
+    status?: string; name?: string; breed?: string; color?: string;
+    gender?: string; approxAgeMonths?: number; distinguishingMarks?: string;
+    description?: string; territoryLabel?: string; primaryPhotoUrl?: string;
+  }): Promise<Animal> {
+    return this.request<Animal>("/animals", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   }
 
   async getAnimal(id: string): Promise<Animal> {
@@ -637,6 +704,85 @@ class ApiClient {
     });
   }
 
+  async listConflictReports(status?: string): Promise<ConflictReport[]> {
+    const qs = status ? `?status=${encodeURIComponent(status)}` : "";
+    return this.request<ConflictReport[]>(`/conflict${qs}`).catch(() => []);
+  }
+
+  async reportConflict(data: {
+    conflictType: string; description: string;
+    latitude: number; longitude: number; locationText?: string; severity?: string;
+  }): Promise<ConflictReport> {
+    return this.request<ConflictReport>("/conflict", {
+      method: "POST",
+      body: JSON.stringify({
+        conflictType: data.conflictType,
+        description: data.description,
+        location: { latitude: data.latitude, longitude: data.longitude },
+        locationText: data.locationText,
+        severity: data.severity ?? "medium",
+      }),
+    });
+  }
+
+  async listTransportRequests(caseId?: string, status?: string): Promise<TransportRequest[]> {
+    const sp = new URLSearchParams();
+    if (caseId) sp.append("caseId", caseId);
+    if (status) sp.append("status", status);
+    const qs = sp.toString();
+    return this.request<TransportRequest[]>(`/transport-requests${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async createTransportRequest(data: {
+    caseId: string; animalId?: string; vehicleTypeRequired: string; patientCondition: string;
+    pickupLocation: { latitude: number; longitude: number }; pickupLocationText?: string;
+    destinationLocation: { latitude: number; longitude: number }; destinationLocationText?: string;
+    slabId?: string; slabAmountInr?: number; fundingSource?: string;
+  }): Promise<TransportRequest> {
+    return this.request<TransportRequest>("/transport-requests", {
+      method: "POST",
+      body: JSON.stringify({
+        caseId: data.caseId,
+        animalId: data.animalId,
+        vehicleTypeRequired: data.vehicleTypeRequired,
+        patientCondition: data.patientCondition,
+        pickupLocation: data.pickupLocation,
+        pickupLocationText: data.pickupLocationText,
+        destinationLocation: data.destinationLocation,
+        destinationLocationText: data.destinationLocationText,
+        slabId: data.slabId,
+        slabAmountInr: data.slabAmountInr,
+        fundingSource: data.fundingSource,
+      }),
+    });
+  }
+
+  async listEducationContent(audience?: string, topicKey?: string): Promise<EducationContent[]> {
+    const sp = new URLSearchParams();
+    if (audience) sp.append("audience", audience);
+    if (topicKey) sp.append("topicKey", topicKey);
+    const qs = sp.toString();
+    return this.request<EducationContent[]>(`/education${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async listQrCodes(): Promise<QrCode[]> {
+    return this.request<QrCode[]>("/qr-codes").catch(() => []);
+  }
+
+  async createQrCode(data: {
+    code: string; qrType: string; linkedAnimalId?: string; linkedZoneId?: string; linkedCaseId?: string;
+    latitude?: number; longitude?: number; locationText?: string; displayLabel?: string;
+  }): Promise<QrCode> {
+    return this.request<QrCode>("/qr-codes", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getQrCode(code: string): Promise<QrCode> {
+    return this.request<QrCode>(`/qr-codes/${code}`);
+  }
+
   async getWardSummaries(): Promise<WardSummary[]> {
     return this.request<WardSummary[]>("/safety/ward-summary").catch(() => []);
   }
@@ -701,6 +847,50 @@ class ApiClient {
     if (!res.ok) throw new Error(`Upload failed (${res.status})`);
     const data = await res.json();
     return data.data as { uploadUrl: string; publicUrl: string };
+  }
+
+  // ── Admin ──────────────────────────────────────────────────────────────────
+  async listVerifications(): Promise<{ ngo: any[]; identity: any[] }> {
+    const [ngo, identity] = await Promise.all([
+      this.request<any[]>("/admin/verifications/ngo").catch(() => []),
+      this.request<any[]>("/admin/verifications/identity").catch(() => []),
+    ]);
+    return { ngo: ngo ?? [], identity: identity ?? [] };
+  }
+
+  async approveVerification(type: "ngo" | "identity", verificationId: string, approved: boolean, notes?: string, requestedTier?: number): Promise<any> {
+    const body: Record<string, unknown> = { verificationId, approved, notes };
+    if (type === "ngo" && requestedTier !== undefined) body.requestedTier = requestedTier;
+    return this.request<any>(`/admin/verifications/${type}/approve`, { method: "POST", body: JSON.stringify(body) });
+  }
+
+  async listReimbursementRequests(): Promise<any[]> {
+    return this.request<any[]>("/admin/reimbursements").catch(() => []);
+  }
+
+  async releasePayout(fundingCaseId: string): Promise<any> {
+    return this.request<any>(`/admin/funding/${fundingCaseId}/release-payout`, { method: "POST", body: JSON.stringify({ fundingCaseId }) });
+  }
+
+  async listAdminCases(filters?: { status?: string; caseType?: string; ward?: string }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.status) sp.append("status", filters.status);
+    if (filters?.caseType) sp.append("caseType", filters.caseType);
+    if (filters?.ward) sp.append("ward", filters.ward);
+    const qs = sp.toString();
+    return this.request<any[]>(`/admin/cases${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async updateAdminCaseStatus(caseId: string, status: string): Promise<any> {
+    return this.request<any>(`/admin/cases/${caseId}/status`, { method: "PATCH", body: JSON.stringify({ status }) });
+  }
+
+  async listAdminUsers(limit = 100): Promise<any[]> {
+    return this.request<any[]>(`/admin/users?limit=${limit}`).catch(() => []);
+  }
+
+  async updateAdminUser(userId: string, data: { isBanned?: boolean; role?: string; identityTier?: number }): Promise<any> {
+    return this.request<any>(`/admin/users/${userId}`, { method: "PATCH", body: JSON.stringify(data) });
   }
 
   async logout(): Promise<void> {

@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { NextRequest } from "next/server";
+import { verifyToken } from "@/lib/jwt";
 
 export interface AuthenticatedUser {
   id: string;
@@ -22,17 +23,18 @@ export async function authMiddleware(req: NextRequest): Promise<{ user: Authenti
   const token = authHeader.replace("Bearer ", "").trim();
   const admin = supabaseAdmin();
 
-  try {
-    const { data: { user: supabaseUser }, error: authError } = await admin.auth.getUser(token);
-
-    if (authError || !supabaseUser) {
-      return { error: new Response(JSON.stringify({ success: false, code: "INVALID_TOKEN", message: "Invalid or expired token" }), { status: 401, headers: { "Content-Type": "application/json" } }) };
-    }
+   try {
+     let payload;
+     try {
+       payload = await verifyToken(token);
+     } catch {
+       return { error: new Response(JSON.stringify({ success: false, code: "INVALID_TOKEN", message: "Invalid or expired token" }), { status: 401, headers: { "Content-Type": "application/json" } }) };
+     }
 
     const { data: userRow, error: userError } = await admin
       .from("users")
       .select("is_banned, ban_reason, identity_tier, role")
-      .eq("id", supabaseUser.id)
+      .eq("id", payload.sub)
       .single();
 
     if (userError || !userRow) {
@@ -51,9 +53,9 @@ export async function authMiddleware(req: NextRequest): Promise<{ user: Authenti
 
     return {
       user: {
-        id: supabaseUser.id,
-        email: supabaseUser.email ?? "",
-        role: (userRow as { role: string }).role,
+        id: payload.sub,
+        email: payload.email,
+        role: userRow.role,
         identityTier: userRow.identity_tier ?? 0,
       },
     };
@@ -69,22 +71,26 @@ export async function optionalAuth(req: NextRequest): Promise<AuthenticatedUser 
   const token = authHeader.replace("Bearer ", "").trim();
   const admin = supabaseAdmin();
   try {
-    const { data: { user: supabaseUser }, error: authError } = await admin.auth.getUser(token);
-    if (authError || !supabaseUser) return null;
+    let payload;
+    try {
+      payload = await verifyToken(token);
+    } catch {
+      return null;
+    }
 
     const { data: userRow } = await admin
       .from("users")
       .select("is_banned, identity_tier, role")
-      .eq("id", supabaseUser.id)
+      .eq("id", payload.sub)
       .single();
 
     if (userRow?.is_banned) {
       return null;
     }
     if (userRow) {
-      return { id: supabaseUser.id, email: supabaseUser.email ?? "", role: userRow.role, identityTier: userRow.identity_tier ?? 0 };
+      return { id: payload.sub, email: payload.email, role: userRow.role, identityTier: userRow.identity_tier ?? 0 };
     }
-    return { id: supabaseUser.id, email: supabaseUser.email ?? "", role: "citizen" };
+    return { id: payload.sub, email: payload.email, role: "citizen" };
   } catch {
     return null;
   }

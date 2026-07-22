@@ -1,0 +1,16 @@
+_id,Zone,Zone Name,Address,Phone,Latitude,Longitude,Google Maps Link
+1,Zone-1,Thiruvottiyur,"No.947, T.H. Road, Thiruvottiyur, Chennai-600 019",044-25993494,13.156265,80.301910,https://maps.app.goo.gl/gFwyUBtLqbz7E2W36
+2,Zone-2,Manali,"No.112, Dr. Ambedkar Street, Manali, Chennai-600 068",044-25941079,13.162304,80.266229,https://maps.app.goo.gl/QHzEDgN927UfGo2M9
+3,Zone-3,Madhavaram,"No.1, Thattankulam Salai, Bazar Road, Madhavaram, Chennai-600 060",044-25530427 / 25531134,13.144213,80.223584,https://maps.app.goo.gl/gVkWsR5K7JcBppzA8
+4,Zone-4,Tondiarpet,"No.266, T.H. Road, Tondiarpet, Chennai-600 021",044-25951083 / 25961199,13.120787,80.286461,https://maps.app.goo.gl/VLBSPckrF7wbtVFVA
+5,Zone-5,Royapuram,"No.105, Basin Bridge Road, Royapuram, Chennai-600 079",044-25206655 / 25209269,13.104726,80.274513,https://maps.app.goo.gl/oyudhqjS14whdRGy8
+6,Zone-6,Thiru-Vi-Ka Nagar,"No.158, Strahans Salai, Otteri, Chennai-600 012",044-26749990 / 26741802,13.097709,80.256737,https://maps.app.goo.gl/mq8NtrYnt342RAf99
+7,Zone-7,Ambattur,"Thiruvallur High Road, Ambattur, Chennai-600 053",044-26253331 / 26250231,13.106431,80.152954,https://maps.app.goo.gl/sXcFBtzBRTKC2U776
+8,Zone-8,Shenoy Nagar,"No.13B/36B, Pulla Avenue, Shenoy Nagar, Chennai-600 030",,13.077105,80.225689,https://maps.app.goo.gl/twwJBSqMi4rEjehd8
+9,Zone-9,Nungambakkam,"No.4, 4 Cross Street, Lake View Road, Nungambakkam, Chennai-600 034",044-28170738 / 28174775,13.054946,80.239206,https://maps.app.goo.gl/LrzorRNYbyQYw5jB6
+10,Zone-10,Kodambakkam,"No.64, N.S.K. Salai, Kodambakkam, Chennai-600 024",044-24838968 / 24801959,13.051702,80.219233,https://maps.app.goo.gl/ymMHd5AsvLtabDdA9
+11,Zone-11,Valasaravakkam,"No.33, Arcot Road, Valasaravakkam, Chennai-600 087",044-24867054,13.041035,80.172154,https://maps.app.goo.gl/YXQiA4SLih7P1bUp6
+12,Zone-12,Guindy,"No.121, Nagireddy Garden Street, Guindy Thiru Vi Ka Industrial Estate, Chennai-600 032",044-22341702,13.018205,80.212623,https://maps.app.goo.gl/zYwyQoCDbuM7ejth7
+13,Zone-13,Adyar,"No.115, Dr. Muthulakshmi Salai, Adyar, Chennai-600 020",044-24425961 / 24425963,13.004691,80.256848,https://maps.app.goo.gl/yq8Vxzf9Hs9TeJB5A
+14,Zone-14,Puzhuthivakkam,"No.6/64, Puzhuthivakkam Main Road, Chennai-600 091",044-22420520,12.972226,80.193646,https://maps.app.goo.gl/k215osiivVQ64WPCA
+15,Zone-15,Sozhinganallur,"No.120, Rajiv Gandhi Salai (Old Mahabalipuram Road), Sozhinganallur, Chennai-600 119",044-24500923,12.896866,80.227342,https://maps.app.goo.gl/Z9N3sLCL6RSvxaXT8

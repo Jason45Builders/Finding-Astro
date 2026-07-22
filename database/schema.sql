@@ -1295,13 +1295,15 @@ INSERT INTO wildlife_species_categories (name, display_name, handling_risk, publ
 ('monkey', 'Monkey', 'Medium — bite risk, disease transmission', 'Do not make eye contact. Do not show teeth. Move away slowly. If injured, seek medical attention first, then report.', 'Do not feed. Do not approach infants. Do not attempt to trap.'),
 ('reptile', 'Reptile', 'Medium — salmonella, bite', 'Keep distance. Do not handle with bare hands. Call a wildlife specialist.', 'Do not handle without gloves. Do not release into water bodies. Do not keep as a pet.'),
 ('mammal', 'Mammal', 'Medium — bite, rabies risk', 'Observe from a distance. Do not touch. If the animal is injured, call a wildlife rescuer. If you are bitten, seek medical care immediately.', 'Do not handle. Do not feed. Do not attempt to keep or adopt.'),
-('other', 'Other Wildlife', 'Unknown', 'Observe from a distance. Do not touch. Call a wildlife rescuer for guidance.', 'Do not handle. Do not feed. Do not attempt to keep.');
+('other', 'Other Wildlife', 'Unknown', 'Observe from a distance. Do not touch. Call a wildlife rescuer for guidance.', 'Do not handle. Do not feed. Do not attempt to keep.')
+ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO transport_slabs (label, amount_inr, max_dist_km, is_active) VALUES
 ('Short (< 5 km)', 150, 5, TRUE),
 ('Medium (5–15 km)', 300, 15, TRUE),
 ('Long (15–30 km)', 500, 30, TRUE),
-('Emergency (any distance)', 800, NULL, TRUE);
+('Emergency (any distance)', 800, NULL, TRUE)
+ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO helplines (name, phone, description, category, city, is_24hr, is_active) VALUES
 ('Blue Cross of India', '04446274999', 'Animal ambulance and rescue', 'rescue', 'Chennai', TRUE, TRUE),
@@ -1309,7 +1311,8 @@ INSERT INTO helplines (name, phone, description, category, city, is_24hr, is_act
 ('Chennai Corporation Veterinary', '04425394999', 'Municipal ABC and vaccination', 'govt', 'Chennai', FALSE, TRUE),
 ('Childline India', '1098', 'Child safety and protection', 'child_safety', 'Chennai', TRUE, TRUE),
 ('iCall Psychosocial Helpline', '02225521111', 'Mental health support for volunteers', 'mental_health', 'India', TRUE, TRUE),
-('Sangath', '01141198696', 'Counselling and mental health', 'mental_health', 'India', FALSE, TRUE);
+('Sangath', '01141198696', 'Counselling and mental health', 'mental_health', 'India', FALSE, TRUE)
+ON CONFLICT (id) DO NOTHING;
 
 -- ══════════════════════════════════════════════════════════════════════════════
 -- END OF SCHEMA

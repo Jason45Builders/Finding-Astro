@@ -1,14 +1,23 @@
-import jwt from "jsonwebtoken";
+import { SignJWT, jwtVerify } from "jose";
 import { JWT_SECRET } from "./env";
 
 export interface TokenPayload {
   sub: string;
   email: string;
   role: string;
+  [key: string]: unknown;
 }
 
-export const signToken = (payload: TokenPayload): string =>
-  jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+export async function signToken(payload: TokenPayload): Promise<string> {
+  const secret = new TextEncoder().encode(JWT_SECRET);
+  return new SignJWT({ sub: payload.sub, email: payload.email, role: payload.role })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("7d")
+    .sign(secret);
+}
 
-export const verifyToken = (token: string): TokenPayload =>
-  jwt.verify(token, JWT_SECRET) as TokenPayload;
+export async function verifyToken(token: string): Promise<TokenPayload> {
+  const secret = new TextEncoder().encode(JWT_SECRET);
+  const { payload } = await jwtVerify(token, secret);
+  return payload as unknown as TokenPayload;
+}

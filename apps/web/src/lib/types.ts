@@ -1,5 +1,3 @@
-import { createClientSupabase } from "./supabase";
-
 export type Profile = User;
 export type CaseRecord = Case;
 
