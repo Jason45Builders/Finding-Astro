@@ -4,6 +4,10 @@
   "private": true,
   "description": "Finding Astro — civic animal welfare platform for Chennai",
   "workspaces": ["apps/web"],
+  "overrides": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
   "scripts": {
     "dev": "npm --workspace apps/web run dev",
     "build": "npm --workspace apps/web run build",
