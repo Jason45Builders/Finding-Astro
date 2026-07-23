@@ -117,7 +117,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <aside className="hidden md:flex md:flex-col md:w-64 bg-surface-container-low border-r border-outline-variant h-screen sticky top-0">
         <div className="p-5 border-b border-outline-variant shrink-0">
           <Link href="/dashboard" className="font-display-lg text-2xl font-extrabold text-primary tracking-tight block leading-none">Finding Astro</Link>
-          <p className="font-label-caps text-label-caps text-secondary mt-1.5 uppercase">Chennai Animal Welfare</p>
+          <p className="font-label-caps text-label-caps text-secondary mt-1.5 uppercase">Civic Animal Welfare</p>
         </div>
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           {navItems.map(item => <NavLink key={item.href} item={item} />)}
