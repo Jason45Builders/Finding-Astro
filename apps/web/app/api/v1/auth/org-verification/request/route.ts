@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     if (!parsed.ok) return parsed.response;
     const { orgName, registrationNumber, orgType, address, documentUrls, requestedTier } = parsed.data;
 
-    await supabaseAdmin().from("ngo_verifications").insert({
+    const { error } = await supabaseAdmin().from("ngo_verifications").insert({
       user_id: authResult.user.id,
       org_name: orgName,
       registration_number: registrationNumber ?? null,
@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
       requested_tier: requestedTier ?? 3,
       status: "pending",
     });
+    if (error) return serverError(error.message);
     await audit({ tableName: "ngo_verifications", recordId: authResult.user.id, action: "INSERT", actorId: authResult.user.id, actorRole: authResult.user.role, newData: { org_name: orgName, org_type: orgType ?? "ngo", requested_tier: requestedTier ?? 3 } });
     return ok(null, "Verification request submitted");
   } catch {

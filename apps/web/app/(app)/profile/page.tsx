@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Shield, MapPin, Star, Save, CheckCircle, AlertCircle, ChevronDown, Award, Radar } from "lucide-react";
+import Link from "next/link";
+import { Shield, MapPin, Star, Save, CheckCircle, AlertCircle, ChevronDown, Award, Radar, Building2, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { Card } from "@/components/ui/Card";
@@ -100,6 +101,20 @@ export default function ProfilePage() {
           </p>
         </div>
       </Card>
+
+      {/* Organization Registration Prompt */}
+      {user.role === "citizen" && (
+        <Link href="/ngo-verification">
+          <Card interactive className="p-5 sm:p-6 flex items-center gap-4">
+            <Building2 className="w-8 h-8 text-primary shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm text-on-surface">Register your organization</p>
+              <p className="text-xs text-on-surface-variant mt-0.5">Get verified as an NGO to unlock case verification, dispatch, and reimbursement review.</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-outline shrink-0" />
+          </Card>
+        </Link>
+      )}
 
       {/* Responder Settings */}
       <Card className="p-6 sm:p-8">

@@ -232,9 +232,14 @@ export default async function RootPage() {
             <p className="text-on-surface-variant max-w-xl mx-auto mb-8">
               Every response depends on verified clinics, NGOs, and welfare organizations who show up when it matters. If you run one, join the network.
             </p>
-            <Link href="/partner-signup">
-              <Button variant="outline" size="lg">Become a Partner</Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/partner-signup">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto">Become a Clinic or Store Partner</Button>
+              </Link>
+              <Link href="/ngo-verification">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto">Register Your Organization</Button>
+              </Link>
+            </div>
           </div>
         </section>
 

@@ -414,6 +414,16 @@ class ApiClient {
     return this.request<User>("/auth/me");
   }
 
+  async requestOrgVerification(data: {
+    orgName: string; orgType?: string; registrationNumber?: string;
+    address?: string; documentUrls?: string[]; requestedTier?: number;
+  }): Promise<void> {
+    await this.request<void>("/auth/org-verification/request", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
   // ── Animals ───────────────────────────────────────────────────────────────
   async listAnimals(params?: {
     latitude?: number; longitude?: number; radiusKm?: number;

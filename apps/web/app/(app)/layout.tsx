@@ -67,6 +67,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`);
+    }
+  }, [isLoading, user, pathname, router]);
+
+  useEffect(() => {
     if (!user) return;
     const fetchNotifications = async () => {
       try { setNotifications(await api.listNotifications()); } catch { /* ignore */ }
@@ -87,9 +93,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><PageSpinner label="Loading Finding Astro..." /></div>;
-
-  if (!user) return null;
+  if (isLoading || !user) return <div className="min-h-screen bg-background flex items-center justify-center"><PageSpinner label="Loading Finding Astro..." /></div>;
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 

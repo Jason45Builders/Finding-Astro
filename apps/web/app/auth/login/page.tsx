@@ -1,21 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Input, Label } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { PageSpinner } from '@/components/ui/Spinner';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
+  const next = searchParams?.get('next');
+  const signupHref = next ? `/auth/signup?next=${encodeURIComponent(next)}` : '/auth/signup';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +27,7 @@ export default function LoginPage() {
     setError('');
     try {
       await login(email, password);
-      router.push('/dashboard');
+      router.push(next && next.startsWith('/') ? next : '/dashboard');
       router.refresh();
     } catch (err: any) {
       setError(err?.message || 'Login failed');
@@ -86,9 +90,17 @@ export default function LoginPage() {
           </Button>
         </form>
         <p className="text-center text-sm text-on-surface-variant mt-6">
-          Don&apos;t have an account? <a href="/auth/signup" className="text-primary font-bold hover:underline">Sign up</a>
+          Don&apos;t have an account? <a href={signupHref} className="text-primary font-bold hover:underline">Sign up</a>
         </p>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<PageSpinner />}>
+      <LoginForm />
+    </Suspense>
   );
 }

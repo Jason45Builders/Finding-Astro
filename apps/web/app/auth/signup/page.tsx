@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, User } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Input, Label } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { PageSpinner } from '@/components/ui/Spinner';
 
-export default function SignupPage() {
+function SignupForm() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,7 +17,10 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signup } = useAuth();
+  const next = searchParams?.get('next');
+  const loginHref = next ? `/auth/login?next=${encodeURIComponent(next)}` : '/auth/login';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +28,7 @@ export default function SignupPage() {
     setError('');
     try {
       await signup(email, password, fullName);
-      router.push('/dashboard');
+      router.push(next && next.startsWith('/') ? next : '/dashboard');
       router.refresh();
     } catch (err: any) {
       setError(err?.message || 'Signup failed');
@@ -102,9 +106,17 @@ export default function SignupPage() {
           </Button>
         </form>
         <p className="text-center text-sm text-on-surface-variant mt-6">
-          Already have an account? <a href="/auth/login" className="text-primary font-bold hover:underline">Sign in</a>
+          Already have an account? <a href={loginHref} className="text-primary font-bold hover:underline">Sign in</a>
         </p>
       </Card>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<PageSpinner />}>
+      <SignupForm />
+    </Suspense>
   );
 }
