@@ -74,8 +74,14 @@ export default function ProfilePage() {
       {/* Identity Card */}
       <Card className="p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-          <div className="w-20 h-20 rounded-full bg-primary text-on-primary flex items-center justify-center text-2xl font-black shrink-0">
-            {initials}
+          <div className="w-20 h-20 rounded-full border-4 border-primary/20 overflow-hidden bg-surface-container-high shrink-0">
+            {user.profilePhotoUrl ? (
+              <img src={user.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-primary text-on-primary text-2xl font-black">
+                {initials}
+              </div>
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-2xl font-black text-on-surface truncate">

@@ -136,6 +136,7 @@ CREATE TABLE IF NOT EXISTS users (
   
   -- Push
   push_token TEXT,
+  profile_photo_url TEXT,
   
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

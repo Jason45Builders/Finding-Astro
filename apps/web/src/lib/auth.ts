@@ -9,6 +9,7 @@ interface AuthState {
   signup: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
   bootstrap: () => Promise<void>;
+  updateUser: (patch: Partial<User>) => void;
 }
 
 export const useAuth = create<AuthState>((set, get) => ({
@@ -53,4 +54,6 @@ export const useAuth = create<AuthState>((set, get) => ({
       set({ user: null, token: null, isLoading: false });
     }
   },
+
+  updateUser: (patch) => set((state) => ({ user: state.user ? { ...state.user, ...patch } : null })),
 }));

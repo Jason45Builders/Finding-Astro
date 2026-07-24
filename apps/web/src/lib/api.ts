@@ -3,6 +3,7 @@ export interface User {
   phone: string;
   fullName: string | null;
   role: "citizen" | "ngo" | "govt" | "admin" | "hospital";
+  profilePhotoUrl: string | null;
   reputationScore: number;
   activeCaseLimit: number;
   isAvailable: boolean;
@@ -412,6 +413,13 @@ class ApiClient {
 
   async getMe(): Promise<User> {
     return this.request<User>("/auth/me");
+  }
+
+  async updateProfilePhoto(profilePhotoUrl: string | null): Promise<User> {
+    return this.request<User>("/auth/me", {
+      method: "PATCH",
+      body: JSON.stringify({ profilePhotoUrl }),
+    });
   }
 
   async requestOrgVerification(data: {

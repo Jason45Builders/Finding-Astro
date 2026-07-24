@@ -9,8 +9,7 @@ import {
   FolderHeart,
   MapPin,
   ChevronRight,
-  Sparkles,
-  Heart
+  Camera
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api, Case, Animal } from "@/lib/api";
@@ -28,6 +27,8 @@ export default function UserDashboard() {
   const [loadingCases, setLoadingCases] = useState(true);
   const [loadingNearby, setLoadingNearby] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCases = async () => {
@@ -76,23 +77,61 @@ export default function UserDashboard() {
     );
   };
 
+  const initials = (user?.fullName || "A").split(" ").map((n) => n.charAt(0).toUpperCase()).slice(0, 2).join("");
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    setPhotoError(null);
+    try {
+      const { uploadUrl } = await api.uploadMedia(file, "profile");
+      const updated = await api.updateProfilePhoto(uploadUrl);
+      useAuth.getState().updateUser({ profilePhotoUrl: updated.profilePhotoUrl });
+    } catch (err: unknown) {
+      setPhotoError(err instanceof Error ? err.message : "Failed to upload photo");
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = "";
+    }
+  };
+
   return (
     <div className="space-y-8">
-      {/* Welcome Banner */}
-      <div className="bg-primary rounded-xl p-8 text-on-primary shadow-lg relative overflow-hidden">
-        <div className="relative z-10 max-w-xl">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-label-caps text-label-caps bg-on-primary/10 mb-4 border border-on-primary/20">
-            <Sparkles className="w-3.5 h-3.5" /> Welcome back
-          </span>
-          <h1 className="font-headline-lg text-headline-lg-mobile sm:text-headline-lg tracking-tight">
-            Hi, {user?.fullName || "Citizen"}!
-          </h1>
-          <p className="mt-2 text-on-primary/80 font-medium leading-relaxed">
-            Your current reputation score is <strong className="text-on-primary">{user?.reputationScore ?? 0}</strong>. Thank you for making Chennai a safer place for animals.
-          </p>
-        </div>
-        <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-y-8 translate-x-4">
-          <Heart className="w-72 h-72 fill-on-primary" />
+      {/* ID Card */}
+      <div className="relative overflow-hidden rounded-2xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-xl">
+        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary to-emerald-500 rounded-l-2xl" />
+        <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-8 p-5 sm:p-8">
+          <div className="flex-1 text-center sm:text-left min-w-0">
+            <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Welcome back</p>
+            <h1 className="text-2xl sm:text-3xl font-black text-on-surface tracking-tight truncate">
+              Hi, {user?.fullName || "Citizen"}!
+            </h1>
+            <p className="text-sm text-on-surface-variant mt-2 leading-relaxed">
+              Your current reputation score is <strong className="text-primary font-semibold">{user?.reputationScore ?? 0}</strong>. Thank you for making Chennai a safer place for animals.
+            </p>
+            {photoError && <p className="text-xs text-error mt-2 font-medium">{photoError}</p>}
+          </div>
+          <div className="relative shrink-0">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-surface-container-high">
+              {user?.profilePhotoUrl ? (
+                <img src={user.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-2xl sm:text-3xl font-black">
+                  {initials}
+                </div>
+              )}
+              {uploadingPhoto && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-full">
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+            <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary hover:bg-emerald-800 rounded-full flex items-center justify-center cursor-pointer shadow-md border-2 border-white transition-colors">
+              <Camera className="w-4 h-4 text-white" />
+              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} disabled={uploadingPhoto} />
+            </label>
+          </div>
         </div>
       </div>
 
