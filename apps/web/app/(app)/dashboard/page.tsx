@@ -9,6 +9,7 @@ import {
   FolderHeart,
   MapPin,
   ChevronRight,
+  Heart,
   Camera
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -86,8 +87,9 @@ export default function UserDashboard() {
     setPhotoError(null);
     try {
       const { uploadUrl } = await api.uploadMedia(file, "profile");
-      const updated = await api.updateProfilePhoto(uploadUrl);
-      useAuth.getState().updateUser({ profilePhotoUrl: updated.profilePhotoUrl });
+      await api.updateProfilePhoto(uploadUrl);
+      const refreshed = await api.getMe();
+      useAuth.getState().updateUser(refreshed);
     } catch (err: unknown) {
       setPhotoError(err instanceof Error ? err.message : "Failed to upload photo");
     } finally {
@@ -99,36 +101,38 @@ export default function UserDashboard() {
   return (
     <div className="space-y-8">
       {/* ID Card */}
-      <div className="relative overflow-hidden rounded-2xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-xl">
-        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary to-emerald-500 rounded-l-2xl" />
-        <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-8 p-5 sm:p-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-primary to-emerald-700 text-white shadow-xl">
+        <div className="absolute right-0 bottom-0 opacity-[0.07] pointer-events-none transform translate-y-6 translate-x-4">
+          <Heart className="w-64 h-64 fill-white" />
+        </div>
+        <div className="relative flex flex-col sm:flex-row items-center gap-5 sm:gap-8 p-5 sm:p-8">
           <div className="flex-1 text-center sm:text-left min-w-0">
-            <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Welcome back</p>
-            <h1 className="text-2xl sm:text-3xl font-black text-on-surface tracking-tight truncate">
+            <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest mb-1">Welcome back</p>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight truncate">
               Hi, {user?.fullName || "Citizen"}!
             </h1>
-            <p className="text-sm text-on-surface-variant mt-2 leading-relaxed">
-              Your current reputation score is <strong className="text-primary font-semibold">{user?.reputationScore ?? 0}</strong>. Thank you for making Chennai a safer place for animals.
+            <p className="text-sm text-white/75 mt-2 leading-relaxed">
+              Your current reputation score is <strong className="text-white font-semibold">{user?.reputationScore ?? 0}</strong>. Thank you for making Chennai a safer place for animals.
             </p>
-            {photoError && <p className="text-xs text-error mt-2 font-medium">{photoError}</p>}
+            {photoError && <p className="text-xs text-red-200 mt-2 font-medium">{photoError}</p>}
           </div>
           <div className="relative shrink-0">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-surface-container-high">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[3px] border-white/80 shadow-xl overflow-hidden bg-white/20 backdrop-blur-sm">
               {user?.profilePhotoUrl ? (
                 <img src={user.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-2xl sm:text-3xl font-black">
+                <div className="w-full h-full flex items-center justify-center bg-white/15 text-white text-2xl sm:text-3xl font-black">
                   {initials}
                 </div>
               )}
               {uploadingPhoto && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-full">
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
             </div>
-            <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary hover:bg-emerald-800 rounded-full flex items-center justify-center cursor-pointer shadow-md border-2 border-white transition-colors">
-              <Camera className="w-4 h-4 text-white" />
+            <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-white hover:bg-white/90 rounded-full flex items-center justify-center cursor-pointer shadow-lg border-2 border-primary transition-colors">
+              <Camera className="w-4 h-4 text-primary" />
               <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} disabled={uploadingPhoto} />
             </label>
           </div>
