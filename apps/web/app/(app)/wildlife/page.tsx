@@ -119,14 +119,22 @@ function WildlifePageInner() {
       {step === "select-species" && (
         <div className="space-y-4">
           <p className="text-sm font-bold text-on-surface-variant">What type of animal did you see?</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 animate-stagger">
-            {(species.length > 0 ? species : ["Snake","Bird","Monkey","Reptile","Mammal","Other"].map(n => ({ id: n, name: n.toLowerCase(), displayName: n, handlingRisk: "Medium — keep distance", publicGuidance: "Stay calm. Keep distance. Call a wildlife rescuer.", doNotDo: "Do not handle or approach.", isActive: true }))).map(s => (
-              <button key={s.id} onClick={() => handleSelectSpecies(s)}
-                className="bg-surface-container-lowest border border-outline-variant hover:border-primary rounded-xl p-4 text-left transition-all duration-150 ease-out active:scale-95 hover:shadow-sm group">
-                <p className="font-bold text-on-surface group-hover:text-primary transition-colors duration-150 ease-out text-sm">{s.displayName}</p>
-                <p className="text-[10px] text-outline mt-1 line-clamp-1">{s.handlingRisk}</p>
-              </button>
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 animate-stagger">
+            {(species.length > 0 ? species : ["Snake","Bird","Monkey","Reptile","Mammal","Other"].map(n => ({ id: n, name: n.toLowerCase(), displayName: n, handlingRisk: "Medium — keep distance", publicGuidance: "Stay calm. Keep distance. Call a wildlife rescuer.", doNotDo: "Do not handle or approach.", isActive: true }))).map(s => {
+              const isSelected = selectedSpecies?.id === s.id;
+              return (
+                <button key={s.id} onClick={() => handleSelectSpecies(s)}
+                  className={cn(
+                    "border rounded-xl p-3 sm:p-4 text-left transition-all duration-150 ease-out active:scale-95 hover:shadow-sm",
+                    isSelected
+                      ? "border-primary bg-primary-container"
+                      : "border-outline-variant bg-surface-container-lowest hover:border-primary"
+                  )}>
+                  <p className={cn("font-bold text-xs sm:text-sm transition-colors duration-150", isSelected ? "text-on-primary-container" : "text-on-surface")}>{s.displayName}</p>
+                  <p className={cn("text-[10px] mt-1 line-clamp-1 transition-colors duration-150", isSelected ? "text-on-primary-container/80" : "text-on-surface-variant")}>{s.handlingRisk}</p>
+                </button>
+              );
+            })}
           </div>
           {centers.length > 0 && (
             <div className="mt-4">

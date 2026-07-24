@@ -97,56 +97,56 @@ export default function UserDashboard() {
       </div>
 
       {/* Quick Actions Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-stagger">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-stagger">
         <Link
           href="/cases/new?type=emergency"
-          className="group bg-surface-container-lowest p-6 rounded-xl border border-outline-variant hover:border-secondary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
+          className="group bg-surface-container-lowest p-4 sm:p-6 rounded-xl border border-outline-variant hover:border-secondary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
         >
-          <div className="w-12 h-12 bg-secondary-container text-on-secondary-container group-hover:coral-gradient group-hover:text-white rounded-md flex items-center justify-center transition-all duration-200 ease-out">
-            <AlertCircle className="w-6 h-6" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-secondary-container text-on-secondary-container group-hover:coral-gradient group-hover:text-white rounded-md flex items-center justify-center transition-all duration-200 ease-out">
+            <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div className="mt-6">
-            <h3 className="font-bold text-on-surface text-lg group-hover:text-secondary transition-colors">Report SOS</h3>
-            <p className="text-on-surface-variant text-sm mt-1">Submit emergency street rescue alert</p>
+          <div className="mt-4 sm:mt-6">
+            <h3 className="font-bold text-on-surface text-base sm:text-lg group-hover:text-secondary transition-colors">Report SOS</h3>
+            <p className="text-on-surface-variant text-xs sm:text-sm mt-1">Submit emergency street rescue alert</p>
           </div>
         </Link>
 
         <Link
           href="/animals"
-          className="group bg-surface-container-lowest p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
+          className="group bg-surface-container-lowest p-4 sm:p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
         >
-          <div className="w-12 h-12 bg-primary-container text-on-primary-container group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all duration-200 ease-out">
-            <Eye className="w-6 h-6" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-container text-on-primary-container group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all duration-200 ease-out">
+            <Eye className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div className="mt-6">
-            <h3 className="font-bold text-on-surface text-lg group-hover:text-primary transition-colors">Browse Animals</h3>
-            <p className="text-on-surface-variant text-sm mt-1">Browse community and lost animals</p>
+          <div className="mt-4 sm:mt-6">
+            <h3 className="font-bold text-on-surface text-base sm:text-lg group-hover:text-primary transition-colors">Browse Animals</h3>
+            <p className="text-on-surface-variant text-xs sm:text-sm mt-1">Browse community and lost animals</p>
           </div>
         </Link>
 
         <Link
           href="/partners?type=clinic"
-          className="group bg-surface-container-lowest p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
+          className="group bg-surface-container-lowest p-4 sm:p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
         >
-          <div className="w-12 h-12 bg-sky-100 text-sky-600 group-hover:bg-sky-600 group-hover:text-white rounded-md flex items-center justify-center transition-all duration-200 ease-out">
-            <Building2 className="w-6 h-6" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-sky-100 text-sky-600 group-hover:bg-sky-600 group-hover:text-white rounded-md flex items-center justify-center transition-all duration-200 ease-out">
+            <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div className="mt-6">
-            <h3 className="font-bold text-on-surface text-lg group-hover:text-sky-600 transition-colors">Find a Vet</h3>
-            <p className="text-on-surface-variant text-sm mt-1">Locate veterinary clinics and SPCAs</p>
+          <div className="mt-4 sm:mt-6">
+            <h3 className="font-bold text-on-surface text-base sm:text-lg group-hover:text-sky-600 transition-colors">Find a Vet</h3>
+            <p className="text-on-surface-variant text-xs sm:text-sm mt-1">Locate veterinary clinics and SPCAs</p>
           </div>
         </Link>
 
         <Link
           href="/cases"
-          className="group bg-surface-container-lowest p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
+          className="group bg-surface-container-lowest p-4 sm:p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
         >
-          <div className="w-12 h-12 bg-surface-container-high text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all duration-200 ease-out">
-            <FolderHeart className="w-6 h-6" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-surface-container-high text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all duration-200 ease-out">
+            <FolderHeart className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div className="mt-6">
-            <h3 className="font-bold text-on-surface text-lg group-hover:text-primary transition-colors">My Cases</h3>
-            <p className="text-on-surface-variant text-sm mt-1">View status of reported cases</p>
+          <div className="mt-4 sm:mt-6">
+            <h3 className="font-bold text-on-surface text-base sm:text-lg group-hover:text-primary transition-colors">My Cases</h3>
+            <p className="text-on-surface-variant text-xs sm:text-sm mt-1">View status of reported cases</p>
           </div>
         </Link>
       </div>
