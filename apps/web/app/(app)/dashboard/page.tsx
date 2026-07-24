@@ -30,6 +30,9 @@ export default function UserDashboard() {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [optimisticPhoto, setOptimisticPhoto] = useState<string | null>(null);
+
+  useEffect(() => () => { if (optimisticPhoto) URL.revokeObjectURL(optimisticPhoto); }, [optimisticPhoto]);
 
   useEffect(() => {
     const fetchCases = async () => {
@@ -79,10 +82,13 @@ export default function UserDashboard() {
   };
 
   const initials = (user?.fullName || "A").split(" ").map((n) => n.charAt(0).toUpperCase()).slice(0, 2).join("");
+  const photoSrc = optimisticPhoto || user?.profilePhotoUrl || null;
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const objectUrl = URL.createObjectURL(file);
+    setOptimisticPhoto(objectUrl);
     setUploadingPhoto(true);
     setPhotoError(null);
     try {
@@ -90,8 +96,9 @@ export default function UserDashboard() {
       await api.updateProfilePhoto(uploadUrl);
       const refreshed = await api.getMe();
       useAuth.getState().updateUser(refreshed);
+      setOptimisticPhoto((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     } catch (err: unknown) {
-      setPhotoError(err instanceof Error ? err.message : "Failed to upload photo");
+      setPhotoError(err instanceof Error ? err.message : "Failed to save profile photo");
     } finally {
       setUploadingPhoto(false);
       e.target.value = "";
@@ -114,12 +121,16 @@ export default function UserDashboard() {
             <p className="text-sm text-white/75 mt-2 leading-relaxed">
               Your current reputation score is <strong className="text-white font-semibold">{user?.reputationScore ?? 0}</strong>. Thank you for making Chennai a safer place for animals.
             </p>
-            {photoError && <p className="text-xs text-red-200 mt-2 font-medium">{photoError}</p>}
+            {photoError && (
+              <div className="mt-3 inline-flex items-center gap-2 bg-red-500/20 border border-red-400/40 text-red-100 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                <span>{photoError}</span>
+              </div>
+            )}
           </div>
           <div className="relative shrink-0">
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[3px] border-white/80 shadow-xl overflow-hidden bg-white/20 backdrop-blur-sm">
-              {user?.profilePhotoUrl ? (
-                <img src={user.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
+              {photoSrc ? (
+                <img src={photoSrc} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-white/15 text-white text-2xl sm:text-3xl font-black">
                   {initials}
