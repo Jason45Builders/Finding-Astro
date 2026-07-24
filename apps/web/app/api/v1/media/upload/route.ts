@@ -3,6 +3,14 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ok, created, badRequest, serverError } from "@/lib/api-response";
 import { stripExifGps } from "@/lib/strip-exif";
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '50mb',
+    },
+  },
+};
+
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", "application/pdf"]);
 const MAX_SIZE = 10 * 1024 * 1024;
 const BUCKET = "finding-astro-media";
