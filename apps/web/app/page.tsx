@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { LogoMark } from "@/components/ui/Logo";
 import {
-  PawPrint,
   ShieldCheck,
   Camera,
   ClipboardCheck,
@@ -116,8 +116,16 @@ export default async function RootPage() {
                 </Link>
               </div>
             </div>
-            <div className="relative aspect-square md:aspect-auto md:h-[440px] rounded-[40px] overflow-hidden bg-primary flex items-center justify-center">
-              <PawPrint className="w-40 h-40 text-on-primary/15" />
+            <div className="relative aspect-square md:aspect-auto md:h-[440px] rounded-[40px] overflow-hidden bg-primary">
+              <Image
+                src="/images/dog-01.jpg"
+                alt="A volunteer gently offering a hand to a stray dog"
+                fill
+                priority
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent" />
               <span className="absolute top-6 left-6 bg-surface/90 text-primary font-label-caps text-label-caps px-3 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-1.5">
                 <MapPinned className="w-3.5 h-3.5" /> Geo-Tagged Reports
               </span>
