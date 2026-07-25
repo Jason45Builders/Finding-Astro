@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, serverError } from "@/lib/api-response";
+import { mapWildlifeSpecies } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
   const authResult = await authMiddleware(req);
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest) {
   try {
     const { data, error } = await supabaseAdmin().from("wildlife_species_categories").select("*").eq("is_active", true);
     if (error) return serverError(error.message);
-    return ok(data ?? [], "Wildlife species loaded");
+    return ok((data ?? []).map(mapWildlifeSpecies), "Wildlife species loaded");
   } catch {
     return serverError();
   }
