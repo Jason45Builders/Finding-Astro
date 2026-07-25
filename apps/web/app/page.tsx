@@ -253,16 +253,16 @@ export default async function RootPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg md:py-24 bg-surface relative overflow-hidden">
+        <section className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg md:py-24 bg-green-700 relative overflow-hidden">
           <div className="max-w-[800px] mx-auto text-center relative z-10">
-            <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-4 md:mb-6">Ready to help an animal near you?</h2>
-            <p className="font-body-lg text-on-surface-variant mb-8 md:mb-10">Create an account to report, respond, or track a case from start to finish.</p>
+            <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-white mb-4 md:mb-6">Ready to help an animal near you?</h2>
+            <p className="font-body-lg text-green-100 mb-8 md:mb-10">Create an account to report, respond, or track a case from start to finish.</p>
             <Link href="/auth/signup">
               <Button variant="coral" size="lg">Create Your Account</Button>
             </Link>
           </div>
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary-fixed-dim/20 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary-fixed/20 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary-fixed/25 rounded-full blur-[100px] pointer-events-none" />
         </section>
       </main>
 
