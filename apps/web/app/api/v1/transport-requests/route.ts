@@ -5,6 +5,22 @@ import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { validateBody, LocationSchema } from "@/lib/validation";
 
+function mapTransportRequest(row: Record<string, unknown>) {
+  return {
+    id: row.id as string,
+    caseId: row.case_id as string,
+    animalId: row.animal_id as string | null,
+    requestedByUserId: row.requested_by_user_id as string,
+    assignedToUserId: row.assigned_to_user_id as string | null,
+    vehicleTypeRequired: row.vehicle_type_required as string,
+    patientCondition: row.patient_condition as string,
+    status: row.status as string,
+    slabAmountInr: Number(row.slab_amount_inr ?? 0),
+    fundingSource: row.funding_source as string,
+    createdAt: row.created_at as string,
+  };
+}
+
 const TransportRequestSchema = z.object({
   caseId: z.string().uuid(),
   animalId: z.string().uuid().optional(),
@@ -38,7 +54,7 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await query.order("created_at", { ascending: false }).limit(50);
     if (error) return serverError(error.message);
-    return ok(data ?? [], "Transport requests loaded");
+    return ok((data ?? []).map(mapTransportRequest), "Transport requests loaded");
   } catch {
     return serverError();
   }
@@ -71,7 +87,7 @@ export async function POST(req: NextRequest) {
     }).select("*").single();
 
     if (error) return serverError(error.message);
-    return ok(data, "Transport request created");
+    return ok(mapTransportRequest(data), "Transport request created");
   } catch {
     return serverError();
   }

@@ -3,6 +3,21 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, serverError, notFound } from "@/lib/api-response";
 
+function mapEducationContent(row: Record<string, unknown>) {
+  return {
+    id: row.id as string,
+    topicKey: row.topic_key as string,
+    title: row.title as string,
+    audience: row.audience as string,
+    summary: row.summary as string,
+    actionPoints: (row.action_points as string[]) ?? [],
+    triggerCaseType: row.trigger_case_type as string | null,
+    triggerAnimalStatus: row.trigger_animal_status as string | null,
+    languageCode: row.language_code as string,
+    createdAt: row.created_at as string,
+  };
+}
+
 export async function GET(req: NextRequest) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
@@ -18,7 +33,7 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await query.order("created_at", { ascending: false }).limit(50);
     if (error) return serverError(error.message);
-    return ok(data ?? [], "Education content loaded");
+    return ok((data ?? []).map(mapEducationContent), "Education content loaded");
   } catch {
     return serverError();
   }
@@ -46,7 +61,7 @@ export async function POST(req: NextRequest) {
     }).select("*").single();
 
     if (error) return serverError(error.message);
-    return ok(data, "Education content created");
+    return ok(mapEducationContent(data), "Education content created");
   } catch {
     return serverError();
   }

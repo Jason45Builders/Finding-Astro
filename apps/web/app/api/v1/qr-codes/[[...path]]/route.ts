@@ -4,6 +4,25 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
+import { decodeLocation } from "@/lib/geo";
+
+function mapQrCode(row: Record<string, unknown>) {
+  return {
+    id: row.id as string,
+    code: row.code as string,
+    qrType: row.qr_type as string,
+    linkedAnimalId: row.linked_animal_id as string | null,
+    linkedZoneId: row.linked_zone_id as string | null,
+    linkedCaseId: row.linked_case_id as string | null,
+    location: decodeLocation(row.location),
+    locationText: row.location_text as string | null,
+    displayLabel: row.display_label as string | null,
+    scanCount: (row.scan_count as number) ?? 0,
+    lastScannedAt: row.last_scanned_at as string | null,
+    isActive: (row.is_active as boolean) ?? true,
+    createdAt: row.created_at as string,
+  };
+}
 
 const QrCodeSchema = z.object({
   code: z.string().min(1),
@@ -29,12 +48,12 @@ export async function GET(req: NextRequest) {
       const { data, error } = await supabaseAdmin().from("qr_codes").select("*").eq("code", code).maybeSingle();
       if (error) return serverError(error.message);
       if (!data) return notFound("QR code not found");
-      return ok(data, "QR code found");
+      return ok(mapQrCode(data), "QR code found");
     }
 
     const { data, error } = await supabaseAdmin().from("qr_codes").select("*").limit(50);
     if (error) return serverError(error.message);
-    return ok(data ?? [], "QR codes loaded");
+    return ok((data ?? []).map(mapQrCode), "QR codes loaded");
   } catch {
     return serverError();
   }
@@ -68,7 +87,7 @@ export async function POST(req: NextRequest) {
     }).select("*").single();
 
     if (error) return serverError(error.message);
-    return ok(data, "QR code created");
+    return ok(mapQrCode(data), "QR code created");
   } catch {
     return serverError();
   }
@@ -94,7 +113,7 @@ export async function PATCH(req: NextRequest) {
 
     const { data, error } = await supabaseAdmin().from("qr_codes").update(update).eq("id", qrId).select("*").single();
     if (error) return serverError(error.message);
-    return ok(data, "QR code updated");
+    return ok(mapQrCode(data), "QR code updated");
   } catch {
     return serverError();
   }

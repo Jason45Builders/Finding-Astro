@@ -672,6 +672,47 @@ export function mapCaseEvent(row: Record<string, unknown>): CaseEvent {
   };
 }
 
+export function mapWildlifeSpecies(row: Record<string, unknown>): WildlifeSpecies {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    displayName: row.display_name as string,
+    handlingRisk: row.handling_risk as string,
+    publicGuidance: row.public_guidance as string,
+    doNotDo: row.do_not_do as string,
+    isActive: row.is_active as boolean,
+  };
+}
+
+export function mapBehaviourGuidanceCard(row: Record<string, unknown>): BehaviourGuidanceCard {
+  return {
+    id: row.id as string,
+    situationType: row.situation_type as string,
+    title: row.title as string,
+    content: row.content as string,
+    doItems: (row.do_items as string[]) ?? [],
+    dontItems: (row.dont_items as string[]) ?? [],
+    audience: (row.audience as string) ?? "",
+  };
+}
+
+export function mapSafetyReport(row: Record<string, unknown>): SafetyReport {
+  return {
+    id: row.id as string,
+    reporterUserId: row.reporter_user_id as string,
+    situationType: row.situation_type as string,
+    description: row.description as string,
+    location: row.location as { latitude: number; longitude: number },
+    locationText: row.location_text as string | null,
+    severity: row.severity as string,
+    animalId: row.animal_id as string | null,
+    guidanceShown: (row.guidance_shown as string[]) ?? [],
+    referredToCaseId: row.referred_to_case_id as string | null,
+    resolved: (row.resolved as boolean) ?? false,
+    createdAt: row.created_at as string,
+  };
+}
+
 export function mapCaseResponse(row: Record<string, unknown>): CaseResponse {
   return {
     id: row.id as string,

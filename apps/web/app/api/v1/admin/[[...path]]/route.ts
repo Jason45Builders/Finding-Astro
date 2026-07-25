@@ -6,6 +6,20 @@ import { ok, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { GUEST_USER_ID } from "@/lib/guest";
+import { mapCase } from "@/lib/types";
+import { decodeLocation } from "@/lib/geo";
+
+function mapAdminUser(row: Record<string, unknown>) {
+  return {
+    id: row.id as string,
+    email: row.email as string,
+    fullName: row.full_name as string | null,
+    role: row.role as string,
+    identityTier: row.identity_tier as number,
+    isBanned: (row.is_banned as boolean) ?? false,
+    createdAt: row.created_at as string,
+  };
+}
 
 const PRIVILEGED_ROLES = ["ngo", "govt", "admin"];
 
@@ -57,10 +71,17 @@ export async function GET(req: NextRequest) {
       let query = supabaseAdmin().from("cases").select("*").order("created_at", { ascending: false });
       if (caseType) query = query.eq("case_type", caseType);
       if (status) query = query.eq("status", status);
-      if (ward) query = query.eq("ward_name", ward);
+      // "cases" has no ward_name column - the admin search box doubles as a
+      // location/id lookup, so match against location_text or the case id.
+      // A raw .or() would throw if a non-UUID string is compared against the
+      // uuid id column, so only add that clause when it actually looks like one.
+      if (ward) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ward);
+        query = isUuid ? query.or(`location_text.ilike.%${ward}%,id.eq.${ward}`) : query.ilike("location_text", `%${ward}%`);
+      }
       const { data, error } = await query;
       if (error) return serverError(error.message);
-      return ok(data ?? [], "Loaded");
+      return ok((data ?? []).map((row) => mapCase({ ...row, location: decodeLocation(row.location) })), "Loaded");
     }
 
     if (subResource === "users") {
@@ -68,12 +89,12 @@ export async function GET(req: NextRequest) {
       if (userId) {
         const { data, error } = await supabaseAdmin().from("users").select("*").eq("id", userId).single();
         if (error) return serverError(error.message);
-        return ok(data, "User loaded");
+        return ok(mapAdminUser(data), "User loaded");
       }
       const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "100", 10), 200);
       const { data, error } = await supabaseAdmin().from("users").select("id, email, full_name, role, identity_tier, is_banned, created_at").limit(limit);
       if (error) return serverError(error.message);
-      return ok(data ?? [], "Users loaded", { count: data?.length ?? 0 });
+      return ok((data ?? []).map(mapAdminUser), "Users loaded", { count: data?.length ?? 0 });
     }
 
     if (subResource === "partner-requests") {
@@ -82,8 +103,8 @@ export async function GET(req: NextRequest) {
       if (cErr) return serverError(cErr.message);
       if (sErr) return serverError(sErr.message);
       const combined = [
-        ...(clinics ?? []).map((r: any) => ({ ...r, partnerType: "clinic" as const })),
-        ...(stores ?? []).map((r: any) => ({ ...r, partnerType: "store" as const })),
+        ...(clinics ?? []).map((r: any) => ({ ...r, type: "clinic" as const })),
+        ...(stores ?? []).map((r: any) => ({ ...r, type: "store" as const })),
       ].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       return ok(combined, "Pending partner requests loaded", { count: combined.length });
     }
@@ -198,8 +219,8 @@ export async function POST(req: NextRequest) {
         if (cErr) return serverError(cErr.message);
         if (sErr) return serverError(sErr.message);
         const combined = [
-          ...(clinics ?? []).map((r: any) => ({ ...r, partnerType: "clinic" as const })),
-          ...(stores ?? []).map((r: any) => ({ ...r, partnerType: "store" as const })),
+          ...(clinics ?? []).map((r: any) => ({ ...r, type: "clinic" as const })),
+          ...(stores ?? []).map((r: any) => ({ ...r, type: "store" as const })),
         ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         return ok(combined, "Pending partner requests loaded");
       }
@@ -253,19 +274,23 @@ export async function PATCH(req: NextRequest) {
       const { data, error } = await supabaseAdmin().from("cases").update(body).eq("id", caseId).select("*").single();
       if (error) return serverError(error.message);
       if (data) await audit({ tableName: "cases", recordId: caseId, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
-      return ok(data, "Case updated");
+      return ok(mapCase({ ...data, location: decodeLocation(data.location) }), "Case updated");
     }
 
     if (pathParts[0] === "users" && pathParts.length > 1) {
       const userId = pathParts[1];
       const raw = await req.json();
-      const parsed = validateBody(z.object({ isBanned: z.boolean().optional(), role: z.string().optional(), identityTier: z.number().int().nonnegative().optional() }).passthrough(), raw);
+      const parsed = validateBody(z.object({ isBanned: z.boolean().optional(), role: z.string().optional(), identityTier: z.number().int().nonnegative().optional() }), raw);
       if (!parsed.ok) return parsed.response;
-      const body = parsed.data as Record<string, unknown>;
-      const { data, error } = await supabaseAdmin().from("users").update(body).eq("id", userId).select("*").single();
+      const { isBanned, role, identityTier } = parsed.data;
+      const update: Record<string, unknown> = {};
+      if (isBanned !== undefined) update.is_banned = isBanned;
+      if (role !== undefined) update.role = role;
+      if (identityTier !== undefined) update.identity_tier = identityTier;
+      const { data, error } = await supabaseAdmin().from("users").update(update).eq("id", userId).select("*").single();
       if (error) return serverError(error.message);
       if (data) await audit({ tableName: "users", recordId: userId, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
-      return ok(data, "User updated");
+      return ok(mapAdminUser(data), "User updated");
     }
 
     return NextResponse.json({ success: false, code: "NOT_FOUND", message: "Unknown admin resource" }, { status: 404 });
