@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     const { data: { publicUrl } } = supabaseAdmin().storage.from(BUCKET).getPublicUrl(key);
 
-    return created({ uploadUrl: publicUrl, key, cdnUrl: publicUrl }, "Upload URL generated");
+    return created({ uploadUrl: publicUrl, publicUrl, key, cdnUrl: publicUrl }, "Upload URL generated");
   } catch {
     return serverError("Upload failed");
   }

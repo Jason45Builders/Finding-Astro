@@ -3,9 +3,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware, optionalAuth, requireTier, AuthenticatedUser } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError } from "@/lib/api-response";
-import { GUEST_USER_ID } from "@/lib/guest";
 import { LocationSchema, validateBody } from "@/lib/validation";
-import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { audit } from "@/lib/audit";
 import { decodeLocation } from "@/lib/geo";
 import { mapCase } from "@/lib/types";
@@ -66,18 +64,6 @@ export async function POST(req: NextRequest) {
   const url = new URL(req.url);
   const pathParts = url.pathname.replace(/\/api\/v1\//, "").split("/");
   const subAction = pathParts[pathParts.length - 1];
-  const queryCaseType = url.searchParams.get("caseType");
-
-  if (subAction === "emergency" || queryCaseType === "emergency") {
-    const ip = getClientIp(req);
-    const rate = checkRateLimit(ip);
-    if (!rate.allowed) {
-      return new NextResponse(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
-    }
-    const authResult = await optionalAuth(req);
-    const user = authResult ?? null;
-    return handleEmergency(req, user);
-  }
 
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
@@ -103,51 +89,36 @@ async function handleCase(req: NextRequest, user: AuthenticatedUser, caseType: s
   return createCaseRecord(req, user, caseType);
 }
 
-async function handleEmergency(req: NextRequest, user: AuthenticatedUser | null) {
-  // Emergency path — no auth required, no tier requirement (tier 0)
-  return createCaseRecord(req, user, "emergency");
-}
-
-async function createCaseRecord(req: NextRequest, user: AuthenticatedUser | null, caseType: string) {
+async function createCaseRecord(req: NextRequest, user: AuthenticatedUser, caseType: string) {
   const raw = await req.json();
   const parsed = validateBody(CreateCaseSchema, raw);
   if (!parsed.ok) return parsed.response;
-  const { title, description, location, locationText, evidenceUrls, animalId, priority, severity, guestPhone } = parsed.data;
+  const { title, description, location, locationText, evidenceUrls, animalId, priority, guestPhone } = parsed.data;
 
   if (!location) return badRequest("VALIDATION_ERROR", "latitude and longitude are required");
 
-  const caseStatus = caseType === "emergency" || caseType === "rescue" ? "open" : "in_review";
+  const { data, error } = await supabaseAdmin().from("cases").insert({
+    case_type: caseType,
+    status: caseType === "rescue" ? "open" : "in_review",
+    priority: priority ?? "medium",
+    title: title ?? `${caseType} case`,
+    description,
+    location_text: locationText ?? null,
+    location: `POINT(${location.longitude} ${location.latitude})`,
+    evidence_urls: evidenceUrls ?? [],
+    animal_id: animalId ?? null,
+    reporter_user_id: user.id,
+    guest_phone: guestPhone ?? null,
+  }).select("*").single();
 
-  const reporterUserId = caseType === "emergency" ? (user?.id ?? GUEST_USER_ID) : (user as AuthenticatedUser).id;
+  if (error) {
+    if ((error as { code?: string }).code === "23503") return badRequest("REFERENCE_NOT_FOUND", "A referenced record does not exist");
+    return serverError(error.message);
+  }
 
-    const { data, error } = await supabaseAdmin().from("cases").insert({
-      case_type: caseType === "emergency" ? "rescue" : caseType,
-      status: caseStatus,
-      priority: priority ?? (caseType === "emergency" ? "high" : "medium"),
-      title: title ?? `${caseType} case`,
-      description,
-      location_text: locationText ?? null,
-      location: `POINT(${location.longitude} ${location.latitude})`,
-      evidence_urls: evidenceUrls ?? [],
-      animal_id: animalId ?? null,
-      reporter_user_id: reporterUserId,
-      guest_phone: guestPhone ?? null,
-    }).select("*").single();
-
-    if (error) {
-      if ((error as { code?: string }).code === "23503") return badRequest("REFERENCE_NOT_FOUND", "A referenced record does not exist");
-      return serverError(error.message);
-    }
-
-    if (data) {
-      await audit({ tableName: "cases", recordId: data.id, action: "INSERT", actorId: reporterUserId, actorRole: user?.role ?? "guest_system", newData: data });
-    }
-
-    if (caseType === "emergency") {
-      try {
-        await supabaseAdmin().from("notifications").insert({ type: "case", title: `Emergency ${severity ?? "rescue"} case`, message: description, payload: { caseId: data?.id, caseType, severity } });
-      } catch { /* non-fatal */ }
-    }
+  if (data) {
+    await audit({ tableName: "cases", recordId: data.id, action: "INSERT", actorId: user.id, actorRole: user.role, newData: data });
+  }
 
   return ok(mapCase({ ...(data as Record<string, unknown>), location: decodeLocation((data as Record<string, unknown>)?.location) }), "Case created");
 }

@@ -8,6 +8,8 @@ import { LocationSchema, validateBody } from "@/lib/validation";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { audit } from "@/lib/audit";
 import { getChannel } from "@/lib/notify-channels";
+import { mapCase } from "@/lib/types";
+import { decodeLocation } from "@/lib/geo";
 
 const CreateCaseSchema = z.object({
   title: z.string().min(1).optional(),
@@ -76,7 +78,7 @@ async function createCaseRecord(req: NextRequest, user: AuthenticatedUser | null
       } catch { /* non-fatal */ }
     }
 
-    return ok(data, "Case created");
+    return ok(mapCase({ ...(data as Record<string, unknown>), location: decodeLocation((data as Record<string, unknown>)?.location) }), "Case created");
   } catch {
     return serverError();
   }
