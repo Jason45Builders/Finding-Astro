@@ -139,7 +139,8 @@ async function handleAbandon(req: NextRequest, caseId: string, user: { id: strin
 }
 
 async function handleGetResponse(req: NextRequest, caseId: string, _user: { id: string; role: string }) {
-  const { data, error } = await supabaseAdmin().from("case_responses").select("*").eq("case_id", caseId).order("claimed_at", { ascending: false }).limit(5);
+  const { data, error } = await supabaseAdmin().from("case_responses").select("*").eq("case_id", caseId).order("claimed_at", { ascending: false }).limit(1).maybeSingle();
   if (error) return serverError(error.message);
-  return ok(data ?? [], "Response loaded");
+  if (!data) return notFound("No active response found");
+  return ok(data, "Response loaded");
 }

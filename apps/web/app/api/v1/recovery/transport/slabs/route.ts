@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, serverError } from "@/lib/api-response";
+import { mapTransportSlab } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
   const authResult = await authMiddleware(req);
@@ -14,5 +15,5 @@ export async function GET(req: NextRequest) {
     .order("amount_inr", { ascending: true });
 
   if (error) return serverError(error.message);
-  return ok(data ?? [], "Transport slabs loaded");
+  return ok((data ?? []).map(mapTransportSlab), "Transport slabs loaded");
 }

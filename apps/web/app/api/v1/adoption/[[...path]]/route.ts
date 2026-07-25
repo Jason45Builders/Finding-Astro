@@ -5,6 +5,8 @@ import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
+import { mapAnimal, mapAdoptionApplication } from "@/lib/types";
+import { decodeLocation } from "@/lib/geo";
 
 const LivingSituationEnum = z.enum(["house_with_yard", "apartment", "shared_accommodation", "other"]);
 const PriorExperienceEnum = z.enum(["none", "some", "experienced"]);
@@ -42,7 +44,7 @@ export async function GET(req: NextRequest) {
   if (species) query = query.eq("species", species);
   const { data, error } = await query;
   if (error) return serverError(error.message);
-  return ok(data ?? [], "Adoptable animals loaded", { count: data?.length ?? 0 });
+  return ok((data ?? []).map((row) => mapAnimal({ ...row, location: decodeLocation(row.location) })), "Adoptable animals loaded", { count: data?.length ?? 0 });
 }
 
 export async function POST(req: NextRequest) {
@@ -80,7 +82,7 @@ async function handleApply(req: NextRequest, user: { id: string; role: string })
 
     if (error) return serverError(error.message);
     if (data) await audit({ tableName: "adoption_applications", recordId: data.id, action: "INSERT", actorId: user.id, actorRole: user.role, newData: data });
-    return ok(data, "Adoption application submitted");
+    return ok(mapAdoptionApplication(data), "Adoption application submitted");
   } catch {
     return serverError();
   }
@@ -91,7 +93,7 @@ async function handleGetApplications(req: NextRequest, user: { id: string; role:
   if (user.role !== "admin") query = query.eq("applicant_user_id", user.id);
   const { data, error } = await query;
   if (error) return serverError(error.message);
-  return ok(data ?? [], "Applications loaded");
+  return ok((data ?? []).map(mapAdoptionApplication), "Applications loaded");
 }
 
 async function handleConfirm(appId: string | undefined, user: { id: string; role: string }) {
@@ -100,7 +102,7 @@ async function handleConfirm(appId: string | undefined, user: { id: string; role
   const { data, error } = await supabaseAdmin().from("adoption_applications").update({ status: "adopted", updated_at: new Date().toISOString() }).eq("id", appId).select("*").single();
   if (error) return serverError(error.message);
   if (data) await audit({ tableName: "adoption_applications", recordId: appId, action: "UPDATE", actorId: user.id, actorRole: user.role, newData: data });
-  return ok(data, "Adoption confirmed");
+  return ok(mapAdoptionApplication(data), "Adoption confirmed");
 }
 
 async function handleMarkAdoptable(req: NextRequest, user: { id: string; role: string }) {
@@ -112,7 +114,7 @@ async function handleMarkAdoptable(req: NextRequest, user: { id: string; role: s
     const { data, error } = await supabaseAdmin().from("animals").update({ status: "adopted", adoptable_since: new Date().toISOString() }).eq("id", animalId).select("*").single();
     if (error) return serverError(error.message);
     if (data) await audit({ tableName: "animals", recordId: animalId, action: "UPDATE", actorId: user.id, actorRole: user.role, newData: data });
-    return ok(data, "Animal marked adoptable");
+    return ok(mapAnimal({ ...data, location: decodeLocation(data.location) }), "Animal marked adoptable");
   } catch {
     return serverError();
   }

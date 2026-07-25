@@ -8,6 +8,7 @@ import { LocationSchema, validateBody } from "@/lib/validation";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { audit } from "@/lib/audit";
 import { decodeLocation } from "@/lib/geo";
+import { mapCase } from "@/lib/types";
 
 const CaseStatusEnum = z.enum(["open", "in_review", "action_taken", "resolved", "closed"]);
 const CasePriorityEnum = z.enum(["low", "medium", "high"]);
@@ -54,7 +55,7 @@ export async function GET(req: NextRequest) {
     const { data, error } = await query.order("created_at", { ascending: false }).limit(limit);
     if (error) return serverError(error.message);
 
-    const cases = (data ?? []).map((c) => ({ ...c, location: decodeLocation((c as Record<string, unknown>).location) }));
+    const cases = (data ?? []).map((c) => mapCase({ ...(c as Record<string, unknown>), location: decodeLocation((c as Record<string, unknown>).location) }));
     return ok(cases, "Cases loaded", { count: cases.length });
   } catch {
     return serverError();
@@ -148,5 +149,5 @@ async function createCaseRecord(req: NextRequest, user: AuthenticatedUser | null
       } catch { /* non-fatal */ }
     }
 
-  return ok(data, "Case created");
+  return ok(mapCase({ ...(data as Record<string, unknown>), location: decodeLocation((data as Record<string, unknown>)?.location) }), "Case created");
 }

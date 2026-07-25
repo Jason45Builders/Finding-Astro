@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ok, serverError } from "@/lib/api-response";
+import { mapPartner } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
   try {
@@ -21,6 +22,9 @@ export async function GET(req: NextRequest) {
     if (!table) {
       return NextResponse.json({ success: false, code: "BAD_REQUEST", message: `Unknown partner type: ${type}` }, { status: 400 });
     }
+    const singularType: Record<string, string> = {
+      clinics: "clinic", stores: "store", "abc-centres": "abc_centre", "wildlife-centres": "wildlife_centre",
+    };
 
     let query = supabaseAdmin().from(table).select("*").eq("is_verified", true).eq("is_active", true).limit(limit);
 
@@ -36,7 +40,7 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await query;
     if (error) return serverError(error.message);
-    return ok(data ?? [], `${type} loaded`, { count: data?.length ?? 0 });
+    return ok((data ?? []).map((row) => mapPartner(row, singularType[type])), `${type} loaded`, { count: data?.length ?? 0 });
   } catch {
     return serverError();
   }

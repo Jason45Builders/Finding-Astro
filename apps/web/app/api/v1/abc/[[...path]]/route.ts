@@ -5,6 +5,8 @@ import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, serverError } from "@/lib/api-response";
 import { validateBody, LocationSchema } from "@/lib/validation";
 import { audit } from "@/lib/audit";
+import { decodeLocation } from "@/lib/geo";
+import { mapAbcEvent } from "@/lib/types";
 
 const AbcRequestSchema = z.object({
   animalId: z.string().uuid().optional(),
@@ -27,11 +29,11 @@ export async function GET(req: NextRequest) {
   if (animalId) {
     const { data, error } = await supabaseAdmin().from("abc_events").select("*").eq("animal_id", animalId).order("created_at", { ascending: false });
     if (error) return serverError(error.message);
-    return ok(data ?? [], "ABC events loaded");
+    return ok((data ?? []).map((row) => mapAbcEvent({ ...row, location: decodeLocation(row.location) })), "ABC events loaded");
   }
   const { data, error } = await supabaseAdmin().from("abc_events").select("*").order("created_at", { ascending: false }).limit(50);
   if (error) return serverError(error.message);
-  return ok(data ?? [], "ABC tracking loaded");
+  return ok((data ?? []).map((row) => mapAbcEvent({ ...row, location: decodeLocation(row.location) })), "ABC tracking loaded");
 }
 
 export async function POST(req: NextRequest) {
@@ -63,7 +65,7 @@ export async function POST(req: NextRequest) {
 
       if (error) return serverError(error.message);
       if (data) await audit({ tableName: "abc_events", recordId: data.id, action: "INSERT", actorId: user.id, actorRole: user.role, newData: data });
-      return ok(data, "ABC request created");
+      return ok(mapAbcEvent({ ...data, location: decodeLocation(data.location) }), "ABC request created");
     }
 
     if (action === "events") {
@@ -81,7 +83,7 @@ export async function POST(req: NextRequest) {
 
       if (error) return serverError(error.message);
       if (data) await audit({ tableName: "abc_events", recordId: data.id, action: "INSERT", actorId: user.id, actorRole: user.role, newData: data });
-      return ok(data, "ABC event logged");
+      return ok(mapAbcEvent({ ...data, location: decodeLocation(data.location) }), "ABC event logged");
     }
 
     return new Response(null, { status: 404 });

@@ -6,6 +6,7 @@ import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { LocationSchema, validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { fuzzyLocation } from "@/lib/geo";
+import { mapAnimal } from "@/lib/types";
 
 const AnimalStatusEnum = z.enum(["community", "lost", "found", "reunited", "adopted"]);
 const DisappearanceRiskEnum = z.enum(["stable", "watch", "urgent"]);
@@ -54,7 +55,7 @@ export async function GET(req: NextRequest) {
   if (error) return notFound("Animal not found");
 
   const animal = data as Record<string, unknown>;
-  return ok({ ...animal, location: fuzzyLocation(animal.location, userTier) }, "Animal loaded");
+  return ok(mapAnimal({ ...animal, location: fuzzyLocation(animal.location, userTier) }), "Animal loaded");
 }
 
 export async function POST(req: NextRequest) {
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await supabaseAdmin().from("animals").insert(payload).select("*").single();
     if (error) return serverError(error.message);
     if (data) await audit({ tableName: "animals", recordId: data.id, action: "INSERT", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
-    return ok(data, "Animal record created");
+    return ok(mapAnimal({ ...data, location: fuzzyLocation(data.location, authResult.user.identityTier ?? 0) }), "Animal record created");
   } catch {
     return serverError();
   }
@@ -139,7 +140,7 @@ export async function PATCH(req: NextRequest) {
     const { data, error } = await supabaseAdmin().from("animals").update(update).eq("id", id).select("*").single();
     if (error) return serverError(error.message);
     if (data) await audit({ tableName: "animals", recordId: id, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
-    return ok(data, "Animal updated");
+    return ok(mapAnimal({ ...data, location: fuzzyLocation(data.location, authResult.user.identityTier ?? 0) }), "Animal updated");
   } catch {
     return serverError();
   }

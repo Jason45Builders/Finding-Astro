@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError } from "@/lib/api-response";
+import { mapAnimalVaccination } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
   const authResult = await authMiddleware(req);
@@ -18,5 +19,5 @@ export async function GET(req: NextRequest) {
     .order("administered_at", { ascending: false });
 
   if (error) return serverError(error.message);
-  return ok(data ?? [], "Vaccinations loaded");
+  return ok((data ?? []).map(mapAnimalVaccination), "Vaccinations loaded");
 }

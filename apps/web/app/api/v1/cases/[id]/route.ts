@@ -6,6 +6,7 @@ import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { decodeLocation } from "@/lib/geo";
+import { mapCase } from "@/lib/types";
 
 const CaseStatusEnum = z.enum(["open", "in_review", "action_taken", "resolved", "closed"]);
 const CasePriorityEnum = z.enum(["low", "medium", "high"]);
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
   if (error) return notFound("Case not found");
 
   const record = data as Record<string, unknown>;
-  return ok({ ...record, location: decodeLocation(record.location) }, "Case loaded");
+  return ok(mapCase({ ...record, location: decodeLocation(record.location) }), "Case loaded");
 }
 
 export async function PATCH(req: NextRequest) {
@@ -70,7 +71,7 @@ export async function PATCH(req: NextRequest) {
       await audit({ tableName: "cases", recordId: id, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, oldData: existing, newData: data });
     }
 
-    return ok(data, "Case updated");
+    return ok(mapCase({ ...(data as Record<string, unknown>), location: decodeLocation((data as Record<string, unknown>).location) }), "Case updated");
   } catch {
     return serverError();
   }

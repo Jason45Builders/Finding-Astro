@@ -5,6 +5,7 @@ import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
+import { mapFundingCase } from "@/lib/types";
 
 const DonateSchema = z.object({
   fundingCaseId: z.string().uuid(),
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
     if (pathParts.length === 1 && pathParts[0] !== "reimbursement") {
       const { data, error } = await supabaseAdmin().from("funding_cases").select("*").eq("id", pathParts[0]).single();
       if (error) return notFound("Funding case not found");
-      return ok(data, "Funding case loaded");
+      return ok(mapFundingCase(data), "Funding case loaded");
     }
 
     // bare /funding — list
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
     if (status) query = query.eq("status", status);
     const { data, error } = await query.order("created_at", { ascending: false }).limit(limit);
     if (error) return serverError(error.message);
-    return ok(data ?? [], "Funding cases loaded", { count: data?.length ?? 0 });
+    return ok((data ?? []).map(mapFundingCase), "Funding cases loaded", { count: data?.length ?? 0 });
   } catch {
     return serverError();
   }

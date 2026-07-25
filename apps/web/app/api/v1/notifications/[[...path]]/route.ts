@@ -6,6 +6,16 @@ import { ok, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 
+function mapNotification(row: Record<string, unknown>) {
+  return {
+    id: row.id as string,
+    title: row.title as string,
+    body: row.message as string,
+    createdAt: row.created_at as string,
+    read: row.read_at !== null,
+  };
+}
+
 const MarkReadSchema = z.object({});
 
 export async function GET(req: NextRequest) {
@@ -21,7 +31,7 @@ export async function GET(req: NextRequest) {
       const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "20", 10), 100);
       const { data, error } = await supabaseAdmin().from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(limit);
       if (error) return serverError(error.message);
-      return ok(data ?? [], "Notifications loaded");
+      return ok((data ?? []).map(mapNotification), "Notifications loaded");
     }
 
     return new Response(null, { status: 404 });

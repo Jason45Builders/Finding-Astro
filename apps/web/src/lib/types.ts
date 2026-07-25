@@ -169,7 +169,7 @@ export interface FundingCase {
   caseId: string | null;
   fundingType: string;
   totalAmount: number;
-  amountRaised: number;
+  raisedAmount: number;
   status: string;
   hospitalName?: string | null;
   verifierName?: string | null;
@@ -355,7 +355,7 @@ export interface Notification {
   createdAt: string;
 }
 
-function mapUser(row: Record<string, unknown>): User {
+export function mapUser(row: Record<string, unknown>): User {
   return {
     id: row.id as string,
     email: (row.email as string | null) ?? undefined,
@@ -378,7 +378,7 @@ function mapUser(row: Record<string, unknown>): User {
   };
 }
 
-function mapAnimal(row: Record<string, unknown>): Animal {
+export function mapAnimal(row: Record<string, unknown>): Animal {
   return {
     id: row.id as string,
     name: row.name as string | null,
@@ -413,7 +413,7 @@ function mapAnimal(row: Record<string, unknown>): Animal {
   };
 }
 
-function mapCase(row: Record<string, unknown>): Case {
+export function mapCase(row: Record<string, unknown>): Case {
   return {
     id: row.id as string,
     animalId: row.animal_id as string | null,
@@ -443,7 +443,7 @@ function mapCase(row: Record<string, unknown>): Case {
   };
 }
 
-function mapPartner(row: Record<string, unknown>, type: string): Partner {
+export function mapPartner(row: Record<string, unknown>, type: string): Partner {
   const base: Partner = {
     id: row.id as string,
     name: row.name as string,
@@ -515,7 +515,7 @@ function mapPartner(row: Record<string, unknown>, type: string): Partner {
   return base;
 }
 
-function mapNotification(row: Record<string, unknown>): Notification {
+export function mapNotification(row: Record<string, unknown>): Notification {
   return {
     id: row.id as string,
     userId: row.user_id as string,
@@ -528,7 +528,7 @@ function mapNotification(row: Record<string, unknown>): Notification {
   };
 }
 
-function mapWardSummary(row: Record<string, unknown>): WardSummary {
+export function mapWardSummary(row: Record<string, unknown>): WardSummary {
   return {
     wardName: row.ward_name as string,
     totalAnimals: (row.total_animals as number) ?? 0,
@@ -539,5 +539,156 @@ function mapWardSummary(row: Record<string, unknown>): WardSummary {
     resolvedCases30d: (row.resolved_cases_30d as number) ?? 0,
     abcCoveragePct: (row.abc_coverage_pct as number) ?? 0,
     lastActivityAt: row.last_activity_at as string | null,
+  };
+}
+
+export function mapAnimalMedicalRecord(row: Record<string, unknown>): AnimalMedicalRecord {
+  return {
+    id: row.id as string,
+    animalId: row.animal_id as string,
+    caseId: row.case_id as string | null,
+    abcEventId: row.abc_event_id as string | null,
+    createdByUserId: row.created_by_user_id as string | null,
+    entryType: row.entry_type as AnimalMedicalRecord["entryType"],
+    title: row.title as string,
+    notes: row.notes as string | null,
+    providerName: row.provider_name as string | null,
+    treatmentDate: row.treatment_date as string,
+    costAmount: row.cost_amount as number | null,
+    attachments: (row.attachments as string[]) ?? [],
+    createdAt: row.created_at as string,
+  };
+}
+
+export function mapAnimalVaccination(row: Record<string, unknown>): AnimalVaccination {
+  return {
+    id: row.id as string,
+    animalId: row.animal_id as string,
+    vaccineName: row.vaccine_name as string,
+    administeredAt: row.administered_at as string,
+    expiresAt: row.expires_at as string | null,
+    batchNumber: row.batch_number as string | null,
+    notes: row.notes as string | null,
+    verified: (row.verified as boolean) ?? false,
+    status: row.status as AnimalVaccination["status"],
+    createdAt: row.created_at as string,
+  };
+}
+
+export function mapFundingCase(row: Record<string, unknown>): FundingCase {
+  return {
+    id: row.id as string,
+    caseId: row.case_id as string | null,
+    fundingType: row.funding_type as string,
+    totalAmount: Number(row.total_amount ?? 0),
+    raisedAmount: Number(row.amount_raised ?? 0),
+    status: row.status as string,
+    hospitalName: row.hospital_name as string | null,
+    verifierName: row.verifier_name as string | null,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapAbcEvent(row: Record<string, unknown>): AbcEvent {
+  return {
+    id: row.id as string,
+    animalId: row.animal_id as string,
+    animalName: (row.animal_name as string | null) ?? null,
+    caseId: row.case_id as string | null,
+    eventType: row.event_type as AbcEvent["eventType"],
+    status: row.status as string,
+    notes: row.notes as string | null,
+    location: row.location as { latitude: number; longitude: number } | null,
+    geoValidated: (row.geo_validated as boolean) ?? false,
+    unreturnedAlert: (row.unreturned_alert as boolean) ?? false,
+    requestedByUserId: row.requested_by_user_id as string,
+    createdAt: row.created_at as string,
+    updatedAt: (row.updated_at as string) ?? (row.created_at as string),
+  };
+}
+
+export function mapAdoptionApplication(row: Record<string, unknown>): AdoptionApplication {
+  return {
+    id: row.id as string,
+    animalId: row.animal_id as string,
+    applicantUserId: row.applicant_user_id as string,
+    fullName: row.full_name as string,
+    phone: row.phone as string,
+    address: row.address as string,
+    livingSituation: row.living_situation as string,
+    hasOtherPets: (row.has_other_pets as boolean) ?? false,
+    otherPetsDesc: row.other_pets_desc as string | null,
+    priorExperience: row.prior_experience as string,
+    hoursAlonePerDay: (row.hours_alone_per_day as number) ?? 0,
+    reasonForAdopting: row.reason_for_adopting as string,
+    status: row.status as AdoptionApplication["status"],
+    rejectionReason: row.rejection_reason as string | null,
+    reviewNotes: row.review_notes as string | null,
+    trialStartDate: row.trial_start_date as string | null,
+    trialEndDate: row.trial_end_date as string | null,
+    agreementAcceptedAt: row.agreement_accepted_at as string | null,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapRecoveryRecord(row: Record<string, unknown>): RecoveryRecord {
+  return {
+    id: row.id as string,
+    caseId: row.case_id as string,
+    animalId: row.animal_id as string | null,
+    providerName: row.provider_name as string | null,
+    providerType: row.provider_type as RecoveryRecord["providerType"],
+    dailyCostInr: Number(row.daily_cost_inr ?? 0),
+    startDate: row.start_date as string,
+    endDate: row.end_date as string | null,
+    totalRaised: Number(row.total_raised ?? 0),
+    status: row.status as string,
+    createdAt: row.created_at as string,
+  };
+}
+
+export function mapTransportSlab(row: Record<string, unknown>): TransportSlab {
+  return {
+    id: row.id as string,
+    label: row.label as string,
+    amountInr: Number(row.amount_inr ?? 0),
+    maxDistKm: row.max_dist_km as number | null,
+    isActive: (row.is_active as boolean) ?? true,
+    createdAt: row.created_at as string,
+  };
+}
+
+export function mapCaseEvent(row: Record<string, unknown>): CaseEvent {
+  return {
+    id: row.id as string,
+    caseId: row.case_id as string,
+    actorId: row.actor_id as string | null,
+    fromStatus: row.from_status as string | null,
+    toStatus: row.to_status as string | null,
+    notes: row.notes as string | null,
+    createdAt: row.created_at as string,
+  };
+}
+
+export function mapCaseResponse(row: Record<string, unknown>): CaseResponse {
+  return {
+    id: row.id as string,
+    caseId: row.case_id as string,
+    responderUserId: row.responder_user_id as string,
+    status: row.status as CaseResponse["status"],
+    claimedAt: row.claimed_at as string,
+    deadlineAt: row.deadline_at as string,
+    reachedAt: row.reached_at as string | null,
+    pickedUpAt: row.picked_up_at as string | null,
+    atHospitalAt: row.at_hospital_at as string | null,
+    completedAt: row.completed_at as string | null,
+    abandonedAt: row.abandoned_at as string | null,
+    abandonReason: row.abandon_reason as string | null,
+    hospitalId: row.hospital_id as string | null,
+    notes: row.notes as string | null,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
   };
 }
