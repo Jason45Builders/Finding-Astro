@@ -99,7 +99,7 @@ export default async function RootPage() {
         <section className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg md:py-24">
           <div className="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div className="text-center md:text-left flex flex-col gap-stack-md items-center md:items-start">
-              <h1 className="font-display-lg text-[40px] md:text-display-lg leading-tight text-primary">Civic Animal Care, Reimagined.</h1>
+              <h1 className="font-display-lg text-[40px] md:text-display-lg leading-tight text-primary">Civic Infrastructure for Animal Welfare.</h1>
               <p className="font-body-lg text-body-lg text-on-surface-variant max-w-lg">
                 A platform connecting citizens, volunteers, and verified clinics to respond to animals in need — with full transparency from the first report to the final outcome.
               </p>
