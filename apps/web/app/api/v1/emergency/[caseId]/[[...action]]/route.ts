@@ -105,7 +105,7 @@ async function handleClaim(req: NextRequest, caseId: string, user: { id: string;
       notes: null,
       claimed_at: now.toISOString(),
       deadline_at: deadline.toISOString(),
-    }).select("*, users(full_name)").single();
+    }).select("*, users!responder_user_id(full_name)").single();
 
     if (error) return serverError(error.message);
 
@@ -131,7 +131,7 @@ async function handleStatusUpdate(req: NextRequest, caseId: string, user: { id: 
     if (notes) updatePayload.notes = notes;
     if (status === "completed") updatePayload.completed_at = new Date().toISOString();
 
-    const { data, error } = await supabaseAdmin().from("case_responses").update(updatePayload).eq("id", response.id).select("*, users(full_name)").single();
+    const { data, error } = await supabaseAdmin().from("case_responses").update(updatePayload).eq("id", response.id).select("*, users!responder_user_id(full_name)").single();
     if (error) return serverError(error.message);
 
     if (data) await audit({ tableName: "case_responses", recordId: response.id, action: "UPDATE", actorId: user.id, actorRole: user.role, oldData: response, newData: data });
@@ -162,7 +162,7 @@ async function handleAbandon(req: NextRequest, caseId: string, user: { id: strin
     const { data: active } = await supabaseAdmin().from("case_responses").select("*").eq("case_id", caseId).eq("responder_user_id", user.id).not("status", "in", "(completed,abandoned)").maybeSingle();
     if (!active) return notFound("No active response found for this case");
 
-    const { data, error } = await supabaseAdmin().from("case_responses").update({ status: "abandoned", notes: reason ?? "Responder abandoned", abandoned_at: new Date().toISOString() }).eq("id", active.id).select("*, users(full_name)").single();
+    const { data, error } = await supabaseAdmin().from("case_responses").update({ status: "abandoned", notes: reason ?? "Responder abandoned", abandoned_at: new Date().toISOString() }).eq("id", active.id).select("*, users!responder_user_id(full_name)").single();
     if (error) return serverError(error.message);
     if (data) await audit({ tableName: "case_responses", recordId: data.id, action: "UPDATE", actorId: user.id, actorRole: user.role, newData: data });
 
@@ -181,7 +181,7 @@ async function handleAbandon(req: NextRequest, caseId: string, user: { id: strin
 }
 
 async function handleGetResponse(req: NextRequest, caseId: string, _user: { id: string; role: string }) {
-  const { data, error } = await supabaseAdmin().from("case_responses").select("*, users(full_name)").eq("case_id", caseId).order("claimed_at", { ascending: false }).limit(1).maybeSingle();
+  const { data, error } = await supabaseAdmin().from("case_responses").select("*, users!responder_user_id(full_name)").eq("case_id", caseId).order("claimed_at", { ascending: false }).limit(1).maybeSingle();
   if (error) return serverError(error.message);
   if (!data) return notFound("No active response found");
   return ok(mapCaseResponse(data), "Response loaded");
