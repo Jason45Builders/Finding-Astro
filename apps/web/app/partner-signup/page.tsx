@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Building2, Store, MapPin, Phone, Clock, CheckCircle, Loader2 } from "lucide-react";
+import { LogoMark } from "@/components/ui/Logo";
 
 const CLINIC_TYPES = ["govt_hospital", "hospital", "clinic"] as const;
 
@@ -57,6 +58,7 @@ export default function PartnerSignupPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="text-center">
+        <LogoMark className="w-10 h-10 mx-auto mb-3" />
         <h1 className="text-3xl font-black text-slate-800 tracking-tight">Partner Sign-Up</h1>
         <p className="text-sm text-slate-500 mt-2">Join the Finding Astro partner network. Your listing will be reviewed by our team before going live.</p>
       </div>

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { LogoMark } from "@/components/ui/Logo";
 import {
   PawPrint,
   ShieldCheck,
@@ -77,7 +78,7 @@ export default async function RootPage() {
       <ScrollHeader>
         <nav className="flex justify-between items-center h-16 md:h-20 px-container-padding-mobile md:px-container-padding-desktop max-w-[1200px] mx-auto">
           <div className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary flex items-center gap-2">
-            <PawPrint className="w-6 h-6" />
+            <LogoMark className="w-7 h-7" />
             <span>Finding Astro</span>
           </div>
           <div className="hidden md:flex gap-6">
@@ -261,7 +262,7 @@ export default async function RootPage() {
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-stack-md text-center md:text-left">
           <div className="flex flex-col items-center md:items-start">
             <span className="font-headline-lg text-headline-lg-mobile font-bold text-primary flex items-center gap-2">
-              <PawPrint className="w-5 h-5" /> Finding Astro
+              <LogoMark className="w-6 h-6" /> Finding Astro
             </span>
             <p className="text-sm text-on-surface-variant mt-2 max-w-sm">Civic infrastructure for animal welfare.</p>
           </div>

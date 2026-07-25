@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <style>
+    .pin { fill: #004343; }
+    .heel { fill: #ffa454; }
+    .toe { fill: #fbf9f6; }
+    @media (prefers-color-scheme: dark) {
+      .pin { fill: #90d2d1; }
+      .toe { fill: #10201e; }
+    }
+  </style>
+  <path class="pin" d="M100,192 C64,146 30,112 30,78 A70,70 0 1,1 170,78 C170,112 136,146 100,192 Z"/>
+  <ellipse class="heel" cx="100" cy="103" rx="27" ry="21"/>
+  <ellipse class="toe" cx="64" cy="58" rx="14" ry="18" transform="rotate(-18 64 58)"/>
+  <ellipse class="toe" cx="100" cy="42" rx="15" ry="19"/>
+  <ellipse class="toe" cx="136" cy="58" rx="14" ry="18" transform="rotate(18 136 58)"/>
+</svg>

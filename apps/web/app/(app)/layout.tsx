@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth";
 import { api, Notification } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { PageSpinner } from "@/components/ui/Spinner";
+import { Logo, LogoMark } from "@/components/ui/Logo";
 
 const BASE_NAV_ITEMS = [
   { label: "Dashboard",     href: "/dashboard",   icon: LayoutDashboard },
@@ -120,8 +121,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex md:flex-col md:w-64 bg-surface-container-low border-r border-outline-variant h-screen sticky top-0">
         <div className="p-5 border-b border-outline-variant shrink-0">
-          <Link href="/dashboard" className="font-display-lg text-2xl font-extrabold text-primary tracking-tight block leading-none">Finding Astro</Link>
-          <p className="font-label-caps text-label-caps text-secondary mt-1.5 uppercase">Civic Animal Welfare</p>
+          <Link href="/dashboard">
+            <Logo showTagline />
+          </Link>
         </div>
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           {navItems.map(item => <NavLink key={item.href} item={item} />)}
@@ -151,7 +153,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-2 rounded-md text-on-surface-variant hover:bg-surface-container-high transition-colors">
               <MenuIcon className="w-5 h-5" />
             </button>
-            <span className="font-headline-lg-mobile text-headline-lg-mobile text-primary md:hidden">Finding Astro</span>
+            <span className="flex items-center gap-2 md:hidden">
+              <LogoMark className="w-6 h-6" />
+              <span className="font-headline-lg-mobile text-headline-lg-mobile text-primary">Finding Astro</span>
+            </span>
           </div>
           <div className="flex items-center gap-3 relative">
             <button onClick={() => setShowNotifications(!showNotifications)}
@@ -223,7 +228,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm transition-opacity duration-200 ease-out" onClick={() => setMobileMenuOpen(false)} />
           <div className="relative flex flex-col w-72 bg-surface-container-lowest h-full shadow-2xl transition-transform duration-200 ease-out">
             <div className="flex items-center justify-between p-5 border-b border-outline-variant">
-              <span className="font-headline-lg-mobile text-headline-lg-mobile text-primary">Finding Astro</span>
+              <span className="flex items-center gap-2">
+                <LogoMark className="w-7 h-7" />
+                <span className="font-headline-lg-mobile text-headline-lg-mobile text-primary">Finding Astro</span>
+              </span>
               <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-md text-on-surface-variant hover:bg-surface-container-high">
                 <XIcon className="w-5 h-5" />
               </button>

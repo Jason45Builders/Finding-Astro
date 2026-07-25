@@ -9,3 +9,4 @@ export * from "./Tabs";
 export * from "./ProgressBar";
 export * from "./KpiStat";
 export * from "./Stepper";
+export * from "./Logo";
