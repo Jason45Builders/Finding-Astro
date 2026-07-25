@@ -3,6 +3,14 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ok, serverError } from "@/lib/api-response";
 import { mapPartner } from "@/lib/types";
 
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
@@ -26,21 +34,27 @@ export async function GET(req: NextRequest) {
       clinics: "clinic", stores: "store", "abc-centres": "abc_centre", "wildlife-centres": "wildlife_centre",
     };
 
-    let query = supabaseAdmin().from(table).select("*").eq("is_verified", true).eq("is_active", true).limit(limit);
-
-    if (type === "clinics" || type === "stores") {
-      if (lat && lng) {
-        const latF = parseFloat(lat);
-        const lngF = parseFloat(lng);
-        const { data, error } = await supabaseAdmin().rpc("partners_nearby", { p_lat: latF, p_lng: lngF, p_radius_km: radiusKm, p_type: type === "clinics" ? "clinic" : "store" });
-        if (error) return serverError(error.message);
-        return ok(data ?? [], `${type} loaded`);
-      }
-    }
-
+    const query = supabaseAdmin().from(table).select("*").eq("is_verified", true).eq("is_active", true).limit(limit);
     const { data, error } = await query;
     if (error) return serverError(error.message);
-    return ok((data ?? []).map((row) => mapPartner(row, singularType[type])), `${type} loaded`, { count: data?.length ?? 0 });
+    let rows = (data ?? []) as Record<string, unknown>[];
+
+    if ((type === "clinics" || type === "stores") && lat && lng) {
+      const latF = parseFloat(lat);
+      const lngF = parseFloat(lng);
+      rows = rows
+        .map((row) => ({ row, distanceKm: haversineKm(latF, lngF, Number(row.latitude), Number(row.longitude)) }))
+        .filter((r) => r.distanceKm <= radiusKm)
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+        .map((r) => ({ ...r.row, __distanceKm: r.distanceKm }));
+    }
+
+    const mapped = rows.map((row) => {
+      const partner = mapPartner(row, singularType[type]);
+      if (row.__distanceKm !== undefined) partner.distanceKm = Math.round((row.__distanceKm as number) * 10) / 10;
+      return partner;
+    });
+    return ok(mapped, `${type} loaded`, { count: mapped.length });
   } catch {
     return serverError();
   }

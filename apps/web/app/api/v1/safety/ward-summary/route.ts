@@ -11,8 +11,8 @@ export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const ward = url.searchParams.get("ward");
-    let query = supabaseAdmin().from("wards").select("*");
-    if (ward) query = query.eq("name", ward);
+    let query = supabaseAdmin().from("ward_animal_summary").select("*");
+    if (ward) query = query.eq("ward_name", ward);
     const { data, error } = await query;
     if (error) return serverError(error.message);
     return ok((data ?? []).map(mapWardSummary), "Ward summary loaded");
