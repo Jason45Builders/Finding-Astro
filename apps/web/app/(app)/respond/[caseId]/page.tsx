@@ -12,7 +12,9 @@ import {
   Ban,
   Activity,
   ClipboardList,
-  AlertTriangle
+  AlertTriangle,
+  Camera,
+  X,
 } from "lucide-react";
 import { api, Case, CaseResponse } from "@/lib/api";
 import { Card } from "@/components/ui/Card";
@@ -31,6 +33,12 @@ const STEPS = [
   { key: "completed", label: "Completed", icon: CheckCircle, desc: "Rescue operation resolved successfully" },
 ];
 
+// Photo upload is offered from "On Scene" onward; picked up, at hospital, and
+// completed require at least one photo since these are the stages where proof
+// of what actually happened to the animal matters most.
+const PHOTO_STEPS = new Set(["on_scene", "picked_up", "at_hospital", "completed"]);
+const MANDATORY_PHOTO_STEPS = new Set(["picked_up", "at_hospital", "completed"]);
+
 export default function ActiveResponsePage() {
   const params = useParams<{ caseId: string }>();
   const router = useRouter();
@@ -41,6 +49,8 @@ export default function ActiveResponsePage() {
   const [updating, setUpdating] = useState(false);
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
 
   // Abandon state
   const [showAbandonDialog, setShowAbandonDialog] = useState(false);
@@ -66,20 +76,48 @@ export default function ActiveResponsePage() {
     void loadData();
   }, [params?.caseId]);
 
+  const handleAddPhotos = (files: FileList | null) => {
+    if (!files) return;
+    setPhotoFiles((prev) => [...prev, ...Array.from(files)]);
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    setPhotoFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleUpdateStatus = async (statusKey: string) => {
     if (!params?.caseId) return;
+
+    if (MANDATORY_PHOTO_STEPS.has(statusKey) && photoFiles.length === 0) {
+      setError(`At least one photo is required to mark this case as "${statusKey.replace(/_/g, " ")}".`);
+      return;
+    }
+
     setUpdating(true);
     setError(null);
     try {
-      const claim = await api.updateResponderStatus(params.caseId, statusKey, notes);
+      let evidenceUrls: string[] | undefined;
+      if (photoFiles.length > 0) {
+        setUploadingPhotos(true);
+        evidenceUrls = [];
+        for (const file of photoFiles) {
+          const { publicUrl } = await api.uploadMedia(file, "evidence");
+          evidenceUrls.push(publicUrl);
+        }
+        setUploadingPhotos(false);
+      }
+
+      const claim = await api.updateResponderStatus(params.caseId, statusKey, notes, evidenceUrls);
       setActiveClaim(claim);
       setNotes("");
+      setPhotoFiles([]);
       if (statusKey === "completed") {
         router.push(`/cases/${params.caseId}`);
       } else {
         await loadData();
       }
     } catch (err: any) {
+      setUploadingPhotos(false);
       setError(err?.message || "Failed to update responder status");
     } finally {
       setUpdating(false);
@@ -172,6 +210,37 @@ export default function ActiveResponsePage() {
               />
             </div>
 
+            {currentStepIndex < STEPS.length - 1 && PHOTO_STEPS.has(STEPS[currentStepIndex + 1].key) && (
+              <div>
+                <Label>
+                  Photo Evidence {MANDATORY_PHOTO_STEPS.has(STEPS[currentStepIndex + 1].key) ? "(Required)" : "(Optional)"}
+                </Label>
+                <label className="flex items-center justify-center gap-2 border-2 border-dashed border-outline-variant hover:border-primary hover:bg-surface-container rounded-md p-4 text-center transition-colors duration-150 ease-out cursor-pointer">
+                  <Camera className="w-4 h-4 text-outline" />
+                  <span className="text-sm font-bold text-on-surface-variant">Add photo(s)</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => { handleAddPhotos(e.target.files); e.target.value = ""; }}
+                  />
+                </label>
+                {photoFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {photoFiles.map((file, i) => (
+                      <span key={i} className="inline-flex items-center gap-1.5 bg-surface-container-high rounded-full pl-3 pr-1.5 py-1 text-xs font-bold text-on-surface">
+                        {file.name}
+                        <button type="button" onClick={() => handleRemovePhoto(i)} className="p-0.5 rounded-full hover:bg-surface-container-highest">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Next stage button */}
             {currentStepIndex < STEPS.length - 1 && (
               <div className="flex gap-3 flex-wrap">
@@ -179,11 +248,13 @@ export default function ActiveResponsePage() {
                   variant="primary"
                   size="lg"
                   onClick={() => handleUpdateStatus(STEPS[currentStepIndex + 1].key)}
-                  disabled={updating}
+                  disabled={updating || (MANDATORY_PHOTO_STEPS.has(STEPS[currentStepIndex + 1].key) && photoFiles.length === 0)}
                   className="flex-1"
                 >
                   {updating ? (
                     <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : uploadingPhotos ? (
+                    "Uploading photos..."
                   ) : (
                     `Advance to: ${STEPS[currentStepIndex + 1].label}`
                   )}

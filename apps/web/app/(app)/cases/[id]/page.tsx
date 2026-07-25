@@ -162,6 +162,27 @@ export default function CaseDetailPage() {
             </div>
             <StatusBadge token={statusToken.responderStatus(response.status)} />
           </div>
+          {(response.onScenePhotoUrls.length > 0 || response.pickedUpPhotoUrls.length > 0 || response.atHospitalPhotoUrls.length > 0 || response.completedPhotoUrls.length > 0) && (
+            <div className="mt-4 space-y-3">
+              {[
+                { label: "On Scene", urls: response.onScenePhotoUrls },
+                { label: "Picked Up", urls: response.pickedUpPhotoUrls },
+                { label: "At Hospital", urls: response.atHospitalPhotoUrls },
+                { label: "Completed", urls: response.completedPhotoUrls },
+              ].filter((group) => group.urls.length > 0).map((group) => (
+                <div key={group.label}>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">{group.label} photos</p>
+                  <div className="flex flex-wrap gap-2">
+                    {group.urls.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block w-16 h-16 rounded-md overflow-hidden border border-outline-variant hover:opacity-80 transition-opacity">
+                        <img src={url} alt={`${group.label} evidence ${i + 1}`} className="w-full h-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           {claimSuccess && (
             <Link href={`/respond/${caseData.id}`}>
               <Button variant="primary" className="mt-4 w-full">Go to Response Dashboard →</Button>

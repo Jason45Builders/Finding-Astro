@@ -359,6 +359,10 @@ CREATE TABLE IF NOT EXISTS case_responses (
   abandon_reason TEXT,
   hospital_id UUID REFERENCES users(id) ON DELETE SET NULL,
   notes TEXT,
+  on_scene_photo_urls TEXT[] NOT NULL DEFAULT '{}',
+  picked_up_photo_urls TEXT[] NOT NULL DEFAULT '{}',
+  at_hospital_photo_urls TEXT[] NOT NULL DEFAULT '{}',
+  completed_photo_urls TEXT[] NOT NULL DEFAULT '{}',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

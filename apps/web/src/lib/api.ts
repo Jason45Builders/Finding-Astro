@@ -96,6 +96,10 @@ export interface CaseResponse {
   responderName: string | null;
   status: "en_route" | "on_scene" | "picked_up" | "at_hospital" | "completed" | "abandoned";
   notes: string | null;
+  onScenePhotoUrls: string[];
+  pickedUpPhotoUrls: string[];
+  atHospitalPhotoUrls: string[];
+  completedPhotoUrls: string[];
   createdAt: string;
 }
 
@@ -552,10 +556,10 @@ class ApiClient {
     return this.request<CaseResponse>(`/emergency/${caseId}/claim`, { method: "POST" });
   }
 
-  async updateResponderStatus(caseId: string, status: string, notes?: string): Promise<CaseResponse> {
+  async updateResponderStatus(caseId: string, status: string, notes?: string, evidenceUrls?: string[]): Promise<CaseResponse> {
     return this.request<CaseResponse>(`/emergency/${caseId}/status`, {
       method: "PATCH",
-      body: JSON.stringify({ status, notes }),
+      body: JSON.stringify({ status, notes, evidenceUrls }),
     });
   }
 

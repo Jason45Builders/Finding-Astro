@@ -8,6 +8,17 @@ import { audit } from "@/lib/audit";
 
 const RESPONSE_DEADLINE_MINUTES = 15;
 
+// Photo evidence per rescue stage - required for the stages where proof of
+// what actually happened to the animal matters most (a picked-up, hospitalised,
+// or completed rescue with no photo is not verifiable after the fact).
+const PHOTO_COLUMN_BY_STATUS: Record<string, string> = {
+  on_scene: "on_scene_photo_urls",
+  picked_up: "picked_up_photo_urls",
+  at_hospital: "at_hospital_photo_urls",
+  completed: "completed_photo_urls",
+};
+const MANDATORY_PHOTO_STATUSES = new Set(["picked_up", "at_hospital", "completed"]);
+
 function mapCaseResponse(row: Record<string, unknown>) {
   const responder = row.users as { full_name?: string | null } | null;
   return {
@@ -17,6 +28,10 @@ function mapCaseResponse(row: Record<string, unknown>) {
     responderName: responder?.full_name ?? null,
     status: row.status as string,
     notes: row.notes as string | null,
+    onScenePhotoUrls: (row.on_scene_photo_urls as string[]) ?? [],
+    pickedUpPhotoUrls: (row.picked_up_photo_urls as string[]) ?? [],
+    atHospitalPhotoUrls: (row.at_hospital_photo_urls as string[]) ?? [],
+    completedPhotoUrls: (row.completed_photo_urls as string[]) ?? [],
     createdAt: row.created_at as string,
   };
 }
@@ -24,6 +39,7 @@ function mapCaseResponse(row: Record<string, unknown>) {
 const StatusUpdateSchema = z.object({
   status: z.enum(["claimed", "en_route", "on_scene", "picked_up", "at_hospital", "completed", "abandoned"]),
   notes: z.string().optional(),
+  evidenceUrls: z.array(z.string().url()).optional(),
 });
 
 const AbandonSchema = z.object({
@@ -123,13 +139,20 @@ async function handleStatusUpdate(req: NextRequest, caseId: string, user: { id: 
     const raw = await req.json();
     const parsed = validateBody(StatusUpdateSchema, raw);
     if (!parsed.ok) return parsed.response;
-    const { status, notes } = parsed.data;
+    const { status, notes, evidenceUrls } = parsed.data;
+
+    if (MANDATORY_PHOTO_STATUSES.has(status) && (!evidenceUrls || evidenceUrls.length === 0)) {
+      return badRequest("PHOTO_REQUIRED", `Photo evidence is required to mark this case as "${status.replace(/_/g, " ")}"`);
+    }
+
     const { data: response } = await supabaseAdmin().from("case_responses").select("*").eq("case_id", caseId).eq("responder_user_id", user.id).maybeSingle();
     if (!response) return notFound("No active response found");
 
     const updatePayload: Record<string, unknown> = { status };
     if (notes) updatePayload.notes = notes;
     if (status === "completed") updatePayload.completed_at = new Date().toISOString();
+    const photoColumn = PHOTO_COLUMN_BY_STATUS[status];
+    if (photoColumn && evidenceUrls && evidenceUrls.length > 0) updatePayload[photoColumn] = evidenceUrls;
 
     const { data, error } = await supabaseAdmin().from("case_responses").update(updatePayload).eq("id", response.id).select("*, users!responder_user_id(full_name)").single();
     if (error) return serverError(error.message);
