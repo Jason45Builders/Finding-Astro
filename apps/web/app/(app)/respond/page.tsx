@@ -71,7 +71,7 @@ export default function RespondersDispatch() {
       {/* Top Header */}
       <div className="shrink-0">
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">Active SOS Dispatch</h1>
-        <p className="text-sm text-on-surface-variant">Claim and navigate to active animal emergencies in Chennai</p>
+        <p className="text-sm text-on-surface-variant">Claim and navigate to active animal emergencies in your area</p>
       </div>
 
       {error && (

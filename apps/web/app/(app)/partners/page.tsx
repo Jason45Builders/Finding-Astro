@@ -79,7 +79,7 @@ export default function PartnersPage() {
           Partner Network
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">
-          Verified clinics, NGOs, helplines and ABC centres supporting Chennai&apos;s street animals
+          Verified clinics, NGOs, helplines and ABC centres supporting street animals in your area
         </p>
       </div>
 

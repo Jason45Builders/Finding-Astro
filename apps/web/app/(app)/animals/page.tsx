@@ -143,7 +143,7 @@ export default function AnimalsDirectory() {
                     </p>
                     <p className="text-xs text-outline mt-1.5 flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5 text-outline" />
-                      {a.territoryLabel || "Chennai Territory"}
+                      {a.territoryLabel || "Local Territory"}
                     </p>
                   </div>
                   <Link

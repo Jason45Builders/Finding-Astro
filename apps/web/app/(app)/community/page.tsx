@@ -53,7 +53,7 @@ function CommunityPageInner() {
         <h1 className="font-headline-lg text-headline-lg-mobile sm:text-headline-lg text-on-surface tracking-tight flex items-center gap-2">
           <Users className="w-6 h-6 text-primary" /> Community Dashboard
         </h1>
-        <p className="text-sm text-on-surface-variant mt-1">Live ward-level data for Chennai&apos;s animal welfare progress</p>
+        <p className="text-sm text-on-surface-variant mt-1">Live ward-level data for your community&apos;s animal welfare progress</p>
       </div>
 
       {/* City metrics */}

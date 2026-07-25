@@ -14,7 +14,7 @@ const CityMap = dynamic(() => import("@/components/CityMap"), {
     <div className="w-full h-full bg-surface-container rounded-xl flex items-center justify-center min-h-[500px]">
       <div className="flex flex-col items-center gap-3 text-on-surface-variant">
         <Spinner size="lg" />
-        <span className="text-sm font-bold">Loading Chennai City Map...</span>
+        <span className="text-sm font-bold">Loading City Map...</span>
       </div>
     </div>
   ),
@@ -82,7 +82,7 @@ export default function CityMapPage() {
         <div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight flex items-center gap-2">
             <MapPin className="w-6 h-6 text-primary" />
-            Chennai City Map
+            City Map
           </h1>
           <p className="text-sm text-on-surface-variant mt-1">
             Live overlay of animals, active cases, vet clinics and ABC centres

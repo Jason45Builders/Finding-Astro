@@ -114,7 +114,7 @@ export default function FundingCaseDetails() {
             <Building className="w-5 h-5 text-primary shrink-0" />
             <div>
               <p className="font-label-caps text-label-caps text-on-surface-variant">Hospital Partner</p>
-              <p className="text-sm font-bold text-on-surface">{funding.hospitalName || "Partner Vet Clinic, Chennai"}</p>
+              <p className="text-sm font-bold text-on-surface">{funding.hospitalName || "Partner Vet Clinic"}</p>
             </div>
           </div>
 

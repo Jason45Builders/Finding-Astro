@@ -160,7 +160,7 @@ export default function CrueltyPage() {
           <div>
             <Label>Address / Landmark</Label>
             <Input type="text" value={locationText} onChange={e => setLocationText(e.target.value)}
-              placeholder="e.g. Near Anna Nagar water tank, Chennai" />
+              placeholder="e.g. Near the water tank on Main Street" />
           </div>
 
           <div className="space-y-2">

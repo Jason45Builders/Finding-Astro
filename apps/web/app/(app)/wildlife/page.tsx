@@ -144,7 +144,7 @@ function WildlifePageInner() {
                   <Card key={c.id} className="p-4 flex items-center justify-between gap-4">
                     <div className="min-w-0">
                       <p className="font-bold text-on-surface text-sm truncate">{c.name}</p>
-                      <p className="text-xs text-on-surface-variant truncate">{c.address ?? c.city ?? "Chennai"}</p>
+                      <p className="text-xs text-on-surface-variant truncate">{c.address ?? c.city ?? "Location not specified"}</p>
                       {c.acceptedSpecies?.length > 0 && <p className="text-[10px] text-outline mt-0.5 truncate">Accepts: {c.acceptedSpecies.join(", ")}</p>}
                     </div>
                     <a href={`tel:${c.phone}`} className="flex items-center gap-1.5 text-primary font-bold text-sm hover:underline shrink-0">

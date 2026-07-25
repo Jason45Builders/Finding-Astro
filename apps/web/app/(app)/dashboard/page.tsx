@@ -119,7 +119,7 @@ export default function UserDashboard() {
               Hi, {user?.fullName || "Citizen"}!
             </h1>
             <p className="text-sm text-white/75 mt-2 leading-relaxed">
-              Your current reputation score is <strong className="text-white font-semibold">{user?.reputationScore ?? 0}</strong>. Thank you for making Chennai a safer place for animals.
+              Your current reputation score is <strong className="text-white font-semibold">{user?.reputationScore ?? 0}</strong>. Thank you for making your community a safer place for animals.
             </p>
             {photoError && (
               <div className="mt-3 inline-flex items-center gap-2 bg-red-500/20 border border-red-400/40 text-red-100 px-3 py-1.5 rounded-lg text-xs font-semibold">
@@ -262,7 +262,7 @@ export default function UserDashboard() {
                 <div key={animal.id} className="flex gap-4 p-3 hover:bg-surface-container rounded-md transition-colors">
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-on-surface truncate">{animal.name || animal.species}</h4>
-                    <p className="text-xs text-on-surface-variant truncate mt-0.5">{animal.territoryLabel || "Chennai Area"}</p>
+                    <p className="text-xs text-on-surface-variant truncate mt-0.5">{animal.territoryLabel || "Local Area"}</p>
                     <StatusBadge token={statusToken.animalStatus(animal.status)} className="mt-1.5" />
                   </div>
                   <Link
