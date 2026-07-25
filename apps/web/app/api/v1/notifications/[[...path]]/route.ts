@@ -7,16 +7,16 @@ import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 
 const MarkReadSchema = z.object({});
+
 export async function GET(req: NextRequest) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 
   try {
     const url = new URL(req.url);
-    const pathParts = url.pathname.replace(/\/api\/v1\//, "").split("/");
-    const subResource = pathParts[1];
+    const pathParts = url.pathname.replace(/\/api\/v1\/notifications\/?/, "").split("/").filter(Boolean);
 
-    if (subResource === "notifications") {
+    if (pathParts.length === 0) {
       const userId = authResult.user.id;
       const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "20", 10), 100);
       const { data, error } = await supabaseAdmin().from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(limit);

@@ -1,3 +1,8 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finding Astro — Volunteer Playbook</title>
 <style>
   @font-face {
@@ -448,6 +453,76 @@
     color: var(--ink);
   }
 
+  /* ---------- Tier table ---------- */
+  .tiers { display: flex; flex-direction: column; gap: 0; }
+  .tier-row {
+    display: grid;
+    grid-template-columns: 108px 1fr 1.3fr;
+    gap: 18px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .tier-row:first-child { border-top: none; }
+  .tier-row.head {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding-bottom: 10px;
+  }
+  @media (max-width: 640px) {
+    .tier-row { grid-template-columns: 1fr; gap: 4px; }
+    .tier-row.head { display: none; }
+    .tier-row:not(.head) { padding: 16px 0; }
+  }
+  .tier-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--teal);
+    background: var(--teal-tint);
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .tier-row p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+  .tier-row .tier-what { font-weight: 700; color: var(--ink); font-size: 14px; }
+
+  /* ---------- Directory ---------- */
+  .directory { display: flex; flex-direction: column; gap: 22px; }
+  .dir-group h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 10px;
+    font-weight: 600;
+  }
+  .dir-list { display: flex; flex-direction: column; gap: 0; }
+  .dir-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+  }
+  .dir-row:first-child { border-top: none; }
+  .dir-name { font-size: 14px; font-weight: 600; }
+  .dir-sub { display: block; font-size: 12px; color: var(--ink-faint); margin-top: 1px; }
+  .dir-phone {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--teal);
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
   /* ---------- Two column (settings) ---------- */
   .two-col {
     display: grid;
@@ -555,6 +630,9 @@
     * { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; }
   }
 </style>
+</head>
+<body>
+
 
 <svg width="0" height="0" style="position:absolute">
   <defs>
@@ -640,12 +718,14 @@
     <p class="rail-label">On this page</p>
     <nav>
       <a href="#quickstart">Quick start</a>
+      <a href="#tiers">Identity tiers</a>
       <a href="#respond">Responding to a case</a>
-      <a href="#report">Reporting a case</a>
+      <a href="#report">Reporting &amp; registering</a>
       <a href="#do">Everything else you can do</a>
       <a href="#money">Where the money goes</a>
       <a href="#settings">Staying available</a>
       <a href="#org">Represent an org?</a>
+      <a href="#directory">Directory</a>
       <a href="#faq">Quick answers</a>
     </nav>
   </aside>
@@ -663,8 +743,8 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow"/></svg>
           Open the app
         </a>
-        <span class="meta-chip mono">~6 min read</span>
-        <span class="meta-chip mono">v1</span>
+        <span class="meta-chip mono">~8 min read</span>
+        <span class="meta-chip mono">v2</span>
       </div>
     </header>
 
@@ -695,6 +775,37 @@
             <p>This is your main working screen from now on — a live list and map of open cases near you, sorted by priority.</p>
             <span class="hint">Respond SOS</span>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tiers">
+      <p class="eyebrow">Why some things stay locked</p>
+      <h2 class="h">Identity tiers</h2>
+      <p class="lede">Access is layered by how verified your account is — not to slow you down, but because precise animal locations shouldn't be public to anyone who just signed up. Verifying is quick and only needs to happen once.</p>
+      <div class="tiers">
+        <div class="tier-row head">
+          <span>Tier</span><span>Verification</span><span>Unlocks</span>
+        </div>
+        <div class="tier-row">
+          <span class="tier-badge">Tier 0</span>
+          <p class="tier-what">Phone only</p>
+          <p>Emergency reporting — works even before you finish signing up.</p>
+        </div>
+        <div class="tier-row">
+          <span class="tier-badge">Tier 1</span>
+          <p class="tier-what">Registered name</p>
+          <p>Claim and respond to cases, register community animals, view full case details.</p>
+        </div>
+        <div class="tier-row">
+          <span class="tier-badge">Tier 2</span>
+          <p class="tier-what">ID verified</p>
+          <p>Precise animal locations (below this tier, coordinates are rounded to a ~250m grid), plus cruelty, conflict, and adoption applications.</p>
+        </div>
+        <div class="tier-row">
+          <span class="tier-badge">Tier 3+</span>
+          <p class="tier-what">Verified organisation</p>
+          <p>Full NGO tooling — dispatch, verification queues, reimbursement review. Granted after the org verification review below.</p>
         </div>
       </div>
     </section>
@@ -770,6 +881,18 @@
       <p class="body-copy" style="margin-top:22px;">
         Not an emergency? Use the <strong class="rule">Regular Report</strong> tab instead for lost pets, ABC/sterilization requests, or ongoing conflicts — same form, no severity picker.
       </p>
+
+      <div class="steps" style="margin-top:38px;">
+        <p class="eyebrow" style="margin-bottom:16px;">Requires Tier 1</p>
+        <div class="step">
+          <div class="step-num"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-paw"/></svg></div>
+          <div>
+            <h3>Registering a community animal</h3>
+            <p>For a dog or cat you're tracking that isn't an emergency — this is what makes it eligible for ABC and vaccination tracking later. From <strong>Animals → Register</strong>: drop a location pin, add a photo, fill in what you actually know (species is required; breed, color, and name are optional — leave a field blank rather than guess).</p>
+            <span class="hint">Animals → Register</span>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section id="do">
@@ -884,6 +1007,41 @@
       </div>
     </section>
 
+    <section id="directory">
+      <p class="eyebrow">Verified in the platform's own records</p>
+      <h2 class="h">Directory</h2>
+      <p class="lede">A short list pulled directly from what's currently registered — for the full, always-current version including local clinics and stores, check <strong class="rule">Partners</strong> in the app.</p>
+
+      <div class="directory">
+        <div class="dir-group">
+          <h4>Emergency &amp; enforcement</h4>
+          <div class="dir-list">
+            <div class="dir-row"><span class="dir-name">Tambaram Fire &amp; Rescue Station<span class="dir-sub">General rescue</span></span><a class="dir-phone" href="tel:101">101</a></div>
+            <div class="dir-row"><span class="dir-name">S11 Tambaram Police Station<span class="dir-sub">Cruelty enforcement</span></span><a class="dir-phone" href="tel:+914423452769">044 2345 2769</a></div>
+            <div class="dir-row"><span class="dir-name">Forest Range Office — Guindy<span class="dir-sub">Wildlife</span></span><a class="dir-phone" href="tel:+914422200335">044 2220 0335</a></div>
+            <div class="dir-row"><span class="dir-name">PETA India Emergency<span class="dir-sub">Abuse reporting</span></span><a class="dir-phone" href="tel:+919990022060">099900 22060</a></div>
+          </div>
+        </div>
+        <div class="dir-group">
+          <h4>Welfare organisations</h4>
+          <div class="dir-list">
+            <div class="dir-row"><span class="dir-name">Blue Cross of India</span><a class="dir-phone" href="tel:+914446274999">044 4627 4999</a></div>
+            <div class="dir-row"><span class="dir-name">SPCA Chennai</span><a class="dir-phone" href="tel:+914425612160">044 2561 2160</a></div>
+            <div class="dir-row"><span class="dir-name">Heaven For Animals NGO</span><a class="dir-phone" href="tel:+919585338338">095853 38338</a></div>
+            <div class="dir-row"><span class="dir-name">Yahshua Animal Trust</span><a class="dir-phone" href="tel:+918056484677">080564 84677</a></div>
+          </div>
+        </div>
+        <div class="dir-group">
+          <h4>Civic &amp; wellbeing</h4>
+          <div class="dir-list">
+            <div class="dir-row"><span class="dir-name">Chennai Corporation Veterinary</span><a class="dir-phone" href="tel:+914425394999">044 2539 4999</a></div>
+            <div class="dir-row"><span class="dir-name">District Legal Services Authority<span class="dir-sub">Free legal aid</span></span><a class="dir-phone" href="tel:+914425332412">044 2533 2412</a></div>
+            <div class="dir-row"><span class="dir-name">iCall Psychosocial Helpline<span class="dir-sub">For volunteers too — this work is hard on people</span></span><a class="dir-phone" href="tel:+912225521111">022 2552 1111</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="faq">
       <p class="eyebrow">Quick answers</p>
       <h2 class="h">Before you ask</h2>
@@ -908,6 +1066,10 @@
           <summary>Can I report something without creating an account?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></summary>
           <p class="a">Yes, for emergencies — the Emergency report form doesn't require login. You'll want an account to claim, respond to, or track any case afterward though.</p>
         </details>
+        <details class="faq-item">
+          <summary>Why are some animal locations rounded instead of exact?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></summary>
+          <p class="a">Below Tier 2 verification, coordinates are snapped to a ~250m grid rather than showing the exact point. It's a deliberate privacy measure, not a bug — verify your identity in Profile to see precise locations.</p>
+        </details>
       </div>
     </section>
 
@@ -921,3 +1083,6 @@
 
   </main>
 </div>
+
+</body>
+</html>

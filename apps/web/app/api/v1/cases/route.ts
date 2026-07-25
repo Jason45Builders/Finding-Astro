@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware, optionalAuth, requireTier, AuthenticatedUser } from "@/lib/auth-middleware";
-import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
+import { ok, badRequest, serverError } from "@/lib/api-response";
 import { GUEST_USER_ID } from "@/lib/guest";
 import { LocationSchema, validateBody } from "@/lib/validation";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { audit } from "@/lib/audit";
+import { decodeLocation } from "@/lib/geo";
 
 const CaseStatusEnum = z.enum(["open", "in_review", "action_taken", "resolved", "closed"]);
 const CasePriorityEnum = z.enum(["low", "medium", "high"]);
@@ -21,12 +22,6 @@ const CreateCaseSchema = z.object({
   priority: CasePriorityEnum.optional(),
   severity: z.string().optional(),
   guestPhone: z.string().optional(),
-});
-
-const UpdateCaseSchema = z.object({
-  status: CaseStatusEnum.optional(),
-  priority: CasePriorityEnum.optional(),
-  resolutionNotes: z.string().optional(),
 });
 
 const TIER_REQUIREMENTS: Record<string, number> = {
@@ -49,13 +44,18 @@ export async function GET(req: NextRequest) {
     if (status) query = query.eq("status", status);
     if (animalId) query = query.eq("animal_id", animalId);
 
-    if (!["admin", "govt", "ngo"].includes(authResult.user.role)) {
-      query = query.or(`reporter_user_id.eq.${authResult.user.id},assigned_to_user_id.eq.${authResult.user.id}`);
+    // Open cases have no responder yet, so every volunteer needs to see them to be
+    // able to claim one — only non-open (already claimed / in-progress) cases are
+    // scoped down to the reporter, assignee, or staff.
+    if (!["admin", "govt", "ngo"].includes(authResult.user.role) && status !== "open") {
+      query = query.or(`status.eq.open,reporter_user_id.eq.${authResult.user.id},assigned_to_user_id.eq.${authResult.user.id}`);
     }
 
     const { data, error } = await query.order("created_at", { ascending: false }).limit(limit);
     if (error) return serverError(error.message);
-    return ok(data ?? [], "Cases loaded", { count: data?.length ?? 0 });
+
+    const cases = (data ?? []).map((c) => ({ ...c, location: decodeLocation((c as Record<string, unknown>).location) }));
+    return ok(cases, "Cases loaded", { count: cases.length });
   } catch {
     return serverError();
   }
@@ -149,46 +149,4 @@ async function createCaseRecord(req: NextRequest, user: AuthenticatedUser | null
     }
 
   return ok(data, "Case created");
-}
-
-async function PATCH(req: NextRequest) {
-  const authResult = await authMiddleware(req);
-  if ("error" in authResult) return authResult.error;
-
-  try {
-    const url = new URL(req.url);
-    const caseId = url.pathname.replace(/\/api\/v1\/cases\//, "").replace(/\/.*$/, "");
-    if (!caseId) return badRequest("VALIDATION_ERROR", "caseId is required");
-
-    const raw = await req.json();
-    const parsed = validateBody(UpdateCaseSchema, raw);
-    if (!parsed.ok) return parsed.response;
-    const { status, priority, resolutionNotes } = parsed.data;
-
-    const { data: existing } = await supabaseAdmin().from("cases").select("status, priority, title, description, resolution_notes").eq("id", caseId).single();
-    if (!existing) return notFound("Case not found");
-
-    const current = existing.status as string;
-    if (status && current !== status && !["admin", "govt", "ngo"].includes(authResult.user.role)) {
-      const allowed: Record<string, string[]> = { open: ["in_review", "closed"], in_review: ["action_taken", "resolved", "closed"], action_taken: ["resolved", "closed"], resolved: ["closed"] };
-      if (!(allowed[current] ?? []).includes(status)) return badRequest("INVALID_STATUS_TRANSITION", `Cannot move from "${current}" to "${status}"`);
-    }
-
-    const update: Record<string, unknown> = {};
-    if (status) update.status = status;
-    if (priority) update.priority = priority;
-    if (resolutionNotes !== undefined) update.resolution_notes = resolutionNotes;
-    update.updated_at = new Date().toISOString();
-
-    const { data, error } = await supabaseAdmin().from("cases").update(update).eq("id", caseId).select("*").single();
-    if (error) return serverError(error.message);
-
-    if (data) {
-      await audit({ tableName: "cases", recordId: caseId, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, oldData: existing, newData: data });
-    }
-
-    return ok(data, "Case updated");
-  } catch {
-    return serverError();
-  }
 }

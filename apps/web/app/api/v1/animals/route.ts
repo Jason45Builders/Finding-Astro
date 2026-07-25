@@ -5,6 +5,7 @@ import { authMiddleware, optionalAuth, requireTier, AuthenticatedUser } from "@/
 import { ok, badRequest, serverError, unauthorized } from "@/lib/api-response";
 import { LocationSchema, validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
+import { fuzzyLocation } from "@/lib/geo";
 
 const AnimalStatusEnum = z.enum(["community", "lost", "found", "reunited", "adopted"]);
 const DisappearanceRiskEnum = z.enum(["stable", "watch", "urgent"]);
@@ -40,24 +41,6 @@ const UpdateAnimalSchema = CreateAnimalSchema.partial().extend({
   longitude: z.number().optional(),
 });
 
-function snapToGrid(lat: number, lng: number, gridMeters: number): { lat: number; lng: number } {
-  const earthRadius = 6371000;
-  const latGrid = (gridMeters / earthRadius) * (180 / Math.PI);
-  const lngGrid = (gridMeters / (earthRadius * Math.cos(lat * Math.PI / 180))) * (180 / Math.PI);
-  const snappedLat = Math.round(lat / latGrid) * latGrid;
-  const snappedLng = Math.round(lng / lngGrid) * lngGrid;
-  return { lat: snappedLat, lng: snappedLng };
-}
-
-function fuzzyLocation(loc: { latitude: number; longitude: number } | null, tier: number | undefined): { latitude: number; longitude: number } | null {
-  if (!loc) return null;
-  if (tier === undefined || tier < 2) {
-    const snapped = snapToGrid(loc.latitude, loc.longitude, 250);
-    return { latitude: Math.round(snapped.lat * 10000) / 10000, longitude: Math.round(snapped.lng * 10000) / 10000 };
-  }
-  return loc;
-}
-
 export async function GET(req: NextRequest) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
@@ -81,12 +64,7 @@ export async function GET(req: NextRequest) {
   if (error) return serverError(error.message);
 
   const animals = (data ?? []) as Record<string, unknown>[];
-  const fuzzed = animals.map((a) => {
-    if (!a.location) return a;
-    const loc = fuzzyLocation(a.location as { latitude: number; longitude: number }, userTier);
-    if (!loc) return { ...a, location: null };
-    return { ...a, location: loc };
-  });
+  const fuzzed = animals.map((a) => ({ ...a, location: fuzzyLocation(a.location, userTier) }));
 
   return ok(fuzzed, "Animals loaded", { count: fuzzed.length ?? 0 });
 }

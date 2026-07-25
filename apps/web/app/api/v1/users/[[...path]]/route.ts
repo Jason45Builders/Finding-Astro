@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
-import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
+import { ok, badRequest, serverError } from "@/lib/api-response";
 import { LocationSchema, validateBody } from "@/lib/validation";
 
 const UpdateVolunteerSchema = z.object({
@@ -19,11 +19,10 @@ export async function GET(req: NextRequest) {
 
   try {
     const url = new URL(req.url);
-    const pathParts = url.pathname.replace(/\/api\/v1\//, "").split("/");
-    const subResource = pathParts[1];
+    const pathParts = url.pathname.replace(/\/api\/v1\/users\/?/, "").split("/").filter(Boolean);
 
-    if (subResource === "users" && pathParts.length > 2 && pathParts[2] === "me") {
-      if (pathParts[3] === "volunteer") {
+    if (pathParts[0] === "me") {
+      if (pathParts[1] === "volunteer") {
         const { data, error } = await supabaseAdmin().from("users").select("id, email, full_name, role, is_available, active_case_limit, vehicle_type, vehicle_capacity, service_radius_km, home_location, reputation_score").eq("id", authResult.user.id).single();
         if (error) return serverError(error.message);
         return ok(data, "Volunteer profile loaded");
@@ -31,7 +30,7 @@ export async function GET(req: NextRequest) {
       return ok({ id: authResult.user.id, email: authResult.user.email, role: authResult.user.role }, "User info");
     }
 
-    if (subResource === "users" && pathParts.length > 2 && pathParts[2] === "responders" && pathParts[3] === "nearby") {
+    if (pathParts[0] === "responders" && pathParts[1] === "nearby") {
       const lat = url.searchParams.get("latitude");
       const lng = url.searchParams.get("longitude");
       if (!lat || !lng) return badRequest("VALIDATION_ERROR", "latitude and longitude required");
@@ -40,7 +39,7 @@ export async function GET(req: NextRequest) {
       return ok(data ?? [], "Responders loaded");
     }
 
-    if (subResource === "users" && pathParts.length === 2) {
+    if (pathParts.length === 0) {
       const { data, error } = await supabaseAdmin().from("users").select("id, email, full_name, role, is_available, identity_tier, created_at").limit(parseInt(url.searchParams.get("limit") ?? "50", 10));
       if (error) return serverError(error.message);
       return ok(data ?? [], "Users loaded");
@@ -58,9 +57,9 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const url = new URL(req.url);
-    const pathParts = url.pathname.replace(/\/api\/v1\//, "").split("/");
+    const pathParts = url.pathname.replace(/\/api\/v1\/users\/?/, "").split("/").filter(Boolean);
 
-    if (pathParts[1] === "users" && pathParts[2] === "me" && pathParts[3] === "volunteer") {
+    if (pathParts[0] === "me" && pathParts[1] === "volunteer") {
       const raw = await req.json();
       const parsed = validateBody(UpdateVolunteerSchema, raw);
       if (!parsed.ok) return parsed.response;

@@ -5,6 +5,7 @@ import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { LocationSchema, validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
+import { fuzzyLocation } from "@/lib/geo";
 
 const AnimalStatusEnum = z.enum(["community", "lost", "found", "reunited", "adopted"]);
 const DisappearanceRiskEnum = z.enum(["stable", "watch", "urgent"]);
@@ -41,19 +42,19 @@ const UpdateAnimalSchema = CreateAnimalSchema.partial().extend({
 });
 
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
-  const queryText = url.searchParams.get("queryText");
-  const status = url.searchParams.get("status");
-  const species = url.searchParams.get("species");
-  const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "50", 10), 200);
+  const authResult = await authMiddleware(req);
+  if ("error" in authResult) return authResult.error;
+  const userTier = authResult.user.identityTier ?? 0;
 
-  let q = supabaseAdmin().from("animals").select("*");
-  if (status) q = q.eq("status", status);
-  if (species) q = q.eq("species", species);
-  if (queryText) q = q.or(`name.ilike.%${queryText}%,breed.ilike.%${queryText}%`);
-  const { data, error } = await q.limit(limit);
-  if (error) return serverError(error.message);
-  return ok(data ?? [], "Animals loaded", { count: data?.length ?? 0 });
+  const url = new URL(req.url);
+  const id = url.pathname.replace(/\/api\/v1\/animals\//, "").replace(/\/.*$/, "");
+  if (!id) return badRequest("VALIDATION_ERROR", "animal id required");
+
+  const { data, error } = await supabaseAdmin().from("animals").select("*").eq("id", id).single();
+  if (error) return notFound("Animal not found");
+
+  const animal = data as Record<string, unknown>;
+  return ok({ ...animal, location: fuzzyLocation(animal.location, userTier) }, "Animal loaded");
 }
 
 export async function POST(req: NextRequest) {

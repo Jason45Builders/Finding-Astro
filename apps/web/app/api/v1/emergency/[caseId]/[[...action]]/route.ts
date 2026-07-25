@@ -38,6 +38,38 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PATCH(req: NextRequest) {
+  const authResult = await authMiddleware(req);
+  if ("error" in authResult) return authResult.error;
+
+  try {
+    const url = new URL(req.url);
+    const parts = url.pathname.split("/");
+    const caseId = parts[parts.length - 2];
+    const action = parts[parts.length - 1];
+
+    if (action === "status") return handleStatusUpdate(req, caseId, authResult.user);
+
+    return new Response(null, { status: 405 });
+  } catch {
+    return serverError();
+  }
+}
+
+export async function GET(req: NextRequest) {
+  const authResult = await authMiddleware(req);
+  if ("error" in authResult) return authResult.error;
+
+  const url = new URL(req.url);
+  const parts = url.pathname.split("/");
+  const caseId = parts[parts.length - 2];
+  const action = parts[parts.length - 1];
+
+  if (action === "response") return handleGetResponse(req, caseId, authResult.user);
+
+  return new Response(null, { status: 405 });
+}
+
 async function handleClaim(req: NextRequest, caseId: string, user: { id: string; role: string; identityTier?: number }) {
   try {
     const userTier = user.identityTier ?? 0;

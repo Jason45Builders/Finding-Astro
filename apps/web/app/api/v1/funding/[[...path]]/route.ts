@@ -27,14 +27,23 @@ const ReimbursementVerifySchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
-  const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "50", 10), 200);
-  const status = url.searchParams.get("status");
-
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 
   try {
+    const url = new URL(req.url);
+    const pathParts = url.pathname.replace(/\/api\/v1\/funding\/?/, "").split("/").filter(Boolean);
+
+    // /funding/{id} — single funding case fetch. "reimbursement" has its own sub-namespace, not an id.
+    if (pathParts.length === 1 && pathParts[0] !== "reimbursement") {
+      const { data, error } = await supabaseAdmin().from("funding_cases").select("*").eq("id", pathParts[0]).single();
+      if (error) return notFound("Funding case not found");
+      return ok(data, "Funding case loaded");
+    }
+
+    // bare /funding — list
+    const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "50", 10), 200);
+    const status = url.searchParams.get("status");
     let query = supabaseAdmin().from("funding_cases").select("*");
     if (status) query = query.eq("status", status);
     const { data, error } = await query.order("created_at", { ascending: false }).limit(limit);
@@ -51,11 +60,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const url = new URL(req.url);
-    const pathParts = url.pathname.replace(/\/api\/v1\//, "").split("/");
+    const pathParts = url.pathname.replace(/\/api\/v1\/funding\/?/, "").split("/").filter(Boolean);
 
-    if (pathParts[1] === "funding" && pathParts[2] === "donate") return handleDonate(req, authResult.user);
-    if (pathParts[1] === "funding" && pathParts[2] === "reimbursement" && pathParts[3] === "request") return handleReimbursementRequest(req, authResult.user);
-    if (pathParts[1] === "funding" && pathParts[2] === "reimbursement" && pathParts[3] === "verify") return handleReimbursementVerify(req, authResult.user);
+    if (pathParts[0] === "donate") return handleDonate(req, authResult.user);
+    if (pathParts[0] === "reimbursement" && pathParts[1] === "request") return handleReimbursementRequest(req, authResult.user);
+    if (pathParts[0] === "reimbursement" && pathParts[1] === "verify") return handleReimbursementVerify(req, authResult.user);
 
     return new Response(null, { status: 405 });
   } catch {
@@ -116,7 +125,7 @@ async function handleReimbursementRequest(req: NextRequest, user: { id: string; 
   }
 }
 
-async function handleReimbursementVerify(req: NextRequest, _user: { id: string; role: string }) {
+async function handleReimbursementVerify(req: NextRequest, user: { id: string; role: string }) {
   try {
     const raw = await req.json();
     const parsed = validateBody(ReimbursementVerifySchema, raw);
@@ -126,10 +135,9 @@ async function handleReimbursementVerify(req: NextRequest, _user: { id: string; 
     const status = verified ? "VERIFIED" : "REJECTED";
     const { data, error } = await supabaseAdmin().from("reimbursement_requests").update({ status, verified_at: new Date().toISOString(), hospital_notes: notes ?? null }).eq("id", reimbursementId).select("*").single();
     if (error) return serverError(error.message);
-    if (data) await audit({ tableName: "reimbursement_requests", recordId: reimbursementId, action: "UPDATE", actorId: _user.id, actorRole: _user.role, newData: data });
+    if (data) await audit({ tableName: "reimbursement_requests", recordId: reimbursementId, action: "UPDATE", actorId: user.id, actorRole: user.role, newData: data });
     return ok(data, `Reimbursement ${status.toLowerCase()}`);
   } catch {
     return serverError();
   }
 }
-
