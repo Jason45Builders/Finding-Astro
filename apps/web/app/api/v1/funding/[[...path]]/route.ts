@@ -1,15 +1,17 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { mapFundingCase } from "@/lib/types";
 
 const DonateSchema = z.object({
   fundingCaseId: z.string().uuid(),
   amount: z.number().positive(),
+  idempotencyKey: z.string().optional(),
 });
 
 const ReimbursementRequestSchema = z.object({
@@ -25,6 +27,11 @@ const ReimbursementVerifySchema = z.object({
   reimbursementId: z.string().uuid(),
   verified: z.boolean(),
   notes: z.string().optional(),
+});
+
+const RefundSchema = z.object({
+  fundingTransactionId: z.string().uuid(),
+  reason: z.string().min(1),
 });
 
 export async function GET(req: NextRequest) {
@@ -60,12 +67,19 @@ export async function POST(req: NextRequest) {
   if ("error" in authResult) return authResult.error;
 
   try {
+    const ip = getClientIp(req);
+    const rate = checkRateLimit(ip);
+    if (!rate.allowed) {
+      return new NextResponse(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+    }
+
     const url = new URL(req.url);
     const pathParts = url.pathname.replace(/\/api\/v1\/funding\/?/, "").split("/").filter(Boolean);
 
     if (pathParts[0] === "donate") return handleDonate(req, authResult.user);
     if (pathParts[0] === "reimbursement" && pathParts[1] === "request") return handleReimbursementRequest(req, authResult.user);
     if (pathParts[0] === "reimbursement" && pathParts[1] === "verify") return handleReimbursementVerify(req, authResult.user);
+    if (pathParts[0] === "refund") return handleRefund(req, authResult.user);
 
     return new Response(null, { status: 405 });
   } catch {
@@ -78,12 +92,16 @@ async function handleDonate(req: NextRequest, user: { id: string; role: string }
     const raw = await req.json();
     const parsed = validateBody(DonateSchema, raw);
     if (!parsed.ok) return parsed.response;
-    const { fundingCaseId, amount } = parsed.data;
+    const { fundingCaseId, amount, idempotencyKey } = parsed.data;
 
-    const { data: existing } = await supabaseAdmin().from("funding_cases").select("total_amount, amount_raised, status").eq("id", fundingCaseId).single();
-    if (!existing || existing.status !== "OPEN") return notFound("Funding case not found or closed");
+    if (idempotencyKey) {
+      const { data: existingTx } = await supabaseAdmin().from("funding_transactions").select("id").eq("funding_case_id", fundingCaseId).eq("user_id", user.id).eq("idempotency_key", idempotencyKey).maybeSingle();
+      if (existingTx) return ok({ id: existingTx.id, message: "Donation already processed" }, "Donation already recorded");
+    }
 
-    const newRaised = Number(existing.amount_raised) + amount;
+    const { data: existing, error: fetchError } = await supabaseAdmin().from("funding_cases").select("total_amount, amount_raised, status").eq("id", fundingCaseId).single();
+    if (fetchError || !existing || existing.status !== "OPEN") return notFound("Funding case not found or closed");
+
     const { data: tx, error } = await supabaseAdmin().from("funding_transactions").insert({
       funding_case_id: fundingCaseId,
       user_id: user.id,
@@ -92,11 +110,15 @@ async function handleDonate(req: NextRequest, user: { id: string; role: string }
       donor_name: `User ${user.id.slice(0, 8)}`,
       is_anonymous: false,
       is_matched: false,
+      idempotency_key: idempotencyKey ?? null,
     }).select("*").single();
 
     if (error) return serverError(error.message);
 
-    await supabaseAdmin().from("funding_cases").update({ amount_raised: newRaised, status: newRaised >= Number(existing.total_amount) ? "CLOSED" : "OPEN" }).eq("id", fundingCaseId);
+    const { data: txRows } = await supabaseAdmin().from("funding_transactions").select("amount").eq("funding_case_id", fundingCaseId).eq("payment_status", "SUCCESS");
+    const totalRaised = (txRows ?? []).reduce((sum, t: { amount: number }) => sum + Number(t.amount), 0);
+
+    await supabaseAdmin().from("funding_cases").update({ amount_raised: totalRaised, status: totalRaised >= Number(existing.total_amount) ? "CLOSED" : "OPEN" }).eq("id", fundingCaseId);
 
     if (tx) await audit({ tableName: "funding_transactions", recordId: tx.id, action: "INSERT", actorId: user.id, actorRole: user.role, newData: tx });
     return ok(tx, "Donation recorded");
@@ -138,6 +160,38 @@ async function handleReimbursementVerify(req: NextRequest, user: { id: string; r
     if (error) return serverError(error.message);
     if (data) await audit({ tableName: "reimbursement_requests", recordId: reimbursementId, action: "UPDATE", actorId: user.id, actorRole: user.role, newData: data });
     return ok(data, `Reimbursement ${status.toLowerCase()}`);
+  } catch {
+    return serverError();
+  }
+}
+
+async function handleRefund(req: NextRequest, user: { id: string; role: string }) {
+  try {
+    const raw = await req.json();
+    const parsed = validateBody(RefundSchema, raw);
+    if (!parsed.ok) return parsed.response;
+    const { fundingTransactionId, reason } = parsed.data;
+
+    const { data: tx, error: txError } = await supabaseAdmin().from("funding_transactions").select("*").eq("id", fundingTransactionId).single();
+    if (txError || !tx) return notFound("Transaction not found");
+    if (tx.user_id !== user.id && !["admin", "govt"].includes(user.role)) return badRequest("FORBIDDEN", "You can only refund your own donations");
+    if (tx.payment_status === "REFUNDED") return badRequest("INVALID_STATUS", "Transaction already refunded");
+
+    const { data: refund, error: refundError } = await supabaseAdmin().from("refunds").insert({
+      funding_transaction_id: fundingTransactionId,
+      funding_case_id: tx.funding_case_id,
+      user_id: tx.user_id,
+      amount: tx.amount,
+      reason,
+      status: "PENDING",
+    }).select("*").single();
+
+    if (refundError) return serverError(refundError.message);
+
+    await supabaseAdmin().from("funding_transactions").update({ payment_status: "REFUNDED" }).eq("id", fundingTransactionId);
+
+    await audit({ tableName: "refunds", recordId: refund.id, action: "INSERT", actorId: user.id, actorRole: user.role, newData: refund });
+    return ok(refund, "Refund initiated");
   } catch {
     return serverError();
   }

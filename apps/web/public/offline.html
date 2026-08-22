@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finding Astro - Offline</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: 'Manrope', system-ui, sans-serif;
+        background: #fef2f2;
+        color: #1c1917;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .card {
+        max-width: 420px;
+        width: 100%;
+        background: white;
+        border-radius: 24px;
+        padding: 40px 32px;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+        text-align: center;
+      }
+      .icon {
+        width: 80px;
+        height: 80px;
+        background: #fee2e2;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 40px;
+      }
+      h1 {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        letter-spacing: -0.02em;
+      }
+      p {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #57534e;
+        margin-bottom: 24px;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+        background: #0ea5e9;
+        color: white;
+        text-decoration: none;
+      }
+      .button:hover { background: #0284c7; }
+      .status {
+        margin-top: 16px;
+        font-size: 13px;
+        color: #78716c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="icon">📡</div>
+      <h1>You're offline</h1>
+      <p>Finding Astro needs an internet connection for emergency reporting and real-time updates. Some features may be limited while offline.</p>
+      <button class="button" onclick="window.location.reload()">Try Again</button>
+      <p class="status" id="status">Checking connection...</p>
+    </div>
+
+    <script>
+      function updateStatus() {
+        const status = document.getElementById('status');
+        if (navigator.onLine) {
+          status.textContent = 'Connection restored!';
+          status.style.color = '#059669';
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          status.textContent = 'Waiting for connection...';
+          status.style.color = '#78716c';
+        }
+      }
+      window.addEventListener('online', updateStatus);
+      window.addEventListener('offline', updateStatus);
+      updateStatus();
+    </script>
+  </body>
+</html>

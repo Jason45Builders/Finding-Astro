@@ -144,7 +144,7 @@ export default function UserDashboard() {
             </div>
             <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-white hover:bg-white/90 rounded-full flex items-center justify-center cursor-pointer shadow-lg border-2 border-primary transition-colors">
               <Camera className="w-4 h-4 text-primary" />
-              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} disabled={uploadingPhoto} />
+              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoChange} disabled={uploadingPhoto} />
             </label>
           </div>
         </div>

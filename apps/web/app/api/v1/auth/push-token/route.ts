@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
     if (!parsed.ok) return parsed.response;
     const { expoPushToken } = parsed.data;
 
-    await supabaseAdmin().from("users").update({ expo_push_token: expoPushToken }).eq("id", authResult.user.id);
-    await audit({ tableName: "users", recordId: authResult.user.id, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: { expo_push_token: expoPushToken } });
+    await supabaseAdmin().from("users").update({ push_token: expoPushToken }).eq("id", authResult.user.id);
+    await audit({ tableName: "users", recordId: authResult.user.id, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: { push_token: expoPushToken } });
     return ok(null, "Push token registered");
   } catch {
     return serverError("Failed to register push token");

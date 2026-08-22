@@ -136,7 +136,7 @@ export default function RespondersDispatch() {
 
         {/* Right: Map */}
         <Card className="lg:col-span-7 h-full min-h-[400px] p-2 overflow-hidden relative">
-          <OpenCasesMap cases={sortedCases} />
+          <OpenCasesMap cases={sortedCases.filter((c) => !!c.location).map((c) => ({ id: c.id, title: c.title, location: c.location!, locationText: c.locationText ?? undefined, priority: c.priority })) as any} />
         </Card>
       </div>
     </div>

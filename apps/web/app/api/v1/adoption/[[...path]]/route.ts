@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 
   // bare /adoption or /adoption/animals — both list adoptable animals
   const species = url.searchParams.get("species");
-  let query = supabaseAdmin().from("animals").select("*").eq("status", "adopted");
+  let query = supabaseAdmin().from("animals").select("*").not("adoptable_since", "is", null);
   if (species) query = query.eq("species", species);
   const { data, error } = await query;
   if (error) return serverError(error.message);

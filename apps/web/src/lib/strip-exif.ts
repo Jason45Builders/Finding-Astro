@@ -25,3 +25,29 @@ export async function stripExifGps(buffer: ArrayBuffer): Promise<ArrayBuffer> {
   }
   return buffer;
 }
+
+export async function prepareImageUpload(file: File): Promise<File> {
+  if (!file.type.startsWith("image/")) return file;
+
+  const buffer = await file.arrayBuffer();
+
+  if (file.type === "image/jpeg" || file.type === "image/jpg") {
+    const stripped = await stripExifGps(buffer);
+    if (stripped.byteLength === buffer.byteLength) return file;
+    return new File([stripped], file.name, { type: file.type, lastModified: file.lastModified });
+  }
+
+  const bitmap = await createImageBitmap(file);
+  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return file;
+
+  ctx.drawImage(bitmap, 0, 0);
+  bitmap.close();
+
+  const mimeType = file.type === "image/png" ? "image/png" : "image/jpeg";
+  const blob = await canvas.convertToBlob({ type: mimeType, quality: 0.92 });
+  const strippedBuffer = await blob.arrayBuffer();
+
+  return new File([strippedBuffer], file.name.replace(/\.[^.]+$/, mimeType === "image/png" ? ".png" : ".jpg"), { type: mimeType, lastModified: file.lastModified });
+}

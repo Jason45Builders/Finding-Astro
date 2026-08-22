@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { validateBody, LocationSchema } from "@/lib/validation";
+import { audit } from "@/lib/audit";
 
 function mapTransportRequest(row: Record<string, unknown>) {
   return {
@@ -20,6 +21,13 @@ function mapTransportRequest(row: Record<string, unknown>) {
     createdAt: row.created_at as string,
   };
 }
+
+const TransportUpdateSchema = z.object({
+  status: z.enum(["open", "assigned", "completed", "cancelled"]).optional(),
+  assignedToUserId: z.string().uuid().optional(),
+  cancellationReason: z.string().optional(),
+  notes: z.string().optional(),
+});
 
 const TransportRequestSchema = z.object({
   caseId: z.string().uuid(),
@@ -88,6 +96,59 @@ export async function POST(req: NextRequest) {
 
     if (error) return serverError(error.message);
     return ok(mapTransportRequest(data), "Transport request created");
+  } catch {
+    return serverError();
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  const authResult = await authMiddleware(req);
+  if ("error" in authResult) return authResult.error;
+
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").filter(Boolean).pop();
+    if (!id) return badRequest("BAD_REQUEST", "Transport request ID is required");
+
+    const { data: existing, error: fetchError } = await supabaseAdmin().from("transport_requests").select("*").eq("id", id).maybeSingle();
+    if (fetchError || !existing) return notFound("Transport request not found");
+
+    const raw = await req.json();
+    const parsed = validateBody(TransportUpdateSchema, raw);
+    if (!parsed.ok) return parsed.response;
+    const { status, assignedToUserId, cancellationReason, notes } = parsed.data;
+
+    const isStaff = ["admin", "govt", "ngo"].includes(authResult.user.role);
+    if (!isStaff && existing.requested_by_user_id !== authResult.user.id) {
+      return badRequest("FORBIDDEN", "You can only update your own transport requests");
+    }
+
+    if (status && existing.status === "completed" && status !== "completed") {
+      return badRequest("CONFLICT", "Cannot change status of a completed transport request");
+    }
+
+    const update: Record<string, unknown> = {};
+    if (status) {
+      update.status = status;
+      if (status === "completed") update.completed_at = new Date().toISOString();
+      if (status === "cancelled") update.cancelled_at = new Date().toISOString();
+    }
+    if (assignedToUserId && isStaff) {
+      update.assigned_to_user_id = assignedToUserId;
+      if (!update.assigned_at) update.assigned_at = new Date().toISOString();
+    }
+    if (cancellationReason && status === "cancelled") {
+      update.cancellation_reason = cancellationReason;
+    }
+    if (notes) update.notes = notes;
+
+    if (Object.keys(update).length === 0) return badRequest("NO_CHANGES", "No valid fields to update");
+
+    const { data, error } = await supabaseAdmin().from("transport_requests").update(update).eq("id", id).select("*").single();
+    if (error) return serverError(error.message);
+
+    await audit({ tableName: "transport_requests", recordId: id, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: update });
+    return ok(mapTransportRequest(data), "Transport request updated");
   } catch {
     return serverError();
   }

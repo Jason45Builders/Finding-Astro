@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
-import { ok, serverError } from "@/lib/api-response";
+import { ok, serverError, badRequest, notFound } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { GUEST_USER_ID } from "@/lib/guest";
@@ -138,20 +138,39 @@ export async function POST(req: NextRequest) {
     }
 
     if (subResource === "verifications" && pathParts[1] === "ngo") {
+      const privileged = ["admin", "govt"];
+      if (!privileged.includes(authResult.user.role)) {
+        return NextResponse.json({ success: false, code: "FORBIDDEN", message: "Only admins and government officers can approve NGO verifications" }, { status: 403 });
+      }
       const raw = await req.json();
-      const parsed = validateBody(z.object({ verificationId: z.string().uuid(), approved: z.boolean(), notes: z.string().optional(), requestedTier: z.number().int().nonnegative().optional() }), raw);
+      const parsed = validateBody(z.object({ verificationId: z.string().uuid(), approved: z.boolean(), notes: z.string().optional() }), raw);
       if (!parsed.ok) return parsed.response;
-      const { verificationId, approved, notes, requestedTier } = parsed.data;
+      const { verificationId, approved, notes } = parsed.data;
       const newStatus = approved ? "approved" : "rejected";
       const reviewerId = authResult.user.id;
       const { error } = await supabaseAdmin().from("ngo_verifications").update({ status: newStatus, reviewed_by: reviewerId, reviewed_at: new Date().toISOString(), review_notes: notes ?? null }).eq("id", verificationId);
       if (error) return serverError(error.message);
-      const { data: verification } = await supabaseAdmin().from("ngo_verifications").select("user_id, requested_tier").eq("id", verificationId).single();
+      const { data: verification } = await supabaseAdmin().from("ngo_verifications").select("user_id, requested_tier, org_name, org_type, address, welfare_org_id").eq("id", verificationId).single();
       if (approved && verification) {
-        const tier = requestedTier ?? verification.requested_tier ?? 3;
+        const tier = verification.requested_tier ?? 3;
         await supabaseAdmin().from("users").update({ role: "ngo", identity_tier: tier }).eq("id", verification.user_id);
+        if (!verification.welfare_org_id) {
+          const { data: welfareOrg, error: orgError } = await supabaseAdmin().from("welfare_orgs").insert({
+            name: verification.org_name,
+            org_type: verification.org_type ?? "ngo",
+            address: verification.address ?? null,
+            is_verified: true,
+            is_active: true,
+            payment_enabled: false,
+            upi_verified: false,
+          }).select("id").single();
+          if (!orgError && welfareOrg) {
+            await supabaseAdmin().from("welfare_org_admins").insert({ welfare_group_id: welfareOrg.id, user_id: verification.user_id });
+            await supabaseAdmin().from("ngo_verifications").update({ welfare_org_id: welfareOrg.id }).eq("id", verificationId);
+          }
+        }
       }
-      await audit({ tableName: "ngo_verifications", recordId: verificationId, action: "UPDATE", actorId: reviewerId, actorRole: authResult.user.role, newData: { status: newStatus } });
+      await audit({ tableName: "ngo_verifications", recordId: verificationId, action: "UPDATE", actorId: reviewerId, actorRole: authResult.user.role, newData: { status: newStatus, user_id: verification?.user_id, welfare_org_id: verification?.welfare_org_id } });
       return ok(null, `Verification ${newStatus}`);
     }
 
@@ -207,6 +226,29 @@ export async function POST(req: NextRequest) {
       if (error) return serverError(error.message);
       if (data) await audit({ tableName: "reimbursement_requests", recordId: reimbursementId, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: { status: "VERIFIED" } });
       return ok({ ...data, approved: true, gates: { proof: hasProof, hospitalVerified, surgeryDone } }, "Reimbursement approved");
+    }
+
+    if (subResource === "funding" && pathParts[1] === "release-payout") {
+      const raw = await req.json();
+      const parsed = validateBody(z.object({ fundingCaseId: z.string().uuid() }), raw);
+      if (!parsed.ok) return parsed.response;
+      const { fundingCaseId } = parsed.data;
+      const { data: fundingCase, error: fcError } = await supabaseAdmin().from("funding_cases").select("*").eq("id", fundingCaseId).maybeSingle();
+      if (fcError || !fundingCase) return notFound("Funding case not found");
+      if (fundingCase.status === "CLOSED") return badRequest("CONFLICT", "Funding case is already closed");
+      const unallocated = Number(fundingCase.amount_raised ?? 0) - (Number(fundingCase.amount_disbursed ?? 0));
+      if (unallocated <= 0) return badRequest("NO_FUNDS", "No unallocated funds available for payout");
+      const { data: payout, error: payoutError } = await supabaseAdmin().from("payouts").insert({
+        funding_case_id: fundingCaseId,
+        recipient_type: "HOSPITAL",
+        recipient_id: fundingCase.case_id,
+        amount: unallocated,
+        status: "RELEASED",
+      }).select("*").single();
+      if (payoutError) return serverError(payoutError.message);
+      await supabaseAdmin().from("funding_cases").update({ status: "CLOSED", updated_at: new Date().toISOString() }).eq("id", fundingCaseId);
+      await audit({ tableName: "payouts", recordId: payout.id, action: "INSERT", actorId: authResult.user.id, actorRole: authResult.user.role, newData: payout });
+      return ok(payout, "Payout released");
     }
 
     if (subResource === "partner-requests") {

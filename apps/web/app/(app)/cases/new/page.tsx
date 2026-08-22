@@ -145,7 +145,7 @@ function RegularReportForm() {
 
       <div>
         <Label>Report Summary Title</Label>
-        <Input type="text" placeholder="e.g. Lost Golden Retriever near Adyar Beach" value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <Input type="text" placeholder="e.g. Lost Golden Retriever near Adyar Beach" value={title} onChange={(e) => setTitle(e.target.value)} required autoComplete="off" inputMode="text" />
       </div>
 
       <div className="space-y-2">
@@ -170,7 +170,7 @@ function RegularReportForm() {
       <div>
         <Label>Evidence / Photo Upload</Label>
         <div className="border-2 border-dashed border-outline-variant hover:border-primary hover:bg-surface-container rounded-md p-6 text-center transition-colors duration-150 ease-out relative cursor-pointer">
-          <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+          <input type="file" accept="image/*" capture="environment" onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
           <div className="flex flex-col items-center gap-2">
             <Camera className="w-8 h-8 text-outline" />
             <span className="text-sm font-bold text-on-surface-variant">{file ? file.name : "Click to select a photo"}</span>

@@ -199,7 +199,7 @@ export default function LostFoundPage() {
                   <div>
                     <Label>Name (if known)</Label>
                     <Input type="text" placeholder="e.g. Bruno" value={form.name}
-                      onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
+                      onChange={e => setForm(p => ({ ...p, name: e.target.value }))} autoComplete="off" inputMode="text" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -216,8 +216,8 @@ export default function LostFoundPage() {
                 </div>
                 <div>
                   <Label>Last known location</Label>
-                  <Input type="text" placeholder="e.g. Near T. Nagar market" value={form.locationText}
-                    onChange={e => setForm(p => ({ ...p, locationText: e.target.value }))} />
+                    <Input type="text" placeholder="e.g. Near T. Nagar market" value={form.locationText}
+                      onChange={e => setForm(p => ({ ...p, locationText: e.target.value }))} autoComplete="off" inputMode="text" />
                 </div>
                 <div>
                   <Label>Description</Label>
@@ -240,8 +240,8 @@ export default function LostFoundPage() {
                 <div>
                   <Label>Photo</Label>
                   <div className="border-2 border-dashed border-outline-variant hover:border-primary hover:bg-surface-container rounded-md p-5 text-center cursor-pointer relative transition-colors duration-150 ease-out">
-                    <input type="file" accept="image/*" onChange={e => setFile(e.target.files?.[0] ?? null)}
-                      className="absolute inset-0 opacity-0 cursor-pointer" />
+                     <input type="file" accept="image/*" capture="environment" onChange={e => setFile(e.target.files?.[0] ?? null)}
+                       className="absolute inset-0 opacity-0 cursor-pointer" />
                     <Camera className="w-6 h-6 text-outline mx-auto mb-1" />
                     <p className="text-xs text-on-surface-variant font-semibold">{file ? file.name : "Upload a clear photo"}</p>
                   </div>
@@ -250,7 +250,7 @@ export default function LostFoundPage() {
                   <div>
                     <Label>Your contact (optional)</Label>
                     <Input type="text" placeholder="Phone or email for reunification" value={form.guestContact}
-                      onChange={e => setForm(p => ({ ...p, guestContact: e.target.value }))} />
+                      onChange={e => setForm(p => ({ ...p, guestContact: e.target.value }))} autoComplete="off" inputMode="email" />
                   </div>
                 )}
                 <Button type="submit" disabled={submitting} variant="primary" size="lg" className="w-full">

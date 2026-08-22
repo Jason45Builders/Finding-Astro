@@ -29,7 +29,7 @@ export const emailChannel: NotificationChannel = {
 };
 
 export const smsChannel: NotificationChannel = {
-  send: async (_to: string, _body: string) => {
+  send: async (_to: string, _subject: string, _body: string) => {
     if (!process.env.EXOTEL_API_KEY) {
       return { success: false, error: "EXOTEL_API_KEY not configured" };
     }

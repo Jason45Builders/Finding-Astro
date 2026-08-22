@@ -199,7 +199,53 @@ CREATE INDEX IF NOT EXISTS idx_animals_adoptable ON animals(adoptable_since) WHE
 CREATE INDEX IF NOT EXISTS idx_animals_territory ON animals(territory_label);
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 4. ANIMAL PHOTOS
+-- 4. NGO VERIFICATIONS
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS ngo_verifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  org_name TEXT NOT NULL,
+  org_type TEXT,
+  registration_number TEXT,
+  address TEXT,
+  document_urls TEXT[] DEFAULT '{}',
+  requested_tier INT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  reviewed_at TIMESTAMPTZ,
+  review_notes TEXT,
+  welfare_org_id UUID REFERENCES welfare_orgs(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ngo_verifications_user ON ngo_verifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_ngo_verifications_status ON ngo_verifications(status);
+CREATE INDEX IF NOT EXISTS idx_ngo_verifications_welfare_org ON ngo_verifications(welfare_org_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 4a. IDENTITY VERIFICATIONS
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS identity_verifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  document_type TEXT,
+  document_ref TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  reviewed_at TIMESTAMPTZ,
+  review_notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_identity_verifications_user ON identity_verifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_identity_verifications_status ON identity_verifications(status);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 5. ANIMAL PHOTOS
 -- ─────────────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS animal_photos (

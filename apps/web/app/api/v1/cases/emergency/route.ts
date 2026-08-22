@@ -8,6 +8,7 @@ import { LocationSchema, validateBody } from "@/lib/validation";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 import { audit } from "@/lib/audit";
 import { getChannel } from "@/lib/notify-channels";
+import { sendExpoPushNotifications } from "@/lib/push-notify";
 import { mapCase } from "@/lib/types";
 import { decodeLocation } from "@/lib/geo";
 
@@ -68,7 +69,40 @@ async function createCaseRecord(req: NextRequest, user: AuthenticatedUser | null
 
     if (caseType === "rescue") {
       try {
-        await supabaseAdmin().from("notifications").insert({ type: "case", title: `Emergency rescue case — ${title ?? "Untitled"}`, message: description, payload: { caseId: data?.id, caseType: dbCaseType, priority: priority ?? "high" } });
+        const { data: responders } = await supabaseAdmin()
+          .from("users")
+          .select("id, push_token")
+          .in("role", ["ngo", "govt", "admin"])
+          .eq("is_available", true)
+          .eq("is_banned", false)
+          .limit(50);
+
+        const responderIds = (responders ?? []).map((r: { id: string }) => r.id);
+
+        if (responderIds.length > 0) {
+          const notificationRows = responderIds.map((responderId: string) => ({
+            user_id: responderId,
+            type: "case",
+            title: `Emergency rescue case — ${title ?? "Untitled"}`,
+            message: description,
+            payload: { caseId: data?.id, caseType: dbCaseType, priority: priority ?? "high" },
+          }));
+          await supabaseAdmin().from("notifications").insert(notificationRows);
+        }
+
+        const pushTokens = (responders ?? [])
+          .map((r: { push_token: string | null }) => r.push_token)
+          .filter((token: string | null): token is string => !!token);
+
+        if (pushTokens.length > 0) {
+          const pushMessages = pushTokens.map((token: string) => ({
+            to: token,
+            title: `Emergency rescue case — ${title ?? "Untitled"}`,
+            body: description,
+            data: { caseId: data?.id, caseType: dbCaseType, priority: priority ?? "high" },
+          }));
+          void sendExpoPushNotifications(pushMessages).catch(() => {});
+        }
 
         const _body = `New ${priority ?? "medium"} priority ${dbCaseType} case reported at ${locationText ?? "unknown location"}. Case ID: ${data?.id}. Description: ${description ?? "No description"}`;
         const _to = process.env.EMERGENCY_NOTIFY_EMAIL ?? "";

@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { api, Case, CaseResponse } from "@/lib/api";
+import { prepareImageUpload } from "@/lib/strip-exif";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -76,9 +77,10 @@ export default function ActiveResponsePage() {
     void loadData();
   }, [params?.caseId]);
 
-  const handleAddPhotos = (files: FileList | null) => {
+  const handleAddPhotos = async (files: FileList | null) => {
     if (!files) return;
-    setPhotoFiles((prev) => [...prev, ...Array.from(files)]);
+    const prepared = await Promise.all(Array.from(files).map((f) => prepareImageUpload(f)));
+    setPhotoFiles((prev) => [...prev, ...prepared]);
   };
 
   const handleRemovePhoto = (index: number) => {
@@ -221,6 +223,7 @@ export default function ActiveResponsePage() {
                   <input
                     type="file"
                     accept="image/*"
+                    capture="environment"
                     multiple
                     className="hidden"
                     onChange={(e) => { handleAddPhotos(e.target.files); e.target.value = ""; }}
