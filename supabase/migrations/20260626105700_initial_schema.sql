@@ -1315,8 +1315,35 @@ INSERT INTO helplines (name, phone, description, category, city, is_24hr, is_act
 -- END OF SCHEMA
 
 -- Add deferred foreign key constraints (after all tables exist)
-ALTER TABLE vaccinations ADD CONSTRAINT fk_vaccinations_case_id FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE SET NULL;
-ALTER TABLE medical_history ADD CONSTRAINT fk_medical_history_case_id FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE SET NULL;
-ALTER TABLE medical_history ADD CONSTRAINT fk_medical_history_abc_event_id FOREIGN KEY (abc_event_id) REFERENCES abc_events(id) ON DELETE SET NULL;
-ALTER TABLE funding_transactions ADD CONSTRAINT fk_funding_transactions_sponsor_id FOREIGN KEY (matched_by_sponsor_id) REFERENCES csr_sponsors(id) ON DELETE SET NULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_vaccinations_case_id') THEN
+    ALTER TABLE vaccinations ADD CONSTRAINT fk_vaccinations_case_id FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_medical_history_case_id') THEN
+    ALTER TABLE medical_history ADD CONSTRAINT fk_medical_history_case_id FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_medical_history_abc_event_id') THEN
+    ALTER TABLE medical_history ADD CONSTRAINT fk_medical_history_abc_event_id FOREIGN KEY (abc_event_id) REFERENCES abc_events(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_funding_transactions_sponsor_id') THEN
+    ALTER TABLE funding_transactions ADD CONSTRAINT fk_funding_transactions_sponsor_id FOREIGN KEY (matched_by_sponsor_id) REFERENCES csr_sponsors(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
 -- ══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,40 @@
+**Phase 3 Complete — Build succeeded.** Here's the itemized summary:
+
+**Files Created:**
+
+1. **Migration:** `supabase/migrations/20260727100000_documents_brain.sql`
+   - Renames `html_template` → `component_key` in `document_templates`
+   - Adds `template_description` column
+   - Seeds 4 core templates (police_complaint_v1, follow_up_letter_v1, vet_exam_request_v1, case_closure_report_v1)
+
+2. **Template Components:** `apps/web/src/lib/documents/templates/`
+   - `police-complaint.tsx` — Police complaint with case details, offence sections (fetched via offences→law_sections), witnesses, evidence
+   - `follow-up-letter.tsx` — Follow-up letter to police with FIR reference
+   - `vet-exam-request.tsx` — Veterinary examination request with vet selector from contacts table
+   - `case-closure-report.tsx` — Case closure report with timeline (case_events + mission_stage_log), evidence summary, resolution notes
+
+3. **Document Library:** `apps/web/src/lib/documents/`
+   - `types.ts` — DocumentTemplateProps interface, mapping functions
+   - `generator.ts` — PDF generation and Supabase Storage upload
+   - `index.ts` — Template registration
+
+4. **API Routes:**
+   - `apps/web/app/api/v1/documents/route.ts` — POST generates document, GET lists templates
+   - `apps/web/app/api/v1/cases/[id]/documents/route.ts` — GET lists case documents
+
+5. **UI:** Added Documents section to `apps/web/app/(app)/cases/[id]/page.tsx` with template selector and vet contact dropdown
+
+**Modified Files:**
+- `apps/web/package.json` — Added `@react-pdf/renderer@^4.3.0`
+- `apps/web/src/lib/types.ts` — Added `DocumentTemplate`, `GeneratedDocument` interfaces (moved from duplicate), `mapGeneratedDocument` function, updated `veterinaryContact` type to allow `null`
+- `apps/web/src/lib/api.ts` — Added `Contact` interface, `listDocumentTemplates()`, `generateDocument()`, `getCaseDocuments()` methods
+- `apps/web/src/lib/database.types.ts` — Changed `html_template` to `component_key`, added `template_description` column
+
+**Judgment Calls:**
+1. **Veterinary contact selector:** Shows `@select` dropdown when generating Vet Exam Request; if no vet selected, template uses default "Veterinary Doctor"
+2. **Evidence in annexures:** All evidence items linked to case are automatically added as annexure entries when generating documents
+3. **Timeline for case closure:** Merges `case_events` and `mission_stage_log`, sorted by timestamp
+4. **Animal data for vet request:** If case has no linked animal, template renders without animal details section
+5. **PDF storage:** Uses `pawstice-documents` bucket (not `pawstice-evidence` per spec)
+
+**Database.types.ts regeneration note:** The types file was manually edited. You'll need to regenerate it (`npx supabase gen types typescript --project-id YOUR_PROJECT_ID --schema public`) after running the migration to sync with actual schema.

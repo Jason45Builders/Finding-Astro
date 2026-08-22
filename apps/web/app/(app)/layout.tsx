@@ -29,6 +29,7 @@ const BASE_NAV_ITEMS = [
   { label: "Safety",        href: "/safety",       icon: Shield },
   { label: "ABC",           href: "/abc",          icon: Leaf },
   { label: "Funding",       href: "/funding",      icon: Heart },
+  { label: "My Donations",  href: "/my/donations", icon: Heart },
   { label: "Community",     href: "/community",    icon: Users },
   { label: "Report Cruelty",href: "/cruelty",      icon: ShieldAlert },
   { label: "Impact & CSR",  href: "/impact",       icon: TrendingUp },

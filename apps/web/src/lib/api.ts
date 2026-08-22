@@ -154,6 +154,68 @@ export interface Partner {
   distanceKm?: number;
 }
 
+export interface WelfareGroup {
+  id: string;
+  name: string;
+  orgType: string | null;
+  address: string | null;
+  city: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  location: { latitude: number; longitude: number } | null;
+  isVerified: boolean;
+  isActive: boolean;
+  upiId: string | null;
+  upiName: string | null;
+  paymentEnabled: boolean;
+  upiVerified: boolean;
+  googlePlaceId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WelfarePayment {
+  id: string;
+  welfareGroupId: string;
+  donorId: string;
+  caseId: string | null;
+  animalId: string | null;
+  amount: number;
+  currency: string;
+  upiIdSnapshot: string;
+  upiNameSnapshot: string;
+  utr: string;
+  paymentDate: string;
+  purpose: string | null;
+  note: string | null;
+  proofUrl: string | null;
+  status: "PENDING" | "VERIFIED" | "REJECTED" | "CANCELLED";
+  verifiedBy: string | null;
+  verifiedAt: string | null;
+  rejectionReason: string | null;
+  receiptNumber: string;
+  donorName: string | null;
+  donorEmail: string | null;
+  isAnonymous: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WelfarePaymentEvent {
+  id: string;
+  welfarePaymentId: string;
+  eventType: string;
+  actorId: string | null;
+  actorRole: string | null;
+  notes: string | null;
+  oldStatus: string | null;
+  newStatus: string | null;
+  createdAt: string;
+}
+
 export interface WildlifeCenter {
   id: string;
   name: string;
@@ -913,6 +975,62 @@ class ApiClient {
 
   async updateAdminUser(userId: string, data: { isBanned?: boolean; role?: string; identityTier?: number }): Promise<any> {
     return this.request<any>(`/admin/users/${userId}`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  // ── Welfare Group Payments ─────────────────────────────────────────────────
+  async getWelfareGroup(id: string): Promise<WelfareGroup> {
+    return this.request<WelfareGroup>(`/welfare-groups/${id}`);
+  }
+
+  async getWelfareGroupPaymentSettings(id: string): Promise<{ upiId: string | null; upiName: string | null; paymentEnabled: boolean; upiVerified: boolean }> {
+    return this.request(`/welfare-groups/${id}/payment-settings`);
+  }
+
+  async updateWelfareGroupPaymentSettings(id: string, data: { upiId?: string; upiName?: string; paymentEnabled?: boolean }): Promise<any> {
+    return this.request(`/welfare-groups/${id}/payment-settings`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  async submitWelfareDonation(welfareGroupId: string, data: {
+    amount: number;
+    utr: string;
+    paymentDate: string;
+    purpose?: string;
+    note?: string;
+    caseId?: string;
+    animalId?: string;
+    proofUrl?: string;
+  }): Promise<WelfarePayment> {
+    return this.request<WelfarePayment>(`/welfare-groups/${welfareGroupId}/donate`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async listWelfareGroupDonations(welfareGroupId: string, filters?: { status?: string; purpose?: string }): Promise<WelfarePayment[]> {
+    const sp = new URLSearchParams();
+    if (filters?.status) sp.append("status", filters.status);
+    if (filters?.purpose) sp.append("purpose", filters.purpose);
+    const qs = sp.toString();
+    return this.request<WelfarePayment[]>(`/welfare-groups/${welfareGroupId}/donations${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async listMyDonations(filters?: { status?: string }): Promise<WelfarePayment[]> {
+    const sp = new URLSearchParams();
+    if (filters?.status) sp.append("status", filters.status);
+    const qs = sp.toString();
+    return this.request<WelfarePayment[]>(`/my/donations${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async verifyWelfarePayment(paymentId: string): Promise<any> {
+    return this.request(`/welfare-payments/${paymentId}/verify`, { method: "POST" });
+  }
+
+  async rejectWelfarePayment(paymentId: string, reason: string): Promise<any> {
+    return this.request(`/welfare-payments/${paymentId}/reject`, { method: "POST", body: JSON.stringify({ reason }) });
+  }
+
+  async getWelfarePaymentReceipt(paymentId: string): Promise<{ receiptNumber: string; welfareGroup: string; amount: number; currency: string; donorName: string | null; paymentDate: string; utr: string; status: string; purpose: string | null; note: string | null }> {
+    return this.request(`/welfare-payments/${paymentId}/receipt`);
   }
 
   async logout(): Promise<void> {

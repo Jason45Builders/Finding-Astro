@@ -137,6 +137,10 @@ export interface CaseResponse {
   abandonReason: string | null;
   hospitalId: string | null;
   notes: string | null;
+  onScenePhotoUrls: string[];
+  pickedUpPhotoUrls: string[];
+  atHospitalPhotoUrls: string[];
+  completedPhotoUrls: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -443,6 +447,31 @@ export function mapCase(row: Record<string, unknown>): Case {
   };
 }
 
+export function mapCaseResponse(row: Record<string, unknown>): CaseResponse {
+  return {
+    id: row.id as string,
+    caseId: row.case_id as string,
+    responderUserId: row.responder_user_id as string,
+    status: row.status as CaseResponse["status"],
+    claimedAt: row.claimed_at as string,
+    deadlineAt: row.deadline_at as string,
+    reachedAt: row.reached_at as string | null,
+    pickedUpAt: row.picked_up_at as string | null,
+    atHospitalAt: row.at_hospital_at as string | null,
+    completedAt: row.completed_at as string | null,
+    abandonedAt: row.abandoned_at as string | null,
+    abandonReason: row.abandon_reason as string | null,
+    hospitalId: row.hospital_id as string | null,
+    notes: row.notes as string | null,
+    onScenePhotoUrls: (row.on_scene_photo_urls as string[]) ?? [],
+    pickedUpPhotoUrls: (row.picked_up_photo_urls as string[]) ?? [],
+    atHospitalPhotoUrls: (row.at_hospital_photo_urls as string[]) ?? [],
+    completedPhotoUrls: (row.completed_photo_urls as string[]) ?? [],
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
 export function mapPartner(row: Record<string, unknown>, type: string): Partner {
   const base: Partner = {
     id: row.id as string,
@@ -713,23 +742,148 @@ export function mapSafetyReport(row: Record<string, unknown>): SafetyReport {
   };
 }
 
-export function mapCaseResponse(row: Record<string, unknown>): CaseResponse {
+export interface WelfareGroup {
+  id: string;
+  name: string;
+  orgType: string | null;
+  address: string | null;
+  city: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  location: { latitude: number; longitude: number } | null;
+  isVerified: boolean;
+  isActive: boolean;
+  upiId: string | null;
+  upiName: string | null;
+  paymentEnabled: boolean;
+  upiVerified: boolean;
+  googlePlaceId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WelfarePayment {
+  id: string;
+  welfareGroupId: string;
+  donorId: string;
+  caseId: string | null;
+  animalId: string | null;
+  amount: number;
+  currency: string;
+  upiIdSnapshot: string;
+  upiNameSnapshot: string;
+  utr: string;
+  paymentDate: string;
+  purpose: string | null;
+  note: string | null;
+  proofUrl: string | null;
+  status: "PENDING" | "VERIFIED" | "REJECTED" | "CANCELLED";
+  verifiedBy: string | null;
+  verifiedAt: string | null;
+  rejectionReason: string | null;
+  receiptNumber: string;
+  donorName: string | null;
+  donorEmail: string | null;
+  isAnonymous: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WelfarePaymentEvent {
+  id: string;
+  welfarePaymentId: string;
+  eventType: string;
+  actorId: string | null;
+  actorRole: string | null;
+  notes: string | null;
+  oldStatus: string | null;
+  newStatus: string | null;
+  createdAt: string;
+}
+
+export interface WelfareOrgAdmin {
+  id: string;
+  welfareGroupId: string;
+  userId: string;
+  createdAt: string;
+}
+
+export function mapWelfareGroup(row: Record<string, unknown>): WelfareGroup {
   return {
     id: row.id as string,
-    caseId: row.case_id as string,
-    responderUserId: row.responder_user_id as string,
-    status: row.status as CaseResponse["status"],
-    claimedAt: row.claimed_at as string,
-    deadlineAt: row.deadline_at as string,
-    reachedAt: row.reached_at as string | null,
-    pickedUpAt: row.picked_up_at as string | null,
-    atHospitalAt: row.at_hospital_at as string | null,
-    completedAt: row.completed_at as string | null,
-    abandonedAt: row.abandoned_at as string | null,
-    abandonReason: row.abandon_reason as string | null,
-    hospitalId: row.hospital_id as string | null,
-    notes: row.notes as string | null,
+    name: row.name as string,
+    orgType: row.org_type as string | null,
+    address: row.address as string | null,
+    city: row.city as string | null,
+    phone: row.phone as string | null,
+    email: row.email as string | null,
+    website: row.website as string | null,
+    latitude: row.latitude == null ? null : Number(row.latitude),
+    longitude: row.longitude == null ? null : Number(row.longitude),
+    location: row.location == null ? null : { latitude: Number((row.location as any).latitude ?? row.latitude), longitude: Number((row.location as any).longitude ?? row.longitude) },
+    isVerified: (row.is_verified as boolean) ?? false,
+    isActive: (row.is_active as boolean) ?? true,
+    upiId: row.upi_id as string | null,
+    upiName: row.upi_name as string | null,
+    paymentEnabled: (row.payment_enabled as boolean) ?? false,
+    upiVerified: (row.upi_verified as boolean) ?? false,
+    googlePlaceId: row.google_place_id as string | null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapWelfarePayment(row: Record<string, unknown>): WelfarePayment {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    donorId: row.donor_id as string,
+    caseId: row.case_id as string | null,
+    animalId: row.animal_id as string | null,
+    amount: Number(row.amount ?? 0),
+    currency: (row.currency as string) ?? "INR",
+    upiIdSnapshot: row.upi_id_snapshot as string,
+    upiNameSnapshot: row.upi_name_snapshot as string,
+    utr: row.utr as string,
+    paymentDate: row.payment_date as string,
+    purpose: row.purpose as string | null,
+    note: row.note as string | null,
+    proofUrl: row.proof_url as string | null,
+    status: row.status as WelfarePayment["status"],
+    verifiedBy: row.verified_by as string | null,
+    verifiedAt: row.verified_at as string | null,
+    rejectionReason: row.rejection_reason as string | null,
+    receiptNumber: row.receipt_number as string,
+    donorName: row.donor_name as string | null,
+    donorEmail: row.donor_email as string | null,
+    isAnonymous: (row.is_anonymous as boolean) ?? false,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapWelfarePaymentEvent(row: Record<string, unknown>): WelfarePaymentEvent {
+  return {
+    id: row.id as string,
+    welfarePaymentId: row.welfare_payment_id as string,
+    eventType: row.event_type as string,
+    actorId: row.actor_id as string | null,
+    actorRole: row.actor_role as string | null,
+    notes: row.notes as string | null,
+    oldStatus: row.old_status as string | null,
+    newStatus: row.new_status as string | null,
+    createdAt: row.created_at as string,
+  };
+}
+
+export function mapWelfareOrgAdmin(row: Record<string, unknown>): WelfareOrgAdmin {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    userId: row.user_id as string,
+    createdAt: row.created_at as string,
   };
 }
