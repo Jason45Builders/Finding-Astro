@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware, optionalAuth, requireTier, AuthenticatedUser } from "@/lib/auth-middleware";
-import { ok, badRequest, serverError, unauthorized } from "@/lib/api-response";
+import { ok, badRequest, serverError, unauthorized, notFound } from "@/lib/api-response";
 import { LocationSchema, validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { fuzzyLocation } from "@/lib/geo";
