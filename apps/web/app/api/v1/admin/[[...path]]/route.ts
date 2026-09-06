@@ -8,6 +8,7 @@ import { audit } from "@/lib/audit";
 import { GUEST_USER_ID } from "@/lib/guest";
 import { mapCase } from "@/lib/types";
 import { decodeLocation } from "@/lib/geo";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 function mapAdminUser(row: Record<string, unknown>) {
   return {
@@ -77,7 +78,12 @@ export async function GET(req: NextRequest) {
       // uuid id column, so only add that clause when it actually looks like one.
       if (ward) {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ward);
-        query = isUuid ? query.or(`location_text.ilike.%${ward}%,id.eq.${ward}`) : query.ilike("location_text", `%${ward}%`);
+        if (isUuid) {
+          query = query.or(`location_text.ilike.%${ward}%,id.eq.${ward}`);
+        } else {
+          const sanitized = ward.replace(/[%_]/g, "\\$&");
+          query = query.ilike("location_text", `%${sanitized}%`);
+        }
       }
       const { data, error } = await query;
       if (error) return serverError(error.message);
@@ -91,10 +97,19 @@ export async function GET(req: NextRequest) {
         if (error) return serverError(error.message);
         return ok(mapAdminUser(data), "User loaded");
       }
-      const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "100", 10), 200);
-      const { data, error } = await supabaseAdmin().from("users").select("id, email, full_name, role, identity_tier, is_banned, created_at").limit(limit);
+      const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "50", 10), 100);
+      const offset = parseInt(url.searchParams.get("offset") ?? "0", 10);
+      const roleFilter = url.searchParams.get("role");
+      const search = url.searchParams.get("search");
+      let query = supabaseAdmin().from("users").select("id, email, full_name, role, identity_tier, is_banned, created_at", { count: "exact" });
+      if (roleFilter) query = query.eq("role", roleFilter);
+      if (search) {
+        const sanitized = search.replace(/[%_]/g, "\\$&");
+        query = query.or(`email.ilike.%${sanitized}%,full_name.ilike.%${sanitized}%`);
+      }
+      const { data, error, count } = await query.order("created_at", { ascending: false }).range(offset, offset + limit - 1);
       if (error) return serverError(error.message);
-      return ok((data ?? []).map(mapAdminUser), "Users loaded", { count: data?.length ?? 0 });
+      return ok((data ?? []).map(mapAdminUser), "Users loaded", { count: count ?? data?.length ?? 0 });
     }
 
     if (subResource === "partner-requests") {
@@ -120,6 +135,13 @@ export async function POST(req: NextRequest) {
   if ("error" in authResult) return authResult.error;
   const denied = checkPrivileged(authResult.user);
   if (denied) return denied;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`admin:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
   const url = new URL(req.url);
   const pathParts = url.pathname.replace(/\/api\/v1\/admin\//, "").split("/").filter(Boolean);
@@ -152,7 +174,15 @@ export async function POST(req: NextRequest) {
       if (error) return serverError(error.message);
       const { data: verification } = await supabaseAdmin().from("ngo_verifications").select("user_id, requested_tier, org_name, org_type, address, welfare_org_id").eq("id", verificationId).single();
       if (approved && verification) {
-        const tier = verification.requested_tier ?? 3;
+        if (verification.user_id === reviewerId) {
+          return NextResponse.json({ success: false, code: "FORBIDDEN", message: "You cannot approve your own verification" }, { status: 403 });
+        }
+        const requestedTier = Number(verification.requested_tier ?? 3);
+        const MAX_NGO_TIER = 3;
+        const tier = Math.min(requestedTier, MAX_NGO_TIER);
+        if (requestedTier > MAX_NGO_TIER && authResult.user.role !== "admin") {
+          return NextResponse.json({ success: false, code: "FORBIDDEN", message: "Only platform administrators can grant elevated tiers" }, { status: 403 });
+        }
         await supabaseAdmin().from("users").update({ role: "ngo", identity_tier: tier }).eq("id", verification.user_id);
         if (!verification.welfare_org_id) {
           const { data: welfareOrg, error: orgError } = await supabaseAdmin().from("welfare_orgs").insert({
@@ -180,12 +210,15 @@ export async function POST(req: NextRequest) {
       if (!parsed.ok) return parsed.response;
       const { verificationId, approved, notes } = parsed.data;
       const newStatus = approved ? "approved" : "rejected";
+      const { data: existingVerification, error: fetchError } = await supabaseAdmin().from("identity_verifications").select("user_id").eq("id", verificationId).single();
+      if (fetchError || !existingVerification) return serverError("Verification not found");
+      const actualUserId = (existingVerification as Record<string, unknown>).user_id as string;
       const { data, error } = await supabaseAdmin().from("identity_verifications").insert({
-        user_id: verificationId, reviewed_by: authResult.user.id, status: newStatus, reviewed_at: new Date().toISOString(),
+        user_id: actualUserId, reviewed_by: authResult.user.id, status: newStatus, reviewed_at: new Date().toISOString(),
       }).select("*").single();
       if (error) return serverError(error.message);
       if (approved) {
-        await supabaseAdmin().from("users").update({ identity_tier: 2 }).eq("id", verificationId);
+        await supabaseAdmin().from("users").update({ identity_tier: 2 }).eq("id", actualUserId);
       }
       await audit({ tableName: "identity_verifications", recordId: verificationId, action: "INSERT", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
       return ok(data, "Identity verification processed");
@@ -236,8 +269,16 @@ export async function POST(req: NextRequest) {
       const { data: fundingCase, error: fcError } = await supabaseAdmin().from("funding_cases").select("*").eq("id", fundingCaseId).maybeSingle();
       if (fcError || !fundingCase) return notFound("Funding case not found");
       if (fundingCase.status === "CLOSED") return badRequest("CONFLICT", "Funding case is already closed");
+      const { data: successTxs } = await supabaseAdmin().from("funding_transactions").select("id").eq("funding_case_id", fundingCaseId).eq("payment_status", "SUCCESS").limit(1);
+      if (!successTxs || successTxs.length === 0) return badRequest("NO_TRANSACTIONS", "Cannot release payout: no successful donations recorded");
       const unallocated = Number(fundingCase.amount_raised ?? 0) - (Number(fundingCase.amount_disbursed ?? 0));
       if (unallocated <= 0) return badRequest("NO_FUNDS", "No unallocated funds available for payout");
+      const MAX_PAYOUT = 5_000_000;
+      if (unallocated > MAX_PAYOUT) return badRequest("AMOUNT_TOO_HIGH", `Payout amount exceeds maximum allowed (₹${MAX_PAYOUT})`);
+      const caseCreatedAt = new Date((fundingCase as Record<string, unknown>).created_at as string).getTime();
+      if (unallocated > 100_000 && Date.now() - caseCreatedAt < 24 * 60 * 60 * 1000) {
+        return badRequest("COOLING_PERIOD", "Payouts above ₹1,00,000 require a 24-hour cooling period after funding case creation");
+      }
       const { data: payout, error: payoutError } = await supabaseAdmin().from("payouts").insert({
         funding_case_id: fundingCaseId,
         recipient_type: "HOSPITAL",
@@ -303,6 +344,13 @@ export async function PATCH(req: NextRequest) {
   const denied = checkPrivileged(authResult.user);
   if (denied) return denied;
 
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`admin:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
+
   const url = new URL(req.url);
   const pathParts = url.pathname.replace(/\/api\/v1\/admin\//, "").split("/").filter(Boolean);
 
@@ -310,12 +358,31 @@ export async function PATCH(req: NextRequest) {
     if (pathParts[0] === "cases" && pathParts.length > 1) {
       const caseId = pathParts[1];
       const raw = await req.json();
-      const parsed = validateBody(z.object({ status: z.string() }).passthrough(), raw);
+      const parsed = validateBody(z.object({
+        status: z.enum(["open", "in_review", "action_taken", "resolved", "closed"]).optional(),
+        resolutionNotes: z.string().optional(),
+      }), raw);
       if (!parsed.ok) return parsed.response;
       const body = parsed.data as Record<string, unknown>;
-      const { data, error } = await supabaseAdmin().from("cases").update(body).eq("id", caseId).select("*").single();
+
+      const { data: existing, error: fetchError } = await supabaseAdmin().from("cases").select("status, priority, title, description, resolution_notes").eq("id", caseId).single();
+      if (fetchError || !existing) return notFound("Case not found");
+
+      const currentStatus = (existing as Record<string, unknown>).status as string;
+      if (body.status !== undefined && currentStatus !== body.status) {
+        const allowed: Record<string, string[]> = { open: ["in_review", "closed"], in_review: ["action_taken", "resolved", "closed"], action_taken: ["resolved", "closed"], resolved: ["closed"] };
+        if (!(allowed[currentStatus] ?? []).includes(body.status as string)) {
+          return badRequest("INVALID_STATUS_TRANSITION", `Cannot move case from "${currentStatus}" to "${body.status}"`);
+        }
+      }
+
+      const update: Record<string, unknown> = {};
+      if (body.status !== undefined) update.status = body.status;
+      if (body.resolutionNotes !== undefined) update.resolution_notes = body.resolutionNotes;
+      update.updated_at = new Date().toISOString();
+      const { data, error } = await supabaseAdmin().from("cases").update(update).eq("id", caseId).select("*").single();
       if (error) return serverError(error.message);
-      if (data) await audit({ tableName: "cases", recordId: caseId, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
+      if (data) await audit({ tableName: "cases", recordId: caseId, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, oldData: existing, newData: data });
       return ok(mapCase({ ...data, location: decodeLocation(data.location) }), "Case updated");
     }
 
@@ -325,13 +392,40 @@ export async function PATCH(req: NextRequest) {
       const parsed = validateBody(z.object({ isBanned: z.boolean().optional(), role: z.string().optional(), identityTier: z.number().int().nonnegative().optional() }), raw);
       if (!parsed.ok) return parsed.response;
       const { isBanned, role, identityTier } = parsed.data;
+
+      if (userId === authResult.user.id && role !== undefined) {
+        return NextResponse.json({ success: false, code: "FORBIDDEN", message: "You cannot change your own role" }, { status: 403 });
+      }
+
+      const { data: targetUser, error: targetError } = await supabaseAdmin().from("users").select("role, identity_tier").eq("id", userId).single();
+      if (targetError || !targetUser) return badRequest("NOT_FOUND", "Target user not found");
+      const targetRole = (targetUser as Record<string, unknown>).role as string;
+      const targetTier = Number((targetUser as Record<string, unknown>).identity_tier ?? 0);
+
+      const ROLE_HIERARCHY: Record<string, number> = { citizen: 0, ngo: 1, hospital: 2, govt: 3, admin: 4 };
+      const actorLevel = ROLE_HIERARCHY[authResult.user.role] ?? -1;
+      const targetLevel = ROLE_HIERARCHY[targetRole] ?? -1;
+
+      if (role !== undefined) {
+        const newLevel = ROLE_HIERARCHY[role] ?? -1;
+        if (newLevel > actorLevel) return NextResponse.json({ success: false, code: "FORBIDDEN", message: "You cannot assign a role higher than your own" }, { status: 403 });
+        if (targetLevel >= actorLevel && targetRole !== role) return NextResponse.json({ success: false, code: "FORBIDDEN", message: "You cannot modify a user with equal or higher role" }, { status: 403 });
+      }
+
+      if (identityTier !== undefined && identityTier > (authResult.user.identityTier ?? 0)) {
+        return NextResponse.json({ success: false, code: "FORBIDDEN", message: "You cannot assign an identity tier higher than your own" }, { status: 403 });
+      }
+      if (identityTier !== undefined && identityTier > targetTier && authResult.user.role !== "admin") {
+        return NextResponse.json({ success: false, code: "FORBIDDEN", message: "Only platform administrators can elevate identity tiers" }, { status: 403 });
+      }
+
       const update: Record<string, unknown> = {};
       if (isBanned !== undefined) update.is_banned = isBanned;
       if (role !== undefined) update.role = role;
       if (identityTier !== undefined) update.identity_tier = identityTier;
       const { data, error } = await supabaseAdmin().from("users").update(update).eq("id", userId).select("*").single();
       if (error) return serverError(error.message);
-      if (data) await audit({ tableName: "users", recordId: userId, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
+      if (data) await audit({ tableName: "users", recordId: userId, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, oldData: targetUser, newData: data });
       return ok(mapAdminUser(data), "User updated");
     }
 
@@ -346,6 +440,13 @@ export async function DELETE(req: NextRequest) {
   if ("error" in authResult) return authResult.error;
   const denied = checkPrivileged(authResult.user);
   if (denied) return denied;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`admin:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
   const url = new URL(req.url);
   const pathParts = url.pathname.replace(/\/api\/v1\/admin\//, "").split("/").filter(Boolean);

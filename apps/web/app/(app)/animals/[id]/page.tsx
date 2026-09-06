@@ -17,6 +17,8 @@ import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TabBar, TabButton } from "@/components/ui/Tabs";
+import { Modal } from "@/components/ui/Modal";
+import { Input, Label, Textarea } from "@/components/ui/Input";
 import { statusToken } from "@/lib/status";
 
 const SingleAnimalMap = dynamic(() => import("@/components/animals/SingleAnimalMap"), { ssr: false });
@@ -41,6 +43,13 @@ export default function AnimalProfilePage() {
   const [tab, setTab] = useState<ProfileTab>("overview");
   const [abcSubmitting, setAbcSubmitting] = useState(false);
   const [abcSuccess, setAbcSuccess] = useState(false);
+  const [showMedicalModal, setShowMedicalModal] = useState(false);
+  const [showVaccinationModal, setShowVaccinationModal] = useState(false);
+  const [savingMedical, setSavingMedical] = useState(false);
+  const [savingVaccination, setSavingVaccination] = useState(false);
+  const [medicalForm, setMedicalForm] = useState({ entryType: "treatment" as const, title: "", notes: "", providerName: "", treatmentDate: "", costAmount: "", attachments: "" });
+  const [vaccinationForm, setVaccinationForm] = useState({ vaccineName: "", administeredAt: "", expiresAt: "", batchNumber: "", notes: "", verified: false, status: "unverified" as const });
+  const [reuniteLoading, setReuniteLoading] = useState(false);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -74,6 +83,62 @@ export default function AnimalProfilePage() {
       } catch { /* ignore */ }
       finally { setAbcSubmitting(false); }
     }, () => setAbcSubmitting(false));
+  };
+
+  const canCreateMedical = ["admin", "govt", "ngo", "hospital"].includes(user?.role || "");
+  const canCreateVaccination = ["admin", "govt", "ngo", "hospital"].includes(user?.role || "");
+
+  const handleSaveMedical = async () => {
+    if (!animal || !medicalForm.title.trim() || !medicalForm.treatmentDate) return;
+    setSavingMedical(true);
+    try {
+      const attachments = medicalForm.attachments.split(",").map(s => s.trim()).filter(Boolean);
+      await api.createAnimalMedicalRecord(animal.id, {
+        entryType: medicalForm.entryType,
+        title: medicalForm.title.trim(),
+        notes: medicalForm.notes.trim() || undefined,
+        providerName: medicalForm.providerName.trim() || undefined,
+        treatmentDate: medicalForm.treatmentDate,
+        costAmount: medicalForm.costAmount ? parseFloat(medicalForm.costAmount) : undefined,
+        attachments: attachments.length > 0 ? attachments : undefined,
+      });
+      setShowMedicalModal(false);
+      setMedicalForm({ entryType: "treatment", title: "", notes: "", providerName: "", treatmentDate: "", costAmount: "", attachments: "" });
+      const updated = await api.getAnimalMedicalHistory(animal.id);
+      setMedical(updated);
+    } catch { /* ignore */ }
+    finally { setSavingMedical(false); }
+  };
+
+  const handleSaveVaccination = async () => {
+    if (!animal || !vaccinationForm.vaccineName.trim() || !vaccinationForm.administeredAt) return;
+    setSavingVaccination(true);
+    try {
+      await api.createAnimalVaccination(animal.id, {
+        vaccineName: vaccinationForm.vaccineName.trim(),
+        administeredAt: vaccinationForm.administeredAt,
+        expiresAt: vaccinationForm.expiresAt || undefined,
+        batchNumber: vaccinationForm.batchNumber.trim() || undefined,
+        notes: vaccinationForm.notes.trim() || undefined,
+        verified: vaccinationForm.verified,
+        status: vaccinationForm.status,
+      });
+      setShowVaccinationModal(false);
+      setVaccinationForm({ vaccineName: "", administeredAt: "", expiresAt: "", batchNumber: "", notes: "", verified: false, status: "unverified" });
+      const updated = await api.getAnimalVaccinations(animal.id);
+      setVaccinations(updated);
+    } catch { /* ignore */ }
+    finally { setSavingVaccination(false); }
+  };
+
+  const handleReunite = async () => {
+    if (!animal) return;
+    setReuniteLoading(true);
+    try {
+      await api.updateAnimal(animal.id, { status: "reunited" });
+      setAnimal({ ...animal, status: "reunited" });
+    } catch { /* ignore */ }
+    finally { setReuniteLoading(false); }
   };
 
   if (loading) return <PageSpinner label="Loading animal profile..." />;
@@ -143,6 +208,11 @@ export default function AnimalProfilePage() {
               )}
             </div>
             <div className="flex flex-wrap gap-2">
+              {(animal.status === "lost" || animal.status === "found") && (
+                <Button variant="primary" size="sm" onClick={handleReunite} disabled={reuniteLoading}>
+                  <CheckCircle className="w-4 h-4 mr-1" /> {reuniteLoading ? "Updating..." : "Mark Reunited"}
+                </Button>
+              )}
               {animal.status !== "adopted" && (
                 <Link href={`/adopt?animalId=${animal.id}`}>
                   <Button variant="coral" size="sm">
@@ -226,6 +296,13 @@ export default function AnimalProfilePage() {
       {/* MEDICAL */}
       {tab === "medical" && (
         <div className="space-y-4 animate-stagger">
+          {canCreateMedical && (
+            <div className="flex justify-end">
+              <Button variant="primary" size="sm" onClick={() => setShowMedicalModal(true)}>
+                <FileText className="w-4 h-4 mr-1" /> Add Medical Record
+              </Button>
+            </div>
+          )}
           {medical.length > 0 ? medical.map(rec => (
             <Card key={rec.id} className="p-5">
               <div className="flex items-start justify-between gap-3">
@@ -250,6 +327,13 @@ export default function AnimalProfilePage() {
       {/* VACCINATIONS */}
       {tab === "vaccinations" && (
         <div className="space-y-3 animate-stagger">
+          {canCreateVaccination && (
+            <div className="flex justify-end">
+              <Button variant="primary" size="sm" onClick={() => setShowVaccinationModal(true)}>
+                <Syringe className="w-4 h-4 mr-1" /> Add Vaccination
+              </Button>
+            </div>
+          )}
           {vaccinations.length > 0 ? vaccinations.map(vac => (
             <Card key={vac.id} className={`p-5 flex items-center gap-4 ${vac.status === "expired" ? "border-error/30" : ""}`}>
               <Syringe className={`w-8 h-8 shrink-0 ${vac.status === "verified" ? "text-green-500" : vac.status === "expired" ? "text-error" : "text-amber-400"}`} />
@@ -323,6 +407,91 @@ export default function AnimalProfilePage() {
           )}
         </div>
       )}
+
+      {/* MEDICAL RECORD MODAL */}
+      <Modal open={showMedicalModal} onClose={() => setShowMedicalModal(false)} title="Add Medical Record">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="med-entryType">Entry Type</Label>
+            <select id="med-entryType" value={medicalForm.entryType} onChange={(e) => setMedicalForm({ ...medicalForm, entryType: e.target.value as any })} className="w-full bg-surface-container-low border-b-2 border-outline focus:border-primary focus:ring-0 focus:outline-none px-4 py-3 rounded-t-md transition-colors font-body-md text-on-surface">
+              <option value="treatment">Treatment</option>
+              <option value="surgery">Surgery</option>
+              <option value="vaccination">Vaccination</option>
+              <option value="observation">Observation</option>
+            </select>
+          </div>
+          <div>
+            <Label htmlFor="med-title">Title *</Label>
+            <Input id="med-title" value={medicalForm.title} onChange={(e) => setMedicalForm({ ...medicalForm, title: e.target.value })} placeholder="e.g. Wound dressing, Surgery, Checkup" required />
+          </div>
+          <div>
+            <Label htmlFor="med-provider">Veterinarian / Provider</Label>
+            <Input id="med-provider" value={medicalForm.providerName} onChange={(e) => setMedicalForm({ ...medicalForm, providerName: e.target.value })} placeholder="Dr. Name / Clinic" />
+          </div>
+          <div>
+            <Label htmlFor="med-date">Date *</Label>
+            <Input id="med-date" type="date" value={medicalForm.treatmentDate} onChange={(e) => setMedicalForm({ ...medicalForm, treatmentDate: e.target.value })} required />
+          </div>
+          <div>
+            <Label htmlFor="med-cost">Cost (INR)</Label>
+            <Input id="med-cost" type="number" value={medicalForm.costAmount} onChange={(e) => setMedicalForm({ ...medicalForm, costAmount: e.target.value })} placeholder="0" />
+          </div>
+          <div>
+            <Label htmlFor="med-notes">Notes</Label>
+            <textarea id="med-notes" value={medicalForm.notes} onChange={(e) => setMedicalForm({ ...medicalForm, notes: e.target.value })} rows={3} className="w-full bg-surface-container-low border-b-2 border-outline focus:border-primary focus:ring-0 focus:outline-none px-4 py-3 rounded-t-md transition-colors font-body-md text-on-surface resize-none" placeholder="Diagnosis, treatment details..." />
+          </div>
+          <div>
+            <Label htmlFor="med-attachments">Attachments (comma-separated URLs)</Label>
+            <Input id="med-attachments" value={medicalForm.attachments} onChange={(e) => setMedicalForm({ ...medicalForm, attachments: e.target.value })} placeholder="https://..." />
+          </div>
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setShowMedicalModal(false)} disabled={savingMedical}>Cancel</Button>
+            <Button variant="primary" onClick={handleSaveMedical} disabled={savingMedical || !medicalForm.title.trim() || !medicalForm.treatmentDate}>
+              {savingMedical ? "Saving..." : "Save Record"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* VACCINATION MODAL */}
+      <Modal open={showVaccinationModal} onClose={() => setShowVaccinationModal(false)} title="Add Vaccination">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="vac-name">Vaccine Name *</Label>
+            <Input id="vac-name" value={vaccinationForm.vaccineName} onChange={(e) => setVaccinationForm({ ...vaccinationForm, vaccineName: e.target.value })} placeholder="e.g. Rabies, DHPPI" required />
+          </div>
+          <div>
+            <Label htmlFor="vac-date">Administered Date *</Label>
+            <Input id="vac-date" type="date" value={vaccinationForm.administeredAt} onChange={(e) => setVaccinationForm({ ...vaccinationForm, administeredAt: e.target.value })} required />
+          </div>
+          <div>
+            <Label htmlFor="vac-expires">Expiry / Next Due Date</Label>
+            <Input id="vac-expires" type="date" value={vaccinationForm.expiresAt} onChange={(e) => setVaccinationForm({ ...vaccinationForm, expiresAt: e.target.value })} />
+          </div>
+          <div>
+            <Label htmlFor="vac-batch">Batch Number</Label>
+            <Input id="vac-batch" value={vaccinationForm.batchNumber} onChange={(e) => setVaccinationForm({ ...vaccinationForm, batchNumber: e.target.value })} placeholder="Batch #" />
+          </div>
+          <div>
+            <Label htmlFor="vac-status">Status</Label>
+            <select id="vac-status" value={vaccinationForm.status} onChange={(e) => setVaccinationForm({ ...vaccinationForm, status: e.target.value as any })} className="w-full bg-surface-container-low border-b-2 border-outline focus:border-primary focus:ring-0 focus:outline-none px-4 py-3 rounded-t-md transition-colors font-body-md text-on-surface">
+              <option value="unverified">Unverified</option>
+              <option value="verified">Verified</option>
+              <option value="expired">Expired</option>
+            </select>
+          </div>
+          <div>
+            <Label htmlFor="vac-notes">Notes</Label>
+            <textarea id="vac-notes" value={vaccinationForm.notes} onChange={(e) => setVaccinationForm({ ...vaccinationForm, notes: e.target.value })} rows={2} className="w-full bg-surface-container-low border-b-2 border-outline focus:border-primary focus:ring-0 focus:outline-none px-4 py-3 rounded-t-md transition-colors font-body-md text-on-surface resize-none" placeholder="Booster needed, side effects..." />
+          </div>
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setShowVaccinationModal(false)} disabled={savingVaccination}>Cancel</Button>
+            <Button variant="primary" onClick={handleSaveVaccination} disabled={savingVaccination || !vaccinationForm.vaccineName.trim() || !vaccinationForm.administeredAt}>
+              {savingVaccination ? "Saving..." : "Save Vaccination"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

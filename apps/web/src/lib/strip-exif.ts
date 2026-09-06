@@ -4,11 +4,13 @@ export async function stripExifGps(buffer: ArrayBuffer): Promise<ArrayBuffer> {
   if (bytes[0] !== 0xFF || bytes[1] !== 0xD8) return buffer;
 
   let offset = 2;
+  let foundExif = false;
   while (offset < bytes.length - 1) {
     if (bytes[offset] !== 0xFF) break;
     const marker = bytes[offset + 1];
     if (marker === 0xD9) break;
     if (marker === 0xE1) {
+      foundExif = true;
       const length = (bytes[offset + 2] << 8) | bytes[offset + 3];
       const segmentStart = offset;
       const segmentEnd = offset + 2 + length;
@@ -23,6 +25,11 @@ export async function stripExifGps(buffer: ArrayBuffer): Promise<ArrayBuffer> {
     const length = (bytes[offset + 2] << 8) | bytes[offset + 3];
     offset += 2 + length;
   }
+
+  if (!foundExif && bytes.length > 20) {
+    console.warn("[stripExif] JPEG without APP1/EXIF segment — GPS data may still be present in other markers");
+  }
+
   return buffer;
 }
 

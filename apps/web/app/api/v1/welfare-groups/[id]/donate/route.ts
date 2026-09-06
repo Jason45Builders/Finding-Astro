@@ -9,7 +9,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { generateReceiptNumber, isValidUpiId } from "@/lib/welfare-payment-utils";
 
 const DonateSchema = z.object({
-  amount: z.number().positive(),
+  amount: z.number().positive().min(1).max(1_000_000),
   utr: z.string().min(1).max(50),
   paymentDate: z.string().min(1),
   purpose: z.string().optional(),
@@ -17,7 +17,12 @@ const DonateSchema = z.object({
   caseId: z.string().uuid().optional(),
   animalId: z.string().uuid().optional(),
   proofUrl: z.string().url().optional(),
-});
+}).refine((data) => {
+  const utr = data.utr.replace(/\s/g, "");
+  if (utr.length < 6 || utr.length > 35) return false;
+  if (!/^[A-Za-z0-9]+$/.test(utr)) return false;
+  return true;
+}, { message: "Invalid UTR format. UPI transaction references are 6-35 alphanumeric characters." });
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await authMiddleware(req);
@@ -31,7 +36,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const { amount, utr, paymentDate, purpose, note, caseId, animalId, proofUrl } = parsed.data;
 
     const ip = getClientIp(req);
-    const rateLimit = checkRateLimit(`welfare-donate:${authResult.user.id}:${ip}`);
+    const userAgent = req.headers.get("user-agent") ?? "unknown";
+    const rateLimit = await checkRateLimit(`welfare-donate:${authResult.user.id}:${ip}:${userAgent}`);
     if (!rateLimit.allowed) {
       return badRequest("RATE_LIMIT_EXCEEDED", `Too many donation attempts. Please wait ${rateLimit.retryAfter} seconds.`);
     }
@@ -59,6 +65,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     if (existingUtr) {
       return badRequest("DUPLICATE_UTR", "This transaction reference has already been submitted for this welfare group.");
+    }
+
+    const paymentTimestamp = new Date(paymentDate).getTime();
+    const now = Date.now();
+    if (isNaN(paymentTimestamp) || paymentTimestamp > now) {
+      return badRequest("INVALID_DATE", "Payment date cannot be in the future");
+    }
+    if (now - paymentTimestamp > 30 * 24 * 60 * 60 * 1000) {
+      return badRequest("INVALID_DATE", "Payment date must be within the last 30 days");
+    }
+    if (amount >= 10_000 && !proofUrl) {
+      return badRequest("PROOF_REQUIRED", "Proof of payment is required for donations of ₹10,000 or more");
     }
 
     const receiptNumber = generateReceiptNumber();

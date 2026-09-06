@@ -430,10 +430,10 @@ class ApiClient {
     if (typeof window !== "undefined") {
       if (token) {
         window.localStorage.setItem("fa_token", token);
-        document.cookie = `fa_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+        document.cookie = `fa_token=${token}; path=/; max-age=604800; SameSite=Lax; Secure`;
       } else {
         window.localStorage.removeItem("fa_token");
-        document.cookie = "fa_token=; path=/; max-age=0; SameSite=Lax";
+        document.cookie = "fa_token=; path=/; max-age=0; SameSite=Lax; Secure";
       }
     }
   }
@@ -531,6 +531,10 @@ class ApiClient {
     return this.request<Animal>(`/animals/${id}`);
   }
 
+  async updateAnimal(id: string, data: { status?: string; name?: string; breed?: string; color?: string; description?: string; isSterilized?: boolean; adoptionNotes?: string; adoptableSince?: string }): Promise<Animal> {
+    return this.request<Animal>(`/animals/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+
   async listAdoptableAnimals(species?: string): Promise<AdoptableAnimal[]> {
     const qs = species ? `?species=${encodeURIComponent(species)}` : "";
     return this.request<AdoptableAnimal[]>(`/adoption/animals${qs}`);
@@ -540,8 +544,40 @@ class ApiClient {
     return this.request<AnimalMedicalRecord[]>(`/animals/${animalId}/medical-history`).catch(() => []);
   }
 
+  async createAnimalMedicalRecord(animalId: string, data: {
+    entryType: "treatment" | "vaccination" | "surgery" | "observation";
+    title: string;
+    notes?: string;
+    providerName?: string;
+    treatmentDate: string;
+    costAmount?: number;
+    caseId?: string;
+    abcEventId?: string;
+    attachments?: string[];
+  }): Promise<AnimalMedicalRecord> {
+    return this.request<AnimalMedicalRecord>(`/animals/${animalId}/medical-history`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
   async getAnimalVaccinations(animalId: string): Promise<AnimalVaccination[]> {
     return this.request<AnimalVaccination[]>(`/animals/${animalId}/vaccinations`).catch(() => []);
+  }
+
+  async createAnimalVaccination(animalId: string, data: {
+    vaccineName: string;
+    administeredAt: string;
+    expiresAt?: string;
+    batchNumber?: string;
+    notes?: string;
+    verified?: boolean;
+    status?: "verified" | "unverified" | "expired";
+  }): Promise<AnimalVaccination> {
+    return this.request<AnimalVaccination>(`/animals/${animalId}/vaccinations`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   }
 
   async getAnimalCases(animalId: string): Promise<Case[]> {
@@ -609,6 +645,21 @@ class ApiClient {
     return this.request<RecoveryRecord[]>(`/recovery/case/${caseId}`).catch(() => []);
   }
 
+  async listRecoveryRecords(caseId?: string, providerType?: string): Promise<RecoveryRecord[]> {
+    const qs = new URLSearchParams();
+    if (caseId) qs.set("caseId", caseId);
+    if (providerType) qs.set("providerType", providerType);
+    return this.request<RecoveryRecord[]>(`/recovery?${qs.toString()}`).catch(() => []);
+  }
+
+  async createRecoveryRecord(data: {
+    caseId: string; animalId?: string; providerName?: string;
+    providerType: "foster" | "ngo_shelter" | "clinic";
+    dailyCostInr: number; startDate: string; endDate?: string; totalRaised?: number; status?: string;
+  }): Promise<RecoveryRecord> {
+    return this.request<RecoveryRecord>("/recovery", { method: "POST", body: JSON.stringify(data) });
+  }
+
   async getTransportSlabs(): Promise<TransportSlab[]> {
     return this.request<TransportSlab[]>("/recovery/transport/slabs").catch(() => []);
   }
@@ -674,6 +725,37 @@ class ApiClient {
     });
   }
 
+  async listAllAdoptionApplications(): Promise<AdoptionApplication[]> {
+    return this.request<AdoptionApplication[]>("/adoption/applications").catch(() => []);
+  }
+
+  async approveAdoptionApplication(applicationId: string, data?: { reviewNotes?: string; adoptionFeeInr?: number }): Promise<AdoptionApplication> {
+    return this.request<AdoptionApplication>(`/adoption/applications/${applicationId}/approve`, {
+      method: "POST",
+      body: JSON.stringify(data ?? {}),
+    });
+  }
+
+  async rejectAdoptionApplication(applicationId: string, data?: { reviewNotes?: string; rejectionReason?: string }): Promise<AdoptionApplication> {
+    return this.request<AdoptionApplication>(`/adoption/applications/${applicationId}/reject`, {
+      method: "POST",
+      body: JSON.stringify(data ?? {}),
+    });
+  }
+
+  async startAdoptionTrial(applicationId: string, trialDays: number, reviewNotes?: string): Promise<AdoptionApplication> {
+    return this.request<AdoptionApplication>(`/adoption/applications/${applicationId}/start-trial`, {
+      method: "POST",
+      body: JSON.stringify({ trialDays, reviewNotes }),
+    });
+  }
+
+  async completeAdoptionTrial(applicationId: string): Promise<AdoptionApplication> {
+    return this.request<AdoptionApplication>(`/adoption/applications/${applicationId}/complete-trial`, {
+      method: "POST",
+    });
+  }
+
   // ── ABC ───────────────────────────────────────────────────────────────────
   async requestAbc(data: {
     animalId: string; notes?: string; locationText?: string;
@@ -693,6 +775,24 @@ class ApiClient {
   async listAbcEvents(animalId?: string): Promise<AbcEvent[]> {
     const qs = animalId ? `?animalId=${animalId}` : "";
     return this.request<AbcEvent[]>(`/abc/tracking${qs}`).catch(() => []);
+  }
+
+  async logAbcEvent(data: {
+    animalId: string;
+    eventType: "capture" | "surgery" | "return";
+    notes?: string;
+    latitude?: number;
+    longitude?: number;
+    attachments?: string[];
+  }): Promise<AbcEvent> {
+    const body: Record<string, unknown> = {
+      animalId: data.animalId,
+      eventType: data.eventType,
+      notes: data.notes,
+      attachments: data.attachments,
+    };
+    if (data.latitude && data.longitude) body.location = { latitude: data.latitude, longitude: data.longitude };
+    return this.request<AbcEvent>("/abc/events", { method: "POST", body: JSON.stringify(body) });
   }
 
   // ── Partners ──────────────────────────────────────────────────────────────

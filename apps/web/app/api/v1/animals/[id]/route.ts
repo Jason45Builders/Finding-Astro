@@ -7,6 +7,7 @@ import { LocationSchema, validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { fuzzyLocation } from "@/lib/geo";
 import { mapAnimal } from "@/lib/types";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 const AnimalStatusEnum = z.enum(["community", "lost", "found", "reunited", "adopted"]);
 const DisappearanceRiskEnum = z.enum(["stable", "watch", "urgent"]);
@@ -42,13 +43,12 @@ const UpdateAnimalSchema = CreateAnimalSchema.partial().extend({
   longitude: z.number().optional(),
 });
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
   const userTier = authResult.user.identityTier ?? 0;
 
-  const url = new URL(req.url);
-  const id = url.pathname.replace(/\/api\/v1\/animals\//, "").replace(/\/.*$/, "");
+  const { id } = await params;
   if (!id) return badRequest("VALIDATION_ERROR", "animal id required");
 
   const { data, error } = await supabaseAdmin().from("animals").select("*").eq("id", id).single();
@@ -58,9 +58,16 @@ export async function GET(req: NextRequest) {
   return ok(mapAnimal({ ...animal, location: fuzzyLocation(animal.location, userTier) }), "Animal loaded");
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`animal-create:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
   try {
     const raw = await req.json();
@@ -103,14 +110,28 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function PATCH(req: NextRequest) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
   const url = new URL(req.url);
-  const id = url.pathname.replace(/\/api\/v1\/animals\//, "").replace(/\/.*$/, "");
+  const { id } = await params;
   if (!id) return badRequest("VALIDATION_ERROR", "animal id required");
 
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`animal-update:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
+
   try {
+    const { data: existing, error: fetchError } = await supabaseAdmin().from("animals").select("created_by_user_id").eq("id", id).single();
+    if (fetchError || !existing) return notFound("Animal not found");
+
+    const isStaff = ["admin", "govt", "ngo", "hospital"].includes(authResult.user.role);
+    const isOwner = (existing as Record<string, unknown>).created_by_user_id === authResult.user.id;
+    if (!isStaff && !isOwner) return badRequest("FORBIDDEN", "You can only update animals you created");
+
     const raw = await req.json();
     const parsed = validateBody(UpdateAnimalSchema, raw);
     if (!parsed.ok) return parsed.response;
@@ -137,10 +158,10 @@ export async function PATCH(req: NextRequest) {
     }
     update.updated_at = new Date().toISOString();
 
-    const { data, error } = await supabaseAdmin().from("animals").update(update).eq("id", id).select("*").single();
-    if (error) return serverError(error.message);
-    if (data) await audit({ tableName: "animals", recordId: id, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
-    return ok(mapAnimal({ ...data, location: fuzzyLocation(data.location, authResult.user.identityTier ?? 0) }), "Animal updated");
+    const { data: updateData, error: updateError } = await supabaseAdmin().from("animals").update(update).eq("id", id).select("*").single();
+    if (updateError) return serverError(updateError.message);
+    if (updateData) await audit({ tableName: "animals", recordId: id, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: updateData });
+    return ok(mapAnimal({ ...updateData, location: fuzzyLocation(updateData.location, authResult.user.identityTier ?? 0) }), "Animal updated");
   } catch {
     return serverError();
   }

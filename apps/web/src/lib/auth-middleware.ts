@@ -7,6 +7,7 @@ export interface AuthenticatedUser {
   email: string;
   role: string;
   identityTier?: number;
+  isBanned?: boolean;
 }
 
 const TIER_NAMES = [
@@ -84,13 +85,10 @@ export async function optionalAuth(req: NextRequest): Promise<AuthenticatedUser 
       .eq("id", payload.sub)
       .single();
 
-    if (userRow?.is_banned) {
-      return null;
-    }
     if (userRow) {
-      return { id: payload.sub, email: payload.email, role: userRow.role, identityTier: userRow.identity_tier ?? 0 };
+      return { id: payload.sub, email: payload.email, role: userRow.role, identityTier: userRow.identity_tier ?? 0, isBanned: userRow.is_banned ?? false };
     }
-    return { id: payload.sub, email: payload.email, role: "citizen" };
+    return { id: payload.sub, email: payload.email, role: "citizen", isBanned: false };
   } catch {
     return null;
   }

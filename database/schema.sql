@@ -23,7 +23,7 @@ BEGIN
     CREATE TYPE case_type AS ENUM ('rescue', 'abuse', 'conflict', 'lost_pet', 'abc', 'wildlife');
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'case_status') THEN
-    CREATE TYPE case_status AS ENUM ('open', 'in_review', 'action_taken', 'resolved', 'closed', 'VERIFIED_REIMBURSEMENT');
+    CREATE TYPE case_status AS ENUM ('open', 'in_review', 'action_taken', 'resolved', 'closed');
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'abc_event_type') THEN
     CREATE TYPE abc_event_type AS ENUM ('request', 'capture', 'surgery', 'return');
@@ -1393,7 +1393,94 @@ END
 $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 55. SEED DATA — Education & Guidance
+-- 54. REFRESH TOKENS
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  revoked_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_hash ON refresh_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON refresh_tokens(expires_at);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 55. LOGIN ATTEMPTS
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS login_attempts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  ip_address TEXT NOT NULL,
+  user_agent TEXT,
+  success BOOLEAN NOT NULL DEFAULT FALSE,
+  attempted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_login_attempts_user_id ON login_attempts(user_id);
+CREATE INDEX IF NOT EXISTS idx_login_attempts_email ON login_attempts(email);
+CREATE INDEX IF NOT EXISTS idx_login_attempts_ip ON login_attempts(ip_address);
+CREATE INDEX IF NOT EXISTS idx_login_attempts_attempted_at ON login_attempts(attempted_at);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'locked_until') THEN
+    ALTER TABLE users ADD COLUMN locked_until TIMESTAMPTZ;
+  END IF;
+END;
+$$;
+
+CREATE INDEX IF NOT EXISTS idx_users_locked_until ON users(locked_until) WHERE locked_until IS NOT NULL;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 56. REFUNDS
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS refunds (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  funding_transaction_id UUID NOT NULL REFERENCES funding_transactions(id) ON DELETE CASCADE,
+  funding_case_id UUID NOT NULL REFERENCES funding_cases(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  amount NUMERIC NOT NULL,
+  reason TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'PENDING',
+  processed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  processed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_refunds_transaction ON refunds(funding_transaction_id);
+CREATE INDEX IF NOT EXISTS idx_refunds_case ON refunds(funding_case_id);
+CREATE INDEX IF NOT EXISTS idx_refunds_user ON refunds(user_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 57. WARDS LOOKUP
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS wards (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  ward_name TEXT NOT NULL UNIQUE,
+  ward_number TEXT,
+  city TEXT NOT NULL DEFAULT 'Chennai',
+  district TEXT,
+  population_estimate INTEGER,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_wards_name ON wards(ward_name);
+CREATE INDEX IF NOT EXISTS idx_wards_city ON wards(city);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 58. SEED DATA — Education & Guidance
 -- ─────────────────────────────────────────────────────────────────────────────
 
 INSERT INTO education_content (topic_key, title, audience, summary, action_points, trigger_case_type, trigger_animal_status, language_code) VALUES
@@ -1468,6 +1555,42 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_funding_transactions_sponsor_id') THEN
     ALTER TABLE funding_transactions ADD CONSTRAINT fk_funding_transactions_sponsor_id FOREIGN KEY (matched_by_sponsor_id) REFERENCES csr_sponsors(id) ON DELETE SET NULL;
   END IF;
+END;
+$$;
+
+-- Prevent duplicate active claims on the same case
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_case_responses_active_claim') THEN
+    ALTER TABLE case_responses ADD CONSTRAINT uq_case_responses_active_claim UNIQUE (case_id, responder_user_id) WHERE status <> 'abandoned';
+  END IF;
+END;
+$$;
+
+-- Ensure reimbursement hospital references a real user account
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_reimbursement_hospital_role') THEN
+    ALTER TABLE reimbursement_requests ADD CONSTRAINT fk_reimbursement_hospital_role CHECK (EXISTS (SELECT 1 FROM users WHERE users.id = hospital_id AND users.role = 'hospital'));
+  END IF;
+EXCEPTION
+  WHEN undefined_object OR feature_not_supported THEN
+    NULL;
+END;
+$$;
+
+DO $$
+DECLARE
+  t TEXT;
+BEGIN
+  FOR t IN
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_type = 'BASE TABLE'
+  LOOP
+    EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
+  END LOOP;
 END;
 $$;
 -- ══════════════════════════════════════════════════════════════════════════════

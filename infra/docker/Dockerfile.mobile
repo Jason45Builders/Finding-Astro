@@ -1,5 +1,7 @@
 FROM node:20-alpine
 
+RUN addgroup -g 1001 -S nodejs && adduser -S node -u 1001
+
 WORKDIR /workspace
 
 COPY package.json ./
@@ -10,6 +12,8 @@ RUN npm install --workspace apps/mobile --include-workspace-root=false
 COPY apps/mobile ./apps/mobile
 
 WORKDIR /workspace/apps/mobile
+
+USER node
 
 EXPOSE 8081
 CMD ["npm", "run", "dev"]

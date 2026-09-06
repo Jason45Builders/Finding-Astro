@@ -5,6 +5,7 @@ import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { validateBody, LocationSchema } from "@/lib/validation";
 import { audit } from "@/lib/audit";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 function mapTransportRequest(row: Record<string, unknown>) {
   return {
@@ -72,6 +73,13 @@ export async function POST(req: NextRequest) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`transport-create:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
+
   try {
     const raw = await req.json();
     const parsed = validateBody(TransportRequestSchema, raw);
@@ -104,6 +112,13 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`transport-update:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
   try {
     const url = new URL(req.url);

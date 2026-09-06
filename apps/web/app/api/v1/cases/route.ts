@@ -7,20 +7,23 @@ import { LocationSchema, validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { decodeLocation } from "@/lib/geo";
 import { mapCase } from "@/lib/types";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
+import { broadcastCaseEvent } from "@/lib/case-stream";
 
 const CaseStatusEnum = z.enum(["open", "in_review", "action_taken", "resolved", "closed"]);
 const CasePriorityEnum = z.enum(["low", "medium", "high"]);
 
 const CreateCaseSchema = z.object({
-  title: z.string().min(1).optional(),
-  description: z.string().min(1),
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().min(1).max(5000),
   location: LocationSchema,
-  locationText: z.string().optional(),
+  locationText: z.string().max(500).optional(),
   evidenceUrls: z.array(z.string().url()).optional(),
   animalId: z.string().uuid().optional(),
   priority: CasePriorityEnum.optional(),
-  severity: z.string().optional(),
-  guestPhone: z.string().optional(),
+  severity: z.string().max(100).optional(),
+  guestPhone: z.string().max(20).optional(),
+  idempotencyKey: z.string().optional(),
 });
 
 const TIER_REQUIREMENTS: Record<string, number> = {
@@ -37,17 +40,21 @@ export async function GET(req: NextRequest) {
     const status = url.searchParams.get("status");
     const animalId = url.searchParams.get("animalId");
     const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "20", 10), 200);
+    const includeBanned = url.searchParams.get("includeBannedReporters") === "true" && ["admin", "govt", "ngo"].includes(authResult.user.role);
 
     let query = supabaseAdmin().from("cases").select("*");
 
     if (status) query = query.eq("status", status);
     if (animalId) query = query.eq("animal_id", animalId);
 
-    // Open cases have no responder yet, so every volunteer needs to see them to be
-    // able to claim one — only non-open (already claimed / in-progress) cases are
-    // scoped down to the reporter, assignee, or staff.
     if (!["admin", "govt", "ngo"].includes(authResult.user.role) && status !== "open") {
       query = query.or(`status.eq.open,reporter_user_id.eq.${authResult.user.id},assigned_to_user_id.eq.${authResult.user.id}`);
+    } else if (!includeBanned) {
+      const { data: bannedUsers } = await supabaseAdmin().from("users").select("id").eq("is_banned", true).limit(500);
+      const bannedIds = (bannedUsers ?? []).map((u: Record<string, unknown>) => u.id as string);
+      if (bannedIds.length > 0) {
+        query = query.not("reporter_user_id", "in", bannedIds);
+      }
     }
 
     const { data, error } = await query.order("created_at", { ascending: false }).limit(limit);
@@ -61,6 +68,16 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const authResult = await authMiddleware(req);
+  if ("error" in authResult) return authResult.error;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`case-create:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
+
   const url = new URL(req.url);
   const pathParts = url.pathname.replace(/\/api\/v1\//, "").split("/");
   const subAction = pathParts[pathParts.length - 1];
@@ -93,9 +110,17 @@ async function createCaseRecord(req: NextRequest, user: AuthenticatedUser, caseT
   const raw = await req.json();
   const parsed = validateBody(CreateCaseSchema, raw);
   if (!parsed.ok) return parsed.response;
-  const { title, description, location, locationText, evidenceUrls, animalId, priority, guestPhone } = parsed.data;
+  const { title, description, location, locationText, evidenceUrls, animalId, priority, guestPhone, idempotencyKey } = parsed.data;
 
   if (!location) return badRequest("VALIDATION_ERROR", "latitude and longitude are required");
+
+  if (idempotencyKey) {
+    const { data: existing } = await supabaseAdmin().from("cases").select("id, status").eq("idempotency_key", idempotencyKey).maybeSingle();
+    if (existing) {
+      const { data: fresh } = await supabaseAdmin().from("cases").select("*").eq("id", (existing as Record<string, unknown>).id as string).single();
+      if (fresh) return ok(mapCase({ ...(fresh as Record<string, unknown>), location: decodeLocation((fresh as Record<string, unknown>)?.location) }), "Case already exists");
+    }
+  }
 
   const { data, error } = await supabaseAdmin().from("cases").insert({
     case_type: caseType,
@@ -109,6 +134,7 @@ async function createCaseRecord(req: NextRequest, user: AuthenticatedUser, caseT
     animal_id: animalId ?? null,
     reporter_user_id: user.id,
     guest_phone: guestPhone ?? null,
+    idempotency_key: idempotencyKey ?? null,
   }).select("*").single();
 
   if (error) {
@@ -118,6 +144,7 @@ async function createCaseRecord(req: NextRequest, user: AuthenticatedUser, caseT
 
   if (data) {
     await audit({ tableName: "cases", recordId: data.id, action: "INSERT", actorId: user.id, actorRole: user.role, newData: data });
+    broadcastCaseEvent({ type: "created", caseId: data.id, caseType: (data as Record<string, unknown>).case_type as string, priority: (data as Record<string, unknown>).priority as string, status: (data as Record<string, unknown>).status as string, locationText: (data as Record<string, unknown>).location_text as string | null, timestamp: new Date().toISOString() });
   }
 
   return ok(mapCase({ ...(data as Record<string, unknown>), location: decodeLocation((data as Record<string, unknown>)?.location) }), "Case created");

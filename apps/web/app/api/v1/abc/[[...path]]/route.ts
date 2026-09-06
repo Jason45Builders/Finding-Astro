@@ -7,6 +7,7 @@ import { validateBody, LocationSchema } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { decodeLocation } from "@/lib/geo";
 import { mapAbcEvent } from "@/lib/types";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 const AbcRequestSchema = z.object({
   animalId: z.string().uuid(),
@@ -46,6 +47,13 @@ export async function POST(req: NextRequest) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`abc:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
+
   try {
     const url = new URL(req.url);
     const action = url.pathname.replace(/.*abc\//, "");
@@ -84,7 +92,6 @@ export async function POST(req: NextRequest) {
         priority: "medium",
         title: `ABC request — ${animal.name ?? "Animal"}`,
         description: notes ?? `ABC request for animal ${animalId}`,
-        location: location ? `POINT(${location.longitude} ${location.latitude})` : "POINT(0 0)",
         reporter_user_id: user.id,
         animal_id: animalId,
         evidence_urls: [],

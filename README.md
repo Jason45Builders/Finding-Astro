@@ -128,3 +128,13 @@ npm --workspace apps/web run dev
 ## Switching Back to the Old Express Backend
 
 The old Express backend is archived. To restore it, check the git history before the migration commit.
+
+## Security Notes
+
+- **Authentication:** All mutating API routes require a Bearer JWT token in the `Authorization` header. The token is issued by `/api/v1/auth/login` and stored client-side in `localStorage` and an HTTP-only cookie.
+- **CSRF:** The API uses Bearer tokens in the `Authorization` header, which are not automatically sent by browsers and therefore are not vulnerable to CSRF. The `fa_token` cookie uses `SameSite=Lax` and `Secure` flags.
+- **Rate Limiting:** All POST/PATCH/DELETE endpoints are rate-limited via Redis (with in-memory fallback for local development).
+- **CORS:** CORS headers are enforced via middleware. Only origins listed in `CORS_ORIGIN` are allowed in production.
+- **Security Headers:** Responses include `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy`.
+- **Secrets:** Never commit `.env.local` or `.env` files. Rotate `JWT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, and database credentials immediately if they are exposed.
+- **RLS:** Row Level Security is enabled at the database level. The application currently uses the service role key which bypasses RLS; future work should migrate to user-scoped access tokens.

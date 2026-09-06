@@ -6,6 +6,7 @@ import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { mapAnimalVaccination } from "@/lib/types";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 const CreateVaccinationSchema = z.object({
   vaccineName: z.string().min(1),
@@ -17,13 +18,12 @@ const CreateVaccinationSchema = z.object({
   status: z.enum(["verified", "unverified", "expired"]).optional(),
 });
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 
-  const url = new URL(req.url);
-  const animalId = url.pathname.replace(/\/api\/v1\/animals\//, "").replace(/\/vaccinations\/?$/, "");
-  if (!animalId) return badRequest("VALIDATION_ERROR", "animal id required");
+  const { id } = await params;
+  if (!id) return badRequest("VALIDATION_ERROR", "animal id required");
 
   const { data, error } = await supabaseAdmin()
     .from("vaccinations")
@@ -35,9 +35,16 @@ export async function GET(req: NextRequest) {
   return ok((data ?? []).map(mapAnimalVaccination), "Vaccinations loaded");
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`vaccination:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
   const privileged = ["admin", "govt", "ngo", "hospital"];
   if (!privileged.includes(authResult.user.role)) {
@@ -45,20 +52,19 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const url = new URL(req.url);
-    const animalId = url.pathname.replace(/\/api\/v1\/animals\//, "").replace(/\/vaccinations\/?$/, "");
-    if (!animalId) return badRequest("VALIDATION_ERROR", "animal id required");
+    const { id } = await params;
+    if (!id) return badRequest("VALIDATION_ERROR", "animal id required");
 
     const raw = await req.json();
     const parsed = validateBody(CreateVaccinationSchema, raw);
     if (!parsed.ok) return parsed.response;
     const { vaccineName, administeredAt, expiresAt, batchNumber, notes, verified, status } = parsed.data;
 
-    const { data: animal } = await supabaseAdmin().from("animals").select("id").eq("id", animalId).maybeSingle();
+    const { data: animal } = await supabaseAdmin().from("animals").select("id").eq("id", id).maybeSingle();
     if (!animal) return notFound("Animal not found");
 
     const { data, error } = await supabaseAdmin().from("vaccinations").insert({
-      animal_id: animalId,
+      animal_id: id,
       vaccine_name: vaccineName,
       administered_at: administeredAt,
       expires_at: expiresAt ?? null,

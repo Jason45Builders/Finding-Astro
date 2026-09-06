@@ -4,6 +4,7 @@ import { ok, badRequest, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { z } from "zod";
 import { audit } from "@/lib/audit";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 const PartnerSignupSchema = z.object({
   partnerType: z.enum(["clinic", "store"]),
@@ -26,6 +27,13 @@ const PartnerSignupSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`partner-signup:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
+
   try {
     const raw = await req.json();
     const parsed = validateBody(PartnerSignupSchema, raw);

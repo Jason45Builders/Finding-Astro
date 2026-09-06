@@ -65,3 +65,23 @@ export function fuzzyLocation(rawValue: unknown, tier: number | undefined): { la
 export function decodeLocation(rawValue: unknown): { latitude: number; longitude: number } | null {
   return parseWKBPoint(rawValue);
 }
+
+export interface ReverseGeocodeResult {
+  displayName: string;
+  latitude: number;
+  longitude: number;
+}
+
+export async function reverseGeocode(lat: number, lng: number): Promise<ReverseGeocodeResult> {
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1`,
+    { headers: { Accept: "application/json" } }
+  );
+  if (!res.ok) throw new Error(`Reverse geocode failed: ${res.status}`);
+  const data = await res.json();
+  return {
+    displayName: data.display_name ?? `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+    latitude: lat,
+    longitude: lng,
+  };
+}

@@ -24,6 +24,7 @@ const BASE_NAV_ITEMS = [
   { label: "Respond SOS",   href: "/respond",      icon: AlertTriangle },
   { label: "City Map",      href: "/map",          icon: Map },
   { label: "Adopt",         href: "/adopt",        icon: Heart },
+  { label: "Foster",        href: "/foster",       icon: Heart },
   { label: "Lost & Found",  href: "/lost-found",   icon: Search },
   { label: "Wildlife",      href: "/wildlife",     icon: Bird },
   { label: "Safety",        href: "/safety",       icon: Shield },
@@ -39,6 +40,7 @@ const BASE_NAV_ITEMS = [
 
 const ADMIN_NAV_ITEMS = [
   { label: "Dispatch",           href: "/dispatch",               icon: Radio },
+  { label: "Adoption Review",    href: "/adoption-admin",         icon: Heart },
   { label: "Verifications",      href: "/admin/verifications",     icon: UserCheck },
   { label: "Reimbursements",     href: "/admin/reimbursements",    icon: DollarSign },
   { label: "Case Oversight",     href: "/admin/cases",             icon: ClipboardList },
@@ -58,6 +60,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout, isLoading, bootstrap } = useAuth();
   const isStaff = user?.role === "admin" || user?.role === "govt";
+  // SECURITY NOTE: Client-side role gating is UI-only. Every API route must enforce
+  // its own authorization server-side. Never rely on this `isStaff` check for security.
   const navItems = isStaff ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS] : BASE_NAV_ITEMS;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { authMiddleware } from "@/lib/auth-middleware";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const authResult = await authMiddleware(req);
+  if ("error" in authResult) return authResult.error;
+
   const start = Date.now();
   try {
     const { data, error } = await supabaseAdmin()

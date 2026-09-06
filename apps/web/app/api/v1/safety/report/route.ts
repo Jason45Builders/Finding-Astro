@@ -22,17 +22,18 @@ const HUMANE_RESPONSES: Record<string, string> = {
 const DEFAULT_HUMANE_RESPONSE = "Thank you for reporting this. A welfare volunteer will review the situation and follow up. Please avoid intervening directly with the animal(s) in the meantime.";
 
 const SafetyReportSchema = z.object({
-  situationType: z.string().min(1),
-  description: z.string().min(1),
+  situationType: z.string().min(1).max(100),
+  description: z.string().min(1).max(2000),
   location: LocationSchema,
-  locationText: z.string().optional(),
-  severity: z.string().optional(),
+  locationText: z.string().max(500).optional(),
+  severity: z.string().max(50).optional(),
   animalId: z.string().uuid().optional(),
 });
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  const rate = checkRateLimit(ip);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(ip, userAgent);
   if (!rate.allowed) {
     return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
   }

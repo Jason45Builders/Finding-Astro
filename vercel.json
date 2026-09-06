@@ -1,7 +1,13 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "npm --workspace finding-astro-web run build",
+  "buildCommand": "npm --workspace apps/web run build",
   "outputDirectory": ".next",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "crons": [
+    {
+      "path": "/api/v1/cron/abc-unreturned",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }

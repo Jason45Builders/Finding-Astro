@@ -72,12 +72,26 @@ export default function LostFoundPage() {
     setSubmitting(true); setError(null);
     try {
       let evidenceUrls: string[] = [];
+      let primaryPhotoUrl: string | undefined;
       if (file) {
         try {
           const { publicUrl } = await api.uploadMedia(file, "evidence");
           evidenceUrls = [publicUrl];
+          primaryPhotoUrl = publicUrl;
         } catch { /* ignore */ }
       }
+      const animalStatus = tab === "report-lost" ? "lost" : "found";
+      const animal = await api.createAnimal({
+        species: form.species,
+        status: animalStatus,
+        name: form.name || undefined,
+        breed: form.breed || undefined,
+        color: form.color || undefined,
+        description: form.description || undefined,
+        location: { latitude: form.latitude, longitude: form.longitude },
+        territoryLabel: form.locationText || undefined,
+        primaryPhotoUrl,
+      });
       await api.createCase({
         caseType: "lost_pet",
         title: `${tab === "report-lost" ? "Lost" : "Found"} ${form.species}${form.name ? ` — ${form.name}` : ""}`,
@@ -85,6 +99,7 @@ export default function LostFoundPage() {
         latitude: form.latitude,
         longitude: form.longitude,
         evidenceUrls,
+        animalId: animal.id,
       });
       setSuccess(true);
     } catch (err: unknown) {

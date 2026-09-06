@@ -26,7 +26,8 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  const rate = checkRateLimit(ip);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(ip, userAgent);
   if (!rate.allowed) {
     return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
   }

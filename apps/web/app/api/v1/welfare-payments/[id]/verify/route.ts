@@ -4,10 +4,18 @@ import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, serverError, notFound, forbidden, badRequest } from "@/lib/api-response";
 import { audit } from "@/lib/audit";
 import { mapWelfarePayment } from "@/lib/types";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`payment-verify:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
   try {
     const { id } = await params;

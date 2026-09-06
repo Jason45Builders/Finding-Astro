@@ -5,6 +5,7 @@ import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, serverError, forbidden } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 const ApproveVerificationSchema = z.object({
   verificationId: z.string().uuid(),
@@ -19,6 +20,13 @@ export async function POST(req: NextRequest) {
   const privileged = ["admin", "govt"];
   if (!privileged.includes(authResult.user.role)) {
     return forbidden("Only admins and government officers can approve NGO verifications");
+  }
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`org-verification-approve:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
   }
 
   try {

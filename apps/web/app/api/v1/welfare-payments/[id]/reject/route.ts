@@ -6,6 +6,7 @@ import { ok, serverError, notFound, forbidden, badRequest } from "@/lib/api-resp
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { mapWelfarePayment } from "@/lib/types";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 const RejectSchema = z.object({
   reason: z.string().min(1).max(500),
@@ -14,6 +15,13 @@ const RejectSchema = z.object({
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`payment-reject:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
   try {
     const { id } = await params;

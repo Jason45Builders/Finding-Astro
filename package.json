@@ -11,7 +11,11 @@
   "scripts": {
     "dev": "npm --workspace apps/web run dev",
     "build": "npm --workspace apps/web run build",
-    "start": "npm --workspace apps/web run start"
+    "start": "npm --workspace apps/web run start",
+    "lint": "npm --workspace apps/web run lint",
+    "typecheck": "npm --workspace apps/web run typecheck",
+    "test": "npm --workspace apps/web run test",
+    "test:watch": "npm --workspace apps/web run test:watch"
   },
   "engines": {
     "node": ">=20.0.0",

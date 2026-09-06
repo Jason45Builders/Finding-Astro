@@ -80,6 +80,12 @@ const VACCINATION_STATUS: Record<string, StatusToken> = {
   expired: { label: "Expired", variant: "danger" },
 };
 
+const RECOVERY_STATUS: Record<string, StatusToken> = {
+  active: { label: "Active", variant: "success" },
+  completed: { label: "Completed", variant: "primary" },
+  cancelled: { label: "Cancelled", variant: "danger" },
+};
+
 function lookup(map: Record<string, StatusToken>, value: string | null | undefined): StatusToken {
   if (!value) return { label: "Unknown", variant: "neutral" };
   return map[value] ?? { label: humanize(value), variant: "neutral" };
@@ -95,4 +101,5 @@ export const statusToken = {
   adoptionStatus: (v: string | null | undefined) => lookup(ADOPTION_STATUS, v),
   partnerType: (v: string | null | undefined) => lookup(PARTNER_TYPE, v),
   vaccinationStatus: (v: string | null | undefined) => lookup(VACCINATION_STATUS, v),
+  recoveryStatus: (v: string | null | undefined) => lookup(RECOVERY_STATUS, v),
 };

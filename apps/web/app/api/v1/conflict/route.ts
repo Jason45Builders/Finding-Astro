@@ -9,11 +9,11 @@ import { audit } from "@/lib/audit";
 import { decodeLocation } from "@/lib/geo";
 
 const ConflictReportSchema = z.object({
-  conflictType: z.string().min(1),
-  description: z.string().min(1),
+  conflictType: z.string().min(1).max(100),
+  description: z.string().min(1).max(5000),
   location: LocationSchema,
-  locationText: z.string().optional(),
-  severity: z.string().optional(),
+  locationText: z.string().max(500).optional(),
+  severity: z.string().max(50).optional(),
 });
 
 function mapConflictReport(row: Record<string, unknown>) {
@@ -33,7 +33,8 @@ function mapConflictReport(row: Record<string, unknown>) {
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  const rate = checkRateLimit(ip);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(ip, userAgent);
   if (!rate.allowed) {
     return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
   }

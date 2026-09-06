@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Label } from "@/components/ui/Input";
 import { KpiStat } from "@/components/ui/KpiStat";
+import { Modal } from "@/components/ui/Modal";
 
 const EVENT_LABELS: Record<string, string> = {
   request: "ABC Requested", capture: "Captured",
@@ -44,12 +45,64 @@ export default function AbcPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [activeTab, setActiveTab] = useState<"request" | "manage">("request");
+  const [pendingAbcs, setPendingAbcs] = useState<AbcEvent[]>([]);
+  const [selectedAbc, setSelectedAbc] = useState<AbcEvent | null>(null);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [progressForm, setProgressForm] = useState<{ eventType: "capture" | "surgery" | "return"; notes: string; latitude: number | null; longitude: number | null; detecting: boolean }>({ eventType: "capture", notes: "", latitude: null, longitude: null, detecting: false });
+  const [progressSubmitting, setProgressSubmitting] = useState(false);
+
+  const isStaff = ["admin", "govt", "ngo", "hospital"].includes(user?.role || "");
+
   useEffect(() => {
     Promise.all([
       api.listAnimals({ limit: 100 }).catch(() => [] as Animal[]),
       api.listAbcEvents().catch(() => [] as AbcEvent[]),
     ]).then(([a, e]) => { setAnimals(a); setEvents(e); }).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (activeTab === "manage" && isStaff) {
+      api.listAbcEvents().then(allEvents => {
+        const pending = allEvents.filter(e => e.eventType === "request" || e.eventType === "capture" || e.eventType === "surgery");
+        setPendingAbcs(pending);
+      }).catch(() => setPendingAbcs([]));
+    }
+  }, [activeTab, isStaff]);
+
+  const loadPendingAbcs = async () => {
+    const allEvents = await api.listAbcEvents();
+    const pending = allEvents.filter(e => ["request", "capture", "surgery"].includes(e.eventType));
+    setPendingAbcs(pending);
+  };
+
+  const handleProgress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAbc || !progressForm.eventType) return;
+    setProgressSubmitting(true);
+    try {
+      await api.logAbcEvent({
+        animalId: selectedAbc.animalId,
+        eventType: progressForm.eventType,
+        notes: progressForm.notes || undefined,
+        latitude: progressForm.latitude ?? undefined,
+        longitude: progressForm.longitude ?? undefined,
+      });
+      setShowProgressModal(false);
+      setSelectedAbc(null);
+      setProgressForm({ eventType: "capture", notes: "", latitude: null, longitude: null, detecting: false });
+      await loadPendingAbcs();
+      const updated = await api.listAbcEvents();
+      setEvents(updated);
+    } catch { /* ignore */ }
+    finally { setProgressSubmitting(false); }
+  };
+
+  const openProgressModal = (abcEvent: AbcEvent, nextStep: "capture" | "surgery" | "return") => {
+    setSelectedAbc(abcEvent);
+    setProgressForm({ eventType: nextStep, notes: "", latitude: null, longitude: null, detecting: false });
+    setShowProgressModal(true);
+  };
 
   const detectLocation = () => {
     setDetectingLocation(true);
@@ -200,6 +253,42 @@ export default function AbcPage() {
             </div>
           )}
         </Card>
+
+        {isStaff && (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-title-md text-title-md text-on-surface">ABC Pipeline</h2>
+              <Button variant="outline" size="sm" onClick={loadPendingAbcs}>Refresh</Button>
+            </div>
+            {pendingAbcs.length === 0 ? (
+              <p className="text-sm text-outline text-center py-8">No active ABC requests in progress.</p>
+            ) : (
+              <div className="space-y-3">
+                {pendingAbcs.map(abc => {
+                  const nextStep = abc.eventType === "request" ? "capture" : abc.eventType === "capture" ? "surgery" : "return";
+                  const nextLabel = EVENT_LABELS[nextStep] ?? nextStep;
+                  return (
+                    <div key={abc.id} className="flex items-center gap-4 p-4 bg-surface-container-low rounded-md">
+                      <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-lg", EVENT_DOT[abc.eventType] ?? EVENT_DOT.request)}>
+                        {EVENT_ICON[abc.eventType] ?? "📋"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-on-surface">{abc.animalName ?? "Animal"}</p>
+                        <p className="text-xs text-outline">
+                          {EVENT_LABELS[abc.eventType]} · {formatDateTime(abc.createdAt)}
+                          {abc.caseId ? ` · Case: ${abc.caseId.slice(0, 8)}...` : ""}
+                        </p>
+                      </div>
+                      <Button variant="primary" size="sm" onClick={() => openProgressModal(abc, nextStep)}>
+                        Mark {nextLabel}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+        )}
       </div>
 
       <div>
@@ -208,6 +297,43 @@ export default function AbcPage() {
           <Button variant="primary">View ABC Centres Near You →</Button>
         </Link>
       </div>
+
+      {/* Progress Modal */}
+      <Modal open={showProgressModal} onClose={() => setShowProgressModal(false)} title={`Log ABC Event: ${selectedAbc ? EVENT_LABELS[selectedAbc.eventType] : ""}`}>
+        <form onSubmit={handleProgress} className="space-y-4">
+          <div>
+            <Label>Next Step</Label>
+            <select value={progressForm.eventType} onChange={(e) => setProgressForm({ ...progressForm, eventType: e.target.value as any })} className="w-full bg-surface-container-low border-b-2 border-outline focus:border-primary focus:ring-0 focus:outline-none px-4 py-3 rounded-t-md transition-colors font-body-md text-on-surface">
+              <option value="capture">Captured</option>
+              <option value="surgery">Surgery Completed</option>
+              <option value="return">Returned to Territory</option>
+            </select>
+          </div>
+          <div>
+            <Label>Notes</Label>
+            <Textarea rows={3} value={progressForm.notes} onChange={(e) => setProgressForm({ ...progressForm, notes: e.target.value })} placeholder="Clinic name, veterinarian, surgery details, return location..." />
+          </div>
+          <div>
+            <Label className="mb-0">Location (optional)</Label>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 grid grid-cols-2 gap-2">
+                <Input type="text" placeholder="Latitude" readOnly value={progressForm.latitude?.toFixed(6) ?? ""} className="rounded-md" />
+                <Input type="text" placeholder="Longitude" readOnly value={progressForm.longitude?.toFixed(6) ?? ""} className="rounded-md" />
+              </div>
+              <Button type="button" variant="ghost" onClick={() => {
+                setProgressForm(p => ({ ...p, detecting: true }));
+                navigator.geolocation?.getCurrentPosition(pos => setProgressForm(p => ({ ...p, latitude: pos.coords.latitude, longitude: pos.coords.longitude, detecting: false })), () => setProgressForm(p => ({ ...p, detecting: false })));
+              }} disabled={progressForm.detecting} className="bg-surface-container-high shrink-0">
+                <MapPin className="w-4 h-4" />{progressForm.detecting ? "..." : "Detect"}
+              </Button>
+            </div>
+          </div>
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" type="button" onClick={() => setShowProgressModal(false)} disabled={progressSubmitting}>Cancel</Button>
+            <Button variant="primary" type="submit" disabled={progressSubmitting}>{progressSubmitting ? "Saving..." : "Save Event"}</Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

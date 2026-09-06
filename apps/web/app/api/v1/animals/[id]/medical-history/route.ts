@@ -6,6 +6,7 @@ import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { mapAnimalMedicalRecord } from "@/lib/types";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 const CreateMedicalRecordSchema = z.object({
   entryType: z.enum(["treatment", "vaccination", "surgery", "observation"]),
@@ -19,13 +20,12 @@ const CreateMedicalRecordSchema = z.object({
   attachments: z.array(z.string().url()).optional(),
 });
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 
-  const url = new URL(req.url);
-  const animalId = url.pathname.replace(/\/api\/v1\/animals\//, "").replace(/\/medical-history\/?$/, "");
-  if (!animalId) return badRequest("VALIDATION_ERROR", "animal id required");
+  const { id } = await params;
+  if (!id) return badRequest("VALIDATION_ERROR", "animal id required");
 
   const { data, error } = await supabaseAdmin()
     .from("medical_history")
@@ -37,9 +37,16 @@ export async function GET(req: NextRequest) {
   return ok((data ?? []).map(mapAnimalMedicalRecord), "Medical history loaded");
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`medical-record:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
   const privileged = ["admin", "govt", "ngo", "hospital"];
   if (!privileged.includes(authResult.user.role)) {
@@ -47,20 +54,19 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const url = new URL(req.url);
-    const animalId = url.pathname.replace(/\/api\/v1\/animals\//, "").replace(/\/medical-history\/?$/, "");
-    if (!animalId) return badRequest("VALIDATION_ERROR", "animal id required");
+    const { id } = await params;
+    if (!id) return badRequest("VALIDATION_ERROR", "animal id required");
 
     const raw = await req.json();
     const parsed = validateBody(CreateMedicalRecordSchema, raw);
     if (!parsed.ok) return parsed.response;
     const { entryType, title, notes, providerName, treatmentDate, costAmount, caseId, abcEventId, attachments } = parsed.data;
 
-    const { data: animal } = await supabaseAdmin().from("animals").select("id").eq("id", animalId).maybeSingle();
+    const { data: animal } = await supabaseAdmin().from("animals").select("id").eq("id", id).maybeSingle();
     if (!animal) return notFound("Animal not found");
 
     const insertPayload: Record<string, unknown> = {
-      animal_id: animalId,
+      animal_id: id,
       entry_type: entryType,
       title,
       notes: notes ?? null,

@@ -18,7 +18,11 @@ jobs:
           cache-dependency-path: "apps/web/package-lock.json"
       - run: npm ci
         working-directory: ./apps/web
+      - run: npm run lint
+        working-directory: ./apps/web
       - run: npm run typecheck
+        working-directory: ./apps/web
+      - run: npm run test
         working-directory: ./apps/web
       - run: npm run build
         working-directory: ./apps/web

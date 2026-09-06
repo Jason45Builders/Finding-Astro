@@ -1,10 +1,11 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 function mapNotification(row: Record<string, unknown>) {
   return {
@@ -31,7 +32,16 @@ export async function GET(req: NextRequest) {
       const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "20", 10), 100);
       const { data, error } = await supabaseAdmin().from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(limit);
       if (error) return serverError(error.message);
-      return ok((data ?? []).map(mapNotification), "Notifications loaded");
+      const notifications = (data ?? []).map(mapNotification);
+      const latest = notifications.length > 0 ? new Date(notifications[0].createdAt).toISOString() : new Date().toISOString();
+      return new NextResponse(JSON.stringify({ success: true, data: notifications, message: "Notifications loaded" }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store, must-revalidate",
+          "Last-Modified": latest,
+        },
+      });
     }
 
     return new Response(null, { status: 404 });
@@ -43,6 +53,13 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`notification-read:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
   try {
     const url = new URL(req.url);

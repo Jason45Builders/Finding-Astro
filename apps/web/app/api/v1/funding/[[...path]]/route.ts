@@ -10,28 +10,28 @@ import { mapFundingCase } from "@/lib/types";
 
 const DonateSchema = z.object({
   fundingCaseId: z.string().uuid(),
-  amount: z.number().positive(),
+  amount: z.number().positive().min(1).max(1_000_000),
   idempotencyKey: z.string().optional(),
 });
 
 const ReimbursementRequestSchema = z.object({
   caseId: z.string().uuid(),
-  amountClaimed: z.number().positive(),
+  amountClaimed: z.number().positive().max(10_000_000),
   billUrl: z.string().url(),
   prescriptionUrl: z.string().url(),
-  doctorName: z.string().optional(),
+  doctorName: z.string().max(200).optional(),
   hospitalId: z.string().uuid().optional(),
 });
 
 const ReimbursementVerifySchema = z.object({
   reimbursementId: z.string().uuid(),
   verified: z.boolean(),
-  notes: z.string().optional(),
+  notes: z.string().max(1000).optional(),
 });
 
 const RefundSchema = z.object({
   fundingTransactionId: z.string().uuid(),
-  reason: z.string().min(1),
+  reason: z.string().min(1).max(500),
 });
 
 export async function GET(req: NextRequest) {
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const ip = getClientIp(req);
-    const rate = checkRateLimit(ip);
+    const rate = await checkRateLimit(ip);
     if (!rate.allowed) {
       return new NextResponse(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
     }
@@ -102,12 +102,15 @@ async function handleDonate(req: NextRequest, user: { id: string; role: string }
     const { data: existing, error: fetchError } = await supabaseAdmin().from("funding_cases").select("total_amount, amount_raised, status").eq("id", fundingCaseId).single();
     if (fetchError || !existing || existing.status !== "OPEN") return notFound("Funding case not found or closed");
 
+    const { data: donorRow } = await supabaseAdmin().from("users").select("full_name, email").eq("id", user.id).single();
+    const donorName = (donorRow as Record<string, unknown> | null)?.full_name ?? (donorRow as Record<string, unknown> | null)?.email ?? `User ${user.id.slice(0, 8)}`;
+
     const { data: tx, error } = await supabaseAdmin().from("funding_transactions").insert({
       funding_case_id: fundingCaseId,
       user_id: user.id,
       amount,
-      payment_status: "SUCCESS",
-      donor_name: `User ${user.id.slice(0, 8)}`,
+      payment_status: "PENDING",
+      donor_name: donorName,
       is_anonymous: false,
       is_matched: false,
       idempotency_key: idempotencyKey ?? null,
@@ -155,6 +158,17 @@ async function handleReimbursementVerify(req: NextRequest, user: { id: string; r
     if (!parsed.ok) return parsed.response;
     const { reimbursementId, verified, notes } = parsed.data;
 
+    const { data: existing, error: fetchError } = await supabaseAdmin().from("reimbursement_requests").select("hospital_id, case_id").eq("id", reimbursementId).single();
+    if (fetchError || !existing) return badRequest("NOT_FOUND", "Reimbursement request not found");
+
+    if (user.role === "hospital" && existing.hospital_id) {
+      const { data: hospitalLink } = await supabaseAdmin().from("partner_clinics").select("id").eq("id", existing.hospital_id).eq("is_verified", true).maybeSingle();
+      if (!hospitalLink) {
+        const { data: userRow } = await supabaseAdmin().from("users").select("id").eq("id", user.id).maybeSingle();
+        if (!userRow) return badRequest("FORBIDDEN", "Hospital verification requires a verified hospital account");
+      }
+    }
+
     const status = verified ? "VERIFIED" : "REJECTED";
     const { data, error } = await supabaseAdmin().from("reimbursement_requests").update({ status, verified_at: new Date().toISOString(), hospital_notes: notes ?? null }).eq("id", reimbursementId).select("*").single();
     if (error) return serverError(error.message);
@@ -176,6 +190,11 @@ async function handleRefund(req: NextRequest, user: { id: string; role: string }
     if (txError || !tx) return notFound("Transaction not found");
     if (tx.user_id !== user.id && !["admin", "govt"].includes(user.role)) return badRequest("FORBIDDEN", "You can only refund your own donations");
     if (tx.payment_status === "REFUNDED") return badRequest("INVALID_STATUS", "Transaction already refunded");
+    if (tx.payment_status === "PENDING") return badRequest("INVALID_STATUS", "Cannot refund a pending donation");
+    const createdAt = new Date((tx as Record<string, unknown>).created_at as string);
+    const daysSinceDonation = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    if (daysSinceDonation > 30) return badRequest("INVALID_STATUS", "Refunds are only allowed within 30 days of donation");
+    if (tx.amount > 100_000 && user.role !== "admin") return badRequest("FORBIDDEN", "Refunds above ₹1,00,000 require admin approval");
 
     const { data: refund, error: refundError } = await supabaseAdmin().from("refunds").insert({
       funding_transaction_id: fundingTransactionId,

@@ -90,7 +90,7 @@ export interface Case {
   reporterUserId: string;
   assignedToUserId: string | null;
   caseType: "rescue" | "lost_pet" | "abc" | "conflict" | "abuse" | "wildlife";
-  status: "open" | "in_review" | "action_taken" | "resolved" | "closed" | "VERIFIED_REIMBURSEMENT";
+  status: "open" | "in_review" | "action_taken" | "resolved" | "closed";
   priority: "low" | "medium" | "high";
   title: string;
   description: string;

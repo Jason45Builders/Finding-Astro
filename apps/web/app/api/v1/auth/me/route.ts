@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, notFound, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 const mapUser = (row: Record<string, unknown>) => ({
   id: row.id as string,
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
   try {
     const { data, error } = await supabaseAdmin()
       .from("users")
-      .select("id, email, password_hash, full_name, role, reputation_score, active_case_limit, is_available, vehicle_type, vehicle_capacity, service_radius_km, home_location, activity_count, completed_case_count, last_login_at, last_active_at, created_at, updated_at, profile_photo_url")
+      .select("id, email, full_name, role, reputation_score, active_case_limit, is_available, vehicle_type, vehicle_capacity, service_radius_km, home_location, activity_count, completed_case_count, last_login_at, last_active_at, created_at, updated_at, profile_photo_url")
       .eq("id", authResult.user.id)
       .single();
 
@@ -50,6 +51,13 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`profile-update:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
   try {
     const raw = await req.json();

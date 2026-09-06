@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Select, Label } from "@/components/ui/Input";
+import CameraCapture from "@/components/animals/CameraCapture";
 
 const SPECIES_OPTIONS = ["dog", "cat", "bird", "cow", "goat", "other"] as const;
 const GENDER_OPTIONS = ["male", "female", "unknown"] as const;
@@ -41,9 +42,7 @@ export default function RegisterAnimalPage() {
     );
   }, []);
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handlePhotoCapture = async (file: File) => {
     setPhotoName(file.name);
     try {
       const res = await api.uploadMedia(file, "animal_photo");
@@ -187,14 +186,12 @@ export default function RegisterAnimalPage() {
 
           <div>
             <Label>Photo</Label>
-            <div className="border-2 border-dashed border-outline-variant hover:border-primary hover:bg-surface-container rounded-md p-6 text-center transition-colors duration-150 ease-out relative cursor-pointer">
-              <input type="file" accept="image/*" onChange={handleUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-              <div className="flex flex-col items-center gap-2">
-                <Camera className="w-8 h-8 text-outline" />
-                <span className="text-sm font-bold text-on-surface-variant">{photoName || "Click to select a photo"}</span>
-                <span className="text-xs text-outline">{photoUrl ? "Photo attached" : "PNG or JPG formats up to 5MB"}</span>
-              </div>
-            </div>
+            <CameraCapture
+              onCapture={handlePhotoCapture}
+              value={photoUrl}
+              onClear={() => { setPhotoUrl(""); setPhotoName(""); }}
+              disabled={submitting}
+            />
           </div>
 
           <Button type="submit" variant="primary" size="lg" className="w-full" disabled={submitting || !location}>

@@ -8,6 +8,8 @@ import { audit } from "@/lib/audit";
 import { getChannel } from "@/lib/notify-channels";
 import { sendExpoPushNotifications } from "@/lib/push-notify";
 import { GUEST_USER_ID } from "@/lib/guest";
+import { broadcastCaseEvent } from "@/lib/case-stream";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 const RESPONSE_DEADLINE_MINUTES = 15;
 
@@ -78,20 +80,26 @@ async function notifyReporter(caseId: string, title: string, message: string) {
   } catch { /* non-fatal */ }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ caseId: string; action?: string[] }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 
-  try {
-    const url = new URL(req.url);
-    const parts = url.pathname.split("/");
-    const caseId = parts[parts.length - 2];
-    const action = parts[parts.length - 1];
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`emergency:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
-    if (action === "claim") return handleClaim(req, caseId, authResult.user);
-    if (action === "status") return handleStatusUpdate(req, caseId, authResult.user);
-    if (action === "abandon") return handleAbandon(req, caseId, authResult.user);
-    if (action === "response") return handleGetResponse(req, caseId, authResult.user);
+  try {
+    const { caseId, action } = await params;
+    if (!caseId) return new Response(JSON.stringify({ success: false, code: "VALIDATION_ERROR", message: "caseId required" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    const actionName = action?.[0];
+
+    if (actionName === "claim") return handleClaim(req, caseId, authResult.user);
+    if (actionName === "status") return handleStatusUpdate(req, caseId, authResult.user);
+    if (actionName === "abandon") return handleAbandon(req, caseId, authResult.user);
+    if (actionName === "response") return handleGetResponse(req, caseId, authResult.user);
 
     return new Response(null, { status: 405 });
   } catch {
@@ -99,17 +107,23 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function PATCH(req: NextRequest) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ caseId: string; action?: string[] }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 
-  try {
-    const url = new URL(req.url);
-    const parts = url.pathname.split("/");
-    const caseId = parts[parts.length - 2];
-    const action = parts[parts.length - 1];
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`emergency:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
-    if (action === "status") return handleStatusUpdate(req, caseId, authResult.user);
+  try {
+    const { caseId, action } = await params;
+    if (!caseId) return new Response(JSON.stringify({ success: false, code: "VALIDATION_ERROR", message: "caseId required" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    const actionName = action?.[0];
+
+    if (actionName === "status") return handleStatusUpdate(req, caseId, authResult.user);
 
     return new Response(null, { status: 405 });
   } catch {
@@ -117,18 +131,18 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ caseId: string; action?: string[] }> }) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 
-  const url = new URL(req.url);
-  const parts = url.pathname.split("/");
-  const caseId = parts[parts.length - 2];
-  const action = parts[parts.length - 1];
+  try {
+    const { caseId, action } = await params;
+    if (!caseId) return new Response(JSON.stringify({ success: false, code: "VALIDATION_ERROR", message: "caseId required" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    const actionName = action?.[0];
 
-  if (action === "response") return handleGetResponse(req, caseId, authResult.user);
+    if (actionName === "response") return handleGetResponse(req, caseId, authResult.user);
 
-  return new Response(null, { status: 405 });
+    return new Response(null, { status: 405 });
 }
 
 async function handleClaim(req: NextRequest, caseId: string, user: { id: string; role: string; identityTier?: number }) {
@@ -160,9 +174,24 @@ async function handleClaim(req: NextRequest, caseId: string, user: { id: string;
     const responderUserId = (isStaff && requestedResponderId) ? requestedResponderId : user.id;
 
     if (isStaff && requestedResponderId) {
-      const { data: targetUser } = await supabaseAdmin().from("users").select("id, is_banned").eq("id", requestedResponderId).maybeSingle();
-      if (!targetUser || targetUser.is_banned) return badRequest("INVALID_RESPONDER", "Selected responder is not available");
+      const { data: targetUser, error: targetError } = await supabaseAdmin().from("users").select("id, is_banned, is_available, identity_tier, active_case_limit, role").eq("id", requestedResponderId).maybeSingle();
+      if (targetError || !targetUser) return badRequest("INVALID_RESPONDER", "Selected responder does not exist");
+      const target = targetUser as Record<string, unknown>;
+      if (target.is_banned === true) return badRequest("INVALID_RESPONDER", "Selected responder is banned");
+      if (target.is_available !== true) return badRequest("INVALID_RESPONDER", "Selected responder is not available for assignments");
+      const targetTier = Number(target.identity_tier ?? 0);
+      if (targetTier < 1) return badRequest("INVALID_RESPONDER", "Selected responder has not completed identity verification");
+      const { data: activeCaseRows } = await supabaseAdmin().from("case_responses").select("id").eq("responder_user_id", requestedResponderId).in("status", ["claimed", "en_route", "on_scene", "picked_up", "at_hospital"]).limit(1);
+      const activeCaseCount = (activeCaseRows ?? []).length;
+      const limit = Number(target.active_case_limit ?? 3);
+      if (activeCaseCount >= limit) return badRequest("INVALID_RESPONDER", "Selected responder has reached their active case limit");
     }
+
+    const { data: selfActiveCaseRows } = await supabaseAdmin().from("case_responses").select("id").eq("responder_user_id", responderUserId).in("status", ["claimed", "en_route", "on_scene", "picked_up", "at_hospital"]).limit(1);
+    const activeCaseCount = (selfActiveCaseRows ?? []).length;
+    const { data: selfUserRow } = await supabaseAdmin().from("users").select("active_case_limit").eq("id", responderUserId).maybeSingle();
+    const selfLimit = Number((selfUserRow as Record<string, unknown> | null)?.active_case_limit ?? 3);
+    if (activeCaseCount >= selfLimit) return badRequest("CASE_LIMIT_REACHED", "You have reached your active case limit. Complete or abandon existing cases before claiming new ones.");
 
     const now = new Date();
     const deadline = new Date(now.getTime() + RESPONSE_DEADLINE_MINUTES * 60 * 1000);
@@ -229,12 +258,15 @@ async function handleStatusUpdate(req: NextRequest, caseId: string, user: { id: 
       await supabaseAdmin().from("cases").update({ status: "action_taken", updated_at: new Date().toISOString() }).eq("id", caseId);
       const eventNotes = latitude && longitude ? `Responder on scene at ${latitude.toFixed(4)}, ${longitude.toFixed(4)}` : "Responder on scene";
       await supabaseAdmin().from("case_events").insert({ case_id: caseId, actor_id: user.id, from_status: previousCaseStatus, to_status: "action_taken", notes: eventNotes, location: latitude && longitude ? `POINT(${longitude} ${latitude})` : null });
+      broadcastCaseEvent({ type: "updated", caseId, caseType: "rescue", priority: "high", status: "action_taken", timestamp: new Date().toISOString() });
     } else if (status === "completed" && previousCaseStatus && previousCaseStatus !== "resolved") {
       await supabaseAdmin().from("cases").update({ status: "resolved", updated_at: new Date().toISOString() }).eq("id", caseId);
       const eventNotes = latitude && longitude ? `Response completed at ${latitude.toFixed(4)}, ${longitude.toFixed(4)}` : notes ?? "Response completed";
       await supabaseAdmin().from("case_events").insert({ case_id: caseId, actor_id: user.id, from_status: previousCaseStatus, to_status: "resolved", notes: eventNotes, location: latitude && longitude ? `POINT(${longitude} ${latitude})` : null });
+      broadcastCaseEvent({ type: "updated", caseId, caseType: "rescue", priority: "high", status: "resolved", timestamp: new Date().toISOString() });
     } else if (latitude && longitude) {
       await supabaseAdmin().from("case_events").insert({ case_id: caseId, actor_id: user.id, event_type: "location_update", from_status: previousCaseStatus ?? "", to_status: previousCaseStatus ?? "", notes: `Responder location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, location: `POINT(${longitude} ${latitude})` });
+      broadcastCaseEvent({ type: "updated", caseId, caseType: "rescue", priority: "high", status: previousCaseStatus ?? "open", timestamp: new Date().toISOString() });
     }
 
     if (caseRecord?.reporter_user_id && caseRecord.reporter_user_id !== GUEST_USER_ID) {

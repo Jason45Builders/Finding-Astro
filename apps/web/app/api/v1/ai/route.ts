@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
+import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 const MatchesSchema = z.object({ animalId: z.string().uuid().optional() });
 const DuplicatesSchema = z.object({ animalId: z.string().uuid() });
@@ -11,6 +12,13 @@ const DuplicatesSchema = z.object({ animalId: z.string().uuid() });
 export async function POST(req: NextRequest) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const rate = await checkRateLimit(`ai:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) {
+    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  }
 
   try {
     const url = new URL(req.url);
