@@ -82,9 +82,6 @@ export async function POST(req: NextRequest) {
   const pathParts = url.pathname.replace(/\/api\/v1\//, "").split("/");
   const subAction = pathParts[pathParts.length - 1];
 
-  const authResult = await authMiddleware(req);
-  if ("error" in authResult) return authResult.error;
-
   try {
     if (subAction === "abuse") return handleCase(req, authResult.user, "abuse");
     if (subAction === "conflict") return handleCase(req, authResult.user, "conflict");

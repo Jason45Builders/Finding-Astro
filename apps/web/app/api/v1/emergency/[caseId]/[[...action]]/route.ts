@@ -143,6 +143,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ case
     if (actionName === "response") return handleGetResponse(req, caseId, authResult.user);
 
     return new Response(null, { status: 405 });
+  } catch {
+    return serverError();
+  }
 }
 
 async function handleClaim(req: NextRequest, caseId: string, user: { id: string; role: string; identityTier?: number }) {
