@@ -30,7 +30,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { data, error } = await supabaseAdmin()
     .from("medical_history")
     .select("*")
-    .eq("animal_id", animalId)
+    .eq("animal_id", id)
     .order("treatment_date", { ascending: false });
 
   if (error) return serverError(error.message);
