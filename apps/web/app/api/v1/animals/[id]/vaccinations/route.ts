@@ -28,7 +28,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { data, error } = await supabaseAdmin()
     .from("vaccinations")
     .select("*")
-    .eq("animal_id", animalId)
+    .eq("animal_id", id)
     .order("administered_at", { ascending: false });
 
   if (error) return serverError(error.message);
