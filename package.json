@@ -9,13 +9,13 @@
     "react-dom": "^19.0.0"
   },
   "scripts": {
-    "dev": "npm --workspace apps/web run dev",
-    "build": "npm --workspace apps/web run build",
-    "start": "npm --workspace apps/web run start",
-    "lint": "npm --workspace apps/web run lint",
-    "typecheck": "npm --workspace apps/web run typecheck",
-    "test": "npm --workspace apps/web run test",
-    "test:watch": "npm --workspace apps/web run test:watch"
+    "dev": "cd apps/web && npm run dev",
+    "build": "cd apps/web && npm run build",
+    "start": "cd apps/web && npm run start",
+    "lint": "cd apps/web && npm run lint",
+    "typecheck": "cd apps/web && npm run typecheck",
+    "test": "cd apps/web && npm run test",
+    "test:watch": "cd apps/web && npm run test:watch"
   },
   "engines": {
     "node": ">=20.0.0",

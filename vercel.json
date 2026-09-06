@@ -1,8 +1,8 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "npm --workspace apps/web run build",
-  "outputDirectory": ".next",
+  "buildCommand": "npm run build",
+  "outputDirectory": "apps/web/.next",
   "installCommand": "npm install",
   "crons": [
     {
