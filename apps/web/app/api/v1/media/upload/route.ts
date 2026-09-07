@@ -60,12 +60,13 @@ export async function POST(req: NextRequest) {
     const key = `${folder}/${date}/${cryptoRandomHex(8)}${ext.toLowerCase()}`;
 
     const arrayBuffer = await file.arrayBuffer();
+    const isProfile = purpose === "profile";
     const scanResult = await scanBuffer(arrayBuffer, originalName);
     if (!scanResult.clean) {
       await audit({ tableName: "media_uploads", recordId: "rejected", action: "REJECT", actorId: authResult.user.id, actorRole: authResult.user.role, newData: { reason: "virus_detected", threat: scanResult.threat, scanner: scanResult.scanner, filename: originalName } });
       return badRequest("MALWARE_DETECTED", `Upload rejected: ${scanResult.threat ?? "Potential malware detected"}`);
     }
-    const cleanedBuffer = await stripExifGps(arrayBuffer);
+    const cleanedBuffer = isProfile ? arrayBuffer : await stripExifGps(arrayBuffer);
     const cleanedFile = new File([cleanedBuffer], file.name, { type: mimeType, lastModified: file.lastModified });
 
     const { error: uploadErr } = await supabaseAdmin().storage.from(BUCKET).upload(key, cleanedFile, {
