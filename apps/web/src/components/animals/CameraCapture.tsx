@@ -33,9 +33,16 @@ export default function CameraCapture({ onCapture, value, onClear, disabled }: C
         throw new Error("Camera API unavailable in this browser");
       }
 
-      const permissionResult = await navigator.permissions.query({ name: "camera" as PermissionName });
-      if (permissionResult.state === "denied") {
-        throw new Error("Camera permission denied. Please allow camera access in browser settings, or use the upload button below.");
+      if (navigator.permissions && typeof navigator.permissions.query === "function") {
+        try {
+          const permissionResult = await navigator.permissions.query({ name: "camera" as PermissionName });
+          if (permissionResult.state === "denied") {
+            throw new Error("Camera permission denied. Please allow camera access in browser settings, or use the upload button below.");
+          }
+        } catch {
+          // Permissions API not supported or camera permission not queryable;
+          // fall through to direct getUserMedia attempt.
+        }
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({

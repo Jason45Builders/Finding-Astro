@@ -1053,7 +1053,12 @@ class ApiClient {
     if (linkedCaseId) fd.append("linkedCaseId", linkedCaseId);
     if (linkedAnimalId) fd.append("linkedAnimalId", linkedAnimalId);
 
-    const res = await fetch(`${this.baseUrl}/media/upload`, { method: "POST", body: fd });
+    const headers = new Headers();
+    if (this.token) {
+      headers.set("Authorization", `Bearer ${this.token}`);
+    }
+
+    const res = await fetch(`${this.baseUrl}/media/upload`, { method: "POST", body: fd, headers });
     if (!res.ok) throw new Error(`Upload failed (${res.status})`);
     const data = await res.json();
     return data.data as { uploadUrl: string; publicUrl: string };

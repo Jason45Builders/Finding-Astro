@@ -38,7 +38,7 @@ export default function RegisterAnimalPage() {
   const getLocation = useCallback(() => {
     return new Promise<void>((resolve) => {
       if (!navigator.geolocation) {
-        setLocationText("Geolocation not supported. Please type the address.");
+        if (!locationText) setLocationText("Geolocation not supported. Please type the address.");
         resolve();
         return;
       }
@@ -50,14 +50,14 @@ export default function RegisterAnimalPage() {
           resolve();
         },
         () => {
-          setLocationText("Unable to get GPS. Please type the address.");
+          if (!locationText) setLocationText("Unable to get GPS. Please type the address.");
           setLocationLoading(false);
           resolve();
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
       );
     });
-  }, []);
+  }, [locationText]);
 
   const handlePhotoCapture = async (file: File) => {
     setPhotoName(file.name);
