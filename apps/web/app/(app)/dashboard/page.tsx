@@ -84,53 +84,8 @@ export default function UserDashboard() {
   const initials = (user?.fullName || "A").split(" ").map((n) => n.charAt(0).toUpperCase()).slice(0, 2).join("");
   const photoSrc = optimisticPhoto || user?.profilePhotoUrl || null;
 
-  const handlePhotoLoadError = async () => {
-    const url = user?.profilePhotoUrl;
-    console.warn("[profile] Failed to load profile photo:", url);
-
-    if (!url) {
-      setPhotoError("Profile photo URL is missing.");
-      return;
-    }
-
-    try {
-      const response = await fetch(url, { method: "HEAD", mode: "cors" });
-      const contentType = response.headers.get("content-type") || "";
-      console.log("[profile] photo HEAD status:", response.status, "contentType:", contentType);
-
-      if (response.ok && contentType.startsWith("image/")) {
-        const img = new window.Image();
-        const decodePromise = new Promise<boolean>((resolve) => {
-          img.onload = () => resolve(true);
-          img.onerror = () => resolve(false);
-        });
-        img.src = `${url}?profile-photo-diagnostic=1`;
-        const decoded = await decodePromise;
-        console.log("[profile] image decode test:", decoded ? "ok" : "failed");
-
-        if (!decoded) {
-          setPhotoError("Profile photo URL is reachable, but the image data appears corrupted or is not a decodable image.");
-        } else {
-          setPhotoError("Profile photo URL is reachable, but the image could not be displayed in the browser.");
-        }
-      } else if (response.status === 404) {
-        setPhotoError("Profile photo not found in storage. The file may be missing or the URL is incorrect.");
-      } else if (response.status === 403) {
-        setPhotoError("Profile photo access denied. Check Supabase Storage bucket public/read permissions.");
-      } else if (!response.ok) {
-        setPhotoError(`Profile photo failed to load (HTTP ${response.status}).`);
-      } else {
-        setPhotoError(`Profile photo returned unexpected content type: ${contentType || "empty"}. Storage may be serving the file with the wrong MIME type.`);
-      }
-    } catch (err) {
-      console.error("[profile] Error checking photo URL:", err);
-      const message = err instanceof Error ? err.message : "Unknown error";
-      if (message.toLowerCase().includes("cors") || message.toLowerCase().includes("opaque")) {
-        setPhotoError("Profile photo blocked by CORS. Configure Supabase Storage CORS to allow your web origin.");
-      } else {
-        setPhotoError("Profile photo failed to load. Check your network connection or Supabase Storage configuration.");
-      }
-    }
+  const handlePhotoLoadError = () => {
+    console.warn("[profile] Failed to load profile photo:", user?.profilePhotoUrl);
   };
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,27 +96,12 @@ export default function UserDashboard() {
     setUploadingPhoto(true);
     setPhotoError(null);
     try {
-      const uploadResult = await api.uploadMedia(file, "profile");
-      console.log("[profile] uploadMedia result:", uploadResult);
-      await api.updateProfilePhoto(uploadResult.uploadUrl);
+      const { uploadUrl } = await api.uploadMedia(file, "profile");
+      await api.updateProfilePhoto(uploadUrl);
       const refreshed = await api.getMe();
-      console.log("[profile] getMe after update:", refreshed);
-
-      const url = refreshed.profilePhotoUrl;
-      if (url) {
-        try {
-          const head = await fetch(url, { method: "HEAD", mode: "cors" });
-          const contentType = head.headers.get("content-type") || "";
-          console.log("[profile] saved photo HEAD status:", head.status, "contentType:", contentType);
-        } catch {
-          console.warn("[profile] could not HEAD saved photo URL:", url);
-        }
-      }
-
       useAuth.getState().updateUser(refreshed);
       setOptimisticPhoto((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     } catch (err: unknown) {
-      console.error("[profile] upload/save error:", err);
       setPhotoError(err instanceof Error ? err.message : "Failed to save profile photo");
       setOptimisticPhoto((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     } finally {

@@ -2,7 +2,6 @@ export async function stripExifGps(buffer: ArrayBuffer): Promise<ArrayBuffer> {
   const bytes = new Uint8Array(buffer);
 
   if (bytes.byteLength < 20 || bytes[0] !== 0xFF || bytes[1] !== 0xD8) {
-    console.warn("[stripExif] Skipping non-JPEG or truncated input");
     return buffer;
   }
 
@@ -14,16 +13,13 @@ export async function stripExifGps(buffer: ArrayBuffer): Promise<ArrayBuffer> {
 
     if (marker === 0xE1) {
       if (offset + 3 >= bytes.byteLength) break;
-      const length = ((bytes[offset + 2] << 8) | (bytes[offset + 3]));
+      const length = (bytes[offset + 2] << 8) | bytes[offset + 3];
       if (length < 2 || offset + 2 + length > bytes.byteLength) break;
-      const segmentStart = offset;
-      const segmentEnd = offset + 2 + length;
-      const before = bytes.slice(0, segmentStart);
-      const after = bytes.slice(segmentEnd);
+      const before = bytes.slice(0, offset);
+      const after = bytes.slice(offset + 2 + length);
       const combined = new Uint8Array(before.length + after.length);
       combined.set(before);
       combined.set(after);
-      console.log("[stripExif] Removed APP1/EXIF segment", { originalSize: buffer.byteLength, cleanedSize: combined.byteLength, segmentStart, segmentEnd });
       return combined.buffer;
     }
 
@@ -33,7 +29,6 @@ export async function stripExifGps(buffer: ArrayBuffer): Promise<ArrayBuffer> {
     offset += 2 + length;
   }
 
-  console.warn("[stripExif] No removable APP1/EXIF segment found before SOS");
   return buffer;
 }
 
