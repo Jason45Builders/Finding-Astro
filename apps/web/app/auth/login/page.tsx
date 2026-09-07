@@ -92,7 +92,9 @@ function LoginForm() {
           </Button>
         </form>
         <p className="text-center text-sm text-on-surface-variant mt-6">
-          Don&apos;t have an account? <a href={signupHref} className="text-primary font-bold hover:underline">Sign up</a>
+          <a href="/auth/forgot-password" className="font-bold text-on-surface-variant hover:text-primary mr-2">Forgot password?</a>
+          <span className="text-outline">|</span>
+          <span className="ml-2">Don&apos;t have an account? <a href={signupHref} className="text-primary font-bold hover:underline">Sign up</a></span>
         </p>
       </Card>
     </div>
