@@ -10,6 +10,8 @@ import { Textarea, Label } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useAuth } from "@/lib/auth";
+import { api } from "@/lib/api";
 
 interface PartnerRequest {
   id: string;
@@ -32,20 +34,33 @@ interface PartnerRequest {
 }
 
 export default function AdminPartnerRequestsPage() {
+  const { user, isLoading } = useAuth();
   const [requests, setRequests] = useState<PartnerRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
   const [selected, setSelected] = useState<PartnerRequest | null>(null);
   const [note, setNote] = useState("");
+  const [error, setError] = useState("");
+
+  if (!isLoading && (!user || !["admin", "govt"].includes(user.role))) {
+    return (
+      <div className="max-w-2xl mx-auto text-center space-y-6">
+        <Card className="p-8">
+          <h1 className="font-headline-lg text-on-surface">Admin Access Required</h1>
+          <p className="text-on-surface-variant text-sm mt-2">You do not have permission to view partner requests.</p>
+        </Card>
+      </div>
+    );
+  }
 
   const fetchRequests = async () => {
     setLoading(true);
+    setError("");
     try {
-      const res = await fetch("/api/v1/admin/partner-requests");
-      const json = await res.json();
-      if (json.success) setRequests(json.data);
+      const data = await api.listPartnerRequests();
+      setRequests(data as PartnerRequest[]);
     } catch {
-      console.error("Failed to load partner requests");
+      setError("Failed to load partner requests");
     } finally {
       setLoading(false);
     }
@@ -56,14 +71,12 @@ export default function AdminPartnerRequestsPage() {
   const handleApprove = async (id: string) => {
     setProcessing(id);
     try {
-      const res = await fetch(`/api/v1/admin/partner-requests/${id}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ note }) });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.message);
+      await api.approvePartnerRequest(id, note);
       setNote("");
       setSelected(null);
       fetchRequests();
-    } catch (err: any) {
-      alert(err?.message || "Approval failed");
+    } catch {
+      alert("Approval failed");
     } finally {
       setProcessing(null);
     }
@@ -73,18 +86,18 @@ export default function AdminPartnerRequestsPage() {
     if (!confirm("Reject this partner request? The applicant will see your note.")) return;
     setProcessing(id);
     try {
-      const res = await fetch(`/api/v1/admin/partner-requests/${id}/reject`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ note }) });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.message);
+      await api.rejectPartnerRequest(id, note);
       setNote("");
       setSelected(null);
       fetchRequests();
-    } catch (err: any) {
-      alert(err?.message || "Rejection failed");
+    } catch {
+      alert("Rejection failed");
     } finally {
       setProcessing(null);
     }
   };
+
+  if (isLoading) return <PageSpinner />;
 
   return (
     <div className="space-y-6">
@@ -92,6 +105,10 @@ export default function AdminPartnerRequestsPage() {
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Partner Requests</h1>
         <p className="text-sm text-on-surface-variant mt-1">Review clinics and stores requesting to join the partner network.</p>
       </div>
+
+      {error && (
+        <div className="bg-error-container text-on-error-container p-4 rounded-md text-sm font-medium">{error}</div>
+      )}
 
       {loading ? (
         <PageSpinner />

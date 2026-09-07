@@ -46,7 +46,7 @@ export default function CrueltyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) { router.push("/login"); return; }
-    if (!latitude || !longitude) { setError("Please detect your location"); return; }
+    if (latitude === null || longitude === null) { setError("Please detect your location"); return; }
     if (!crueltyType) { setError("Please select the type of cruelty"); return; }
     setSubmitting(true); setError(null);
     try {

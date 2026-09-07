@@ -1,41 +1,62 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Radio, User as UserIcon, MapPin, CheckCircle } from 'lucide-react';
-import type { Case, User } from '@/lib/types';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { PageSpinner } from '@/components/ui/Spinner';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { Radio, User as UserIcon, MapPin, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useAuth } from "@/lib/auth";
+import { api, Case, User } from "@/lib/api";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { PageSpinner } from "@/components/ui/Spinner";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function DispatchPage() {
+  const { user } = useAuth();
   const [openCases, setOpenCases] = useState<Case[]>([]);
   const [responders, setResponders] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch('/api/v1/cases?status=open')
-      .then(r => r.json())
-      .then(r => { if (r.success) setOpenCases(r.data); });
-    fetch('/api/v1/users')
-      .then(r => r.json())
-      .then(r => {
-        if (r.success) setResponders((r.data as User[]).filter((u: User) => u.isAvailable));
+    const fetchData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const [casesData, usersData] = await Promise.all([
+          api.listCases({ status: "open" }),
+          api.listUsers(),
+        ]);
+        setOpenCases(casesData);
+        setResponders(usersData.filter((u) => u.isAvailable && !u.isBanned));
+      } catch {
+        setError("Failed to load dispatch data");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    void fetchData();
   }, []);
 
   const handleAssign = async (caseId: string, responderId: string) => {
-    await fetch(`/api/v1/emergency/${caseId}/claim`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    });
-    setOpenCases(prev => prev.filter(c => c.id !== caseId));
+    try {
+      await api.claimCase(caseId, responderId);
+      setOpenCases((prev) => prev.filter((c) => c.id !== caseId));
+    } catch {
+      alert("Failed to assign responder");
+    }
   };
 
   if (loading) return <PageSpinner label="Loading dispatch..." />;
+
+  if (error) {
+    return (
+      <div className="max-w-xl mx-auto text-center py-20">
+        <AlertTriangle className="w-16 h-16 text-error mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-on-surface">{error}</h2>
+        <Button onClick={() => window.location.reload()} className="mt-4">Retry</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -65,7 +86,7 @@ export default function DispatchPage() {
                   </div>
                   <div className="flex items-center gap-2 text-xs text-outline mb-3">
                     <MapPin className="w-3 h-3" />
-                    {c.locationText || `${c.location.latitude.toFixed(4)}, ${c.location.longitude.toFixed(4)}`}
+                    {c.locationText || (c.location ? `${c.location.latitude.toFixed(4)}, ${c.location.longitude.toFixed(4)}` : "Unknown location")}
                   </div>
                   <div className="border-t border-outline-variant pt-3">
                     <p className="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Assign to:</p>

@@ -84,7 +84,7 @@ export default function FundingCaseDetails() {
 
   const progressPercent = Math.min(
     100,
-    Math.round((funding.raisedAmount / funding.totalAmount) * 100)
+    Math.round((funding.raisedAmount / (funding.totalAmount || 1)) * 100)
   );
 
   return (

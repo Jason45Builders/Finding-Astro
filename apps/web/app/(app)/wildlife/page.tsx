@@ -60,7 +60,7 @@ function WildlifePageInner() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!latitude || !longitude) { setError("Please detect your location"); return; }
+    if (latitude === null || longitude === null) { setError("Please detect your location"); return; }
     if (!condition) { setError("Please select the animal's condition"); return; }
     if (!user) { router.push("/login"); return; }
     setSubmitting(true); setError(null);

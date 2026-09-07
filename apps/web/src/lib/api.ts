@@ -1,5 +1,6 @@
 export interface User {
   id: string;
+  email: string;
   phone: string;
   fullName: string | null;
   role: "citizen" | "ngo" | "govt" | "admin" | "hospital";
@@ -633,6 +634,10 @@ class ApiClient {
     return this.request<Case[]>(`/cases${qs ? `?${qs}` : ""}`);
   }
 
+  async listUsers(): Promise<any[]> {
+    return this.request<any[]>("/users");
+  }
+
   async getCase(id: string): Promise<Case> {
     return this.request<Case>(`/cases/${id}`);
   }
@@ -665,8 +670,11 @@ class ApiClient {
   }
 
   // ── Emergency Response ────────────────────────────────────────────────────
-  async claimCase(caseId: string): Promise<CaseResponse> {
-    return this.request<CaseResponse>(`/emergency/${caseId}/claim`, { method: "POST" });
+  async claimCase(caseId: string, responderId?: string): Promise<CaseResponse> {
+    return this.request<CaseResponse>(`/emergency/${caseId}/claim`, {
+      method: "POST",
+      body: JSON.stringify(responderId ? { responderId } : {}),
+    });
   }
 
   async updateResponderStatus(caseId: string, status: string, notes?: string, evidenceUrls?: string[]): Promise<CaseResponse> {
@@ -828,6 +836,24 @@ class ApiClient {
 
   async listAbcCentres(): Promise<Partner[]> {
     return this.request<Partner[]>("/partners/abc-centres");
+  }
+
+  async listPartnerRequests(): Promise<any[]> {
+    return this.request<any[]>("/admin/partner-requests");
+  }
+
+  async approvePartnerRequest(id: string, note?: string): Promise<any> {
+    return this.request(`/admin/partner-requests/${id}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ note: note ?? "" }),
+    });
+  }
+
+  async rejectPartnerRequest(id: string, note?: string): Promise<any> {
+    return this.request(`/admin/partner-requests/${id}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ note: note ?? "" }),
+    });
   }
 
   // ── Wildlife ──────────────────────────────────────────────────────────────

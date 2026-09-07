@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Shield, MapPin, Star, Save, CheckCircle, AlertCircle, ChevronDown, Award, Radar, Building2, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -35,6 +35,14 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setIsAvailable(user.isAvailable);
+      setServiceRadius(user.serviceRadiusKm);
+      setVehicleType(user.vehicleType ?? "");
+    }
+  }, [user]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

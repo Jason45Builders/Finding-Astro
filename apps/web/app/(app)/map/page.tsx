@@ -42,13 +42,24 @@ export default function CityMapPage() {
     abcCentres: false,
   });
 
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {}
+      );
+    }
+  }, []);
+
   useEffect(() => {
     const load = async () => {
       try {
         const [animalData, caseData, clinicData, abcData] = await Promise.allSettled([
           api.listAnimals({ limit: 100 }),
           api.listCases({ limit: 200 }),
-          api.listClinics(13.0827, 80.2707, 30),
+          api.listClinics(userLocation?.lat ?? 13.0827, userLocation?.lng ?? 80.2707, 30),
           api.listAbcCentres(),
         ]);
         if (animalData.status === "fulfilled") setAnimals(animalData.value);
@@ -62,7 +73,7 @@ export default function CityMapPage() {
       }
     };
     void load();
-  }, []);
+  }, [userLocation]);
 
   const toggleLayer = (key: LayerKey) => {
     setActiveLayers((prev) => ({ ...prev, [key]: !prev[key] }));

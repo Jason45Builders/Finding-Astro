@@ -116,7 +116,7 @@ export default function AbcPage() {
     e.preventDefault();
     if (!user) { router.push("/login"); return; }
     if (!selectedAnimalId) { setError("Please select an animal"); return; }
-    if (!latitude || !longitude) { setError("Please detect your location"); return; }
+    if (latitude === null || longitude === null) { setError("Please detect your location"); return; }
     setSubmitting(true); setError(null);
     try {
       await api.requestAbc({ animalId: selectedAnimalId, notes, latitude, longitude });

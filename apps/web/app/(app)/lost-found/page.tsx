@@ -68,7 +68,7 @@ export default function LostFoundPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.latitude || !form.longitude) { setError("Please detect your location first"); return; }
+    if (form.latitude === null || form.longitude === null) { setError("Please detect your location first"); return; }
     setSubmitting(true); setError(null);
     try {
       let evidenceUrls: string[] = [];

@@ -67,7 +67,7 @@ export default function SafetyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) { router.push("/login"); return; }
-    if (!latitude || !longitude) { setError("Please detect your location"); return; }
+    if (latitude === null || longitude === null) { setError("Please detect your location"); return; }
     setSubmitting(true); setError(null);
     try {
       const result = await api.reportSafetyConcern({ situationType, description, latitude, longitude, severity });

@@ -143,11 +143,11 @@ export default function ActiveResponsePage() {
     return <PageSpinner label="Loading mission file..." />;
   }
 
-  if (error || !caseRecord || !activeClaim) {
+  if (error || !caseRecord) {
     return (
       <div className="max-w-xl mx-auto text-center py-20">
         <AlertTriangle className="w-16 h-16 text-error mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-on-surface">{error || "Claim Error"}</h2>
+        <h2 className="text-xl font-bold text-on-surface">{error || "Case not found"}</h2>
         <Link href="/respond" className="text-primary font-bold hover:underline mt-4 block">
           &larr; Back to Dispatch Board
         </Link>
@@ -155,12 +155,12 @@ export default function ActiveResponsePage() {
     );
   }
 
-  const currentStepIndex = STEPS.findIndex((s) => s.key === activeClaim.status);
+  const currentStepIndex = activeClaim ? STEPS.findIndex((s) => s.key === activeClaim.status) : -1;
 
   const stepperSteps: StepItem[] = STEPS.map((step, index) => ({
     key: step.key,
     label: step.label,
-    state: index < currentStepIndex ? "done" : index === currentStepIndex ? "active" : "pending",
+    state: activeClaim ? (index < currentStepIndex ? "done" : index === currentStepIndex ? "active" : "pending") : "pending",
   }));
 
   return (

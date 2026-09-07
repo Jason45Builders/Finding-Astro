@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Calendar } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 import { api, Case } from "@/lib/api";
 import { formatDateTime } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
@@ -16,6 +17,7 @@ import { statusToken } from "@/lib/status";
 type ActiveTab = "reported" | "responding";
 
 export default function MyCases() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>("reported");
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,16 +37,14 @@ export default function MyCases() {
     void fetchCases();
   }, []);
 
-  // Filter cases depending on tab selection
-  // In Finding Astro, a citizen reports cases. In the active claimed case flow, a responder is assigned.
-  // We can filter reported vs claimed:
-  // - Reported: reporterUserId !== null (since the api lists my cases, all returned cases in /cases are relating to the user)
-  // - Responding: cases where assignedToUserId === my user ID. Since listCases returns the relevant user's cases,
-  // we can differentiate them by matching user profiles or checking if it is claimed.
-  // Let's do a basic separation: if activeTab is "responding", show cases where user is claiming (we can inspect responder assignments in detail).
-  // Or, since listCases returns all cases associated with me, we can check.
-  const reportedCases = cases.filter((c) => c.caseType !== "abc" || c.status !== "closed"); // show regular citizen cases
-  const respondingCases = cases.filter((c) => c.status === "in_review" || c.status === "action_taken"); // claimed response cases
+  const currentUserId = user?.id ?? null;
+
+  const reportedCases = cases.filter((c) => {
+    if (c.caseType === "abc" && c.status === "closed") return false;
+    return c.reporterUserId === currentUserId || c.assignedToUserId === currentUserId;
+  });
+
+  const respondingCases = cases.filter((c) => c.assignedToUserId === currentUserId && (c.status === "in_review" || c.status === "action_taken"));
 
   const activeCasesList = activeTab === "reported" ? reportedCases : respondingCases;
 

@@ -11,13 +11,17 @@ import { Badge } from "@/components/ui/Badge";
 import { PageSpinner } from "@/components/ui/Spinner";
 
 export default function MyDonationsPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [donations, setDonations] = useState<WelfarePayment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
+      if (!user) {
+        if (!cancelled) setLoading(false);
+        return;
+      }
       try {
         const data = await api.listMyDonations();
         if (!cancelled) setDonations(data);
@@ -27,11 +31,23 @@ export default function MyDonationsPage() {
         if (!cancelled) setLoading(false);
       }
     };
-    void load();
+    if (!isLoading) void load();
     return () => { cancelled = true; };
-  }, []);
+  }, [user, isLoading]);
 
   if (loading) return <PageSpinner />;
+
+  if (!user) {
+    return (
+      <div className="max-w-3xl mx-auto text-center space-y-6">
+        <Card className="p-8">
+          <h1 className="font-headline-lg text-on-surface">Sign in required</h1>
+          <p className="text-on-surface-variant text-sm mt-2">Please sign in to view your donations.</p>
+          <Link href="/auth/login"><Button variant="primary" className="mt-4">Sign In</Button></Link>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
