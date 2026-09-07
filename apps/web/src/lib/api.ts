@@ -11,6 +11,8 @@ export interface User {
   vehicleType: string | null;
   serviceRadiusKm: number;
   homeLocation: { latitude: number; longitude: number } | null;
+  activityCount: number;
+  completedCaseCount: number;
 }
 
 export interface Animal {
