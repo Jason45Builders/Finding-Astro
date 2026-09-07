@@ -94,19 +94,42 @@ export default function UserDashboard() {
     }
 
     try {
-      const response = await fetch(url, { method: "HEAD" });
-      if (response.ok) {
-        setPhotoError("Profile photo URL is reachable, but the image could not be displayed in the browser.");
+      const response = await fetch(url, { method: "HEAD", mode: "cors" });
+      const contentType = response.headers.get("content-type") || "";
+      console.log("[profile] photo HEAD status:", response.status, "contentType:", contentType);
+
+      if (response.ok && contentType.startsWith("image/")) {
+        const img = new window.Image();
+        const decodePromise = new Promise<boolean>((resolve) => {
+          img.onload = () => resolve(true);
+          img.onerror = () => resolve(false);
+        });
+        img.src = `${url}?profile-photo-diagnostic=1`;
+        const decoded = await decodePromise;
+        console.log("[profile] image decode test:", decoded ? "ok" : "failed");
+
+        if (!decoded) {
+          setPhotoError("Profile photo URL is reachable, but the image data appears corrupted or is not a decodable image.");
+        } else {
+          setPhotoError("Profile photo URL is reachable, but the image could not be displayed in the browser.");
+        }
       } else if (response.status === 404) {
         setPhotoError("Profile photo not found in storage. The file may be missing or the URL is incorrect.");
       } else if (response.status === 403) {
         setPhotoError("Profile photo access denied. Check Supabase Storage bucket public/read permissions.");
-      } else {
+      } else if (!response.ok) {
         setPhotoError(`Profile photo failed to load (HTTP ${response.status}).`);
+      } else {
+        setPhotoError(`Profile photo returned unexpected content type: ${contentType || "empty"}. Storage may be serving the file with the wrong MIME type.`);
       }
     } catch (err) {
       console.error("[profile] Error checking photo URL:", err);
-      setPhotoError("Profile photo failed to load. Check your network connection or Supabase Storage configuration.");
+      const message = err instanceof Error ? err.message : "Unknown error";
+      if (message.toLowerCase().includes("cors") || message.toLowerCase().includes("opaque")) {
+        setPhotoError("Profile photo blocked by CORS. Configure Supabase Storage CORS to allow your web origin.");
+      } else {
+        setPhotoError("Profile photo failed to load. Check your network connection or Supabase Storage configuration.");
+      }
     }
   };
 
@@ -123,6 +146,18 @@ export default function UserDashboard() {
       await api.updateProfilePhoto(uploadResult.uploadUrl);
       const refreshed = await api.getMe();
       console.log("[profile] getMe after update:", refreshed);
+
+      const url = refreshed.profilePhotoUrl;
+      if (url) {
+        try {
+          const head = await fetch(url, { method: "HEAD", mode: "cors" });
+          const contentType = head.headers.get("content-type") || "";
+          console.log("[profile] saved photo HEAD status:", head.status, "contentType:", contentType);
+        } catch {
+          console.warn("[profile] could not HEAD saved photo URL:", url);
+        }
+      }
+
       useAuth.getState().updateUser(refreshed);
       setOptimisticPhoto((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     } catch (err: unknown) {

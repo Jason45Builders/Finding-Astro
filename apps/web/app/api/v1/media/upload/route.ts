@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { data: { publicUrl } } = supabaseAdmin().storage.from(BUCKET).getPublicUrl(key);
+    console.log("[media/upload] uploaded key:", key, "mimeType:", mimeType, "publicUrl:", publicUrl, "cleanedSize:", cleanedBuffer.byteLength, "originalSize:", arrayBuffer.byteLength);
 
     return created({ uploadUrl: publicUrl, publicUrl, key, cdnUrl: publicUrl }, "Upload URL generated");
   } catch (err) {
