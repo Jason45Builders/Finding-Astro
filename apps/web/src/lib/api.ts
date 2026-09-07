@@ -487,6 +487,34 @@ class ApiClient {
     });
   }
 
+  async requestPasswordReset(email: string): Promise<{ email: string }> {
+    return this.request<{ email: string }>("/auth/password-reset?action=request", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const headers = new Headers();
+    headers.set("Authorization", `Bearer ${token}`);
+    await this.request<void>("/auth/password-reset", {
+      method: "POST",
+      body: JSON.stringify({ newPassword, confirmPassword: newPassword }),
+      headers,
+    });
+  }
+
+  async getAbuseReview(): Promise<{ suspiciousIps: Array<{ ip: string; failedAttempts: number }>; recentLoginFailures: Array<Record<string, unknown>>; recentReports: Array<Record<string, unknown>> }> {
+    return this.request("/abuse/review");
+  }
+
+  async deleteAccount(confirmation: string): Promise<void> {
+    await this.request<void>("/auth/account", {
+      method: "POST",
+      body: JSON.stringify({ confirmation }),
+    });
+  }
+
   async getMe(): Promise<User> {
     return this.request<User>("/auth/me");
   }
