@@ -35,6 +35,9 @@ const BASE_NAV_ITEMS = [
   { label: "Report Cruelty",href: "/cruelty",      icon: ShieldAlert },
   { label: "Partners",      href: "/partners",     icon: Building },
   { label: "My Profile",    href: "/profile",      icon: UserIcon },
+  { label: "Legal",         href: "/legal",        icon: ShieldAlert },
+  { label: "Privacy",       href: "/privacy",      icon: Shield },
+  { label: "Terms",         href: "/terms",        icon: ClipboardList },
 ];
 
 const ADMIN_NAV_ITEMS = [
