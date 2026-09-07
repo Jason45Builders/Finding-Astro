@@ -73,12 +73,20 @@ export async function POST(req: NextRequest) {
       upsert: false,
     });
 
-    if (uploadErr) return serverError(uploadErr.message);
+    if (uploadErr) {
+      const message = uploadErr.message ?? "Storage upload failed";
+      if (message.toLowerCase().includes("permission") || message.toLowerCase().includes("not found") || message.toLowerCase().includes("bucket")) {
+        return new Response(JSON.stringify({ success: false, code: "STORAGE_ERROR", message: `Storage error: ${message}. Please ensure the "${BUCKET}" bucket exists in Supabase Storage.` }), { status: 500, headers: { "Content-Type": "application/json" } });
+      }
+      return serverError(message);
+    }
 
     const { data: { publicUrl } } = supabaseAdmin().storage.from(BUCKET).getPublicUrl(key);
 
     return created({ uploadUrl: publicUrl, publicUrl, key, cdnUrl: publicUrl }, "Upload URL generated");
-  } catch {
-    return serverError("Upload failed");
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Upload failed";
+    console.error("[media/upload] Unexpected error:", err);
+    return serverError(message, err);
   }
 }

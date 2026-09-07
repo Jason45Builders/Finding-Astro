@@ -1059,9 +1059,20 @@ class ApiClient {
     }
 
     const res = await fetch(`${this.baseUrl}/media/upload`, { method: "POST", body: fd, headers });
-    if (!res.ok) throw new Error(`Upload failed (${res.status})`);
-    const data = await res.json();
-    return data.data as { uploadUrl: string; publicUrl: string };
+    let payload: unknown;
+    try {
+      payload = await res.json();
+    } catch {
+      throw new Error(`Upload failed (${res.status})`);
+    }
+    const p = payload as { success?: boolean; message?: string; data?: { uploadUrl: string; publicUrl: string } };
+    if (!res.ok || p.success === false) {
+      throw new Error(p.message || `Upload failed (${res.status})`);
+    }
+    if (!p.data) {
+      throw new Error("Upload failed: missing upload data");
+    }
+    return p.data;
   }
 
   // ── Admin ──────────────────────────────────────────────────────────────────

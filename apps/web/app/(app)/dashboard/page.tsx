@@ -99,6 +99,7 @@ export default function UserDashboard() {
       setOptimisticPhoto((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     } catch (err: unknown) {
       setPhotoError(err instanceof Error ? err.message : "Failed to save profile photo");
+      setOptimisticPhoto((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     } finally {
       setUploadingPhoto(false);
       e.target.value = "";
