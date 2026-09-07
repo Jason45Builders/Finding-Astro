@@ -2,7 +2,8 @@
   "version": 2,
   "framework": "nextjs",
   "buildCommand": "npm run build",
-  "outputDirectory": "apps/web/.next",
+  "rootDirectory": "apps/web",
+  "outputDirectory": ".next",
   "installCommand": "npm install",
   "crons": [
     {
