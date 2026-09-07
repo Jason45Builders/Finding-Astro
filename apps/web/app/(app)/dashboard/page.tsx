@@ -84,9 +84,30 @@ export default function UserDashboard() {
   const initials = (user?.fullName || "A").split(" ").map((n) => n.charAt(0).toUpperCase()).slice(0, 2).join("");
   const photoSrc = optimisticPhoto || user?.profilePhotoUrl || null;
 
-  const handlePhotoLoadError = () => {
-    console.warn("[profile] Failed to load profile photo:", user?.profilePhotoUrl);
-    setPhotoError("Profile photo failed to load. Storage or URL may be misconfigured.");
+  const handlePhotoLoadError = async () => {
+    const url = user?.profilePhotoUrl;
+    console.warn("[profile] Failed to load profile photo:", url);
+
+    if (!url) {
+      setPhotoError("Profile photo URL is missing.");
+      return;
+    }
+
+    try {
+      const response = await fetch(url, { method: "HEAD" });
+      if (response.ok) {
+        setPhotoError("Profile photo URL is reachable, but the image could not be displayed in the browser.");
+      } else if (response.status === 404) {
+        setPhotoError("Profile photo not found in storage. The file may be missing or the URL is incorrect.");
+      } else if (response.status === 403) {
+        setPhotoError("Profile photo access denied. Check Supabase Storage bucket public/read permissions.");
+      } else {
+        setPhotoError(`Profile photo failed to load (HTTP ${response.status}).`);
+      }
+    } catch (err) {
+      console.error("[profile] Error checking photo URL:", err);
+      setPhotoError("Profile photo failed to load. Check your network connection or Supabase Storage configuration.");
+    }
   };
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,12 +118,15 @@ export default function UserDashboard() {
     setUploadingPhoto(true);
     setPhotoError(null);
     try {
-      const { uploadUrl } = await api.uploadMedia(file, "profile");
-      await api.updateProfilePhoto(uploadUrl);
+      const uploadResult = await api.uploadMedia(file, "profile");
+      console.log("[profile] uploadMedia result:", uploadResult);
+      await api.updateProfilePhoto(uploadResult.uploadUrl);
       const refreshed = await api.getMe();
+      console.log("[profile] getMe after update:", refreshed);
       useAuth.getState().updateUser(refreshed);
       setOptimisticPhoto((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     } catch (err: unknown) {
+      console.error("[profile] upload/save error:", err);
       setPhotoError(err instanceof Error ? err.message : "Failed to save profile photo");
       setOptimisticPhoto((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     } finally {
