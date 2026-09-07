@@ -115,6 +115,10 @@ export default function UserDashboard() {
     <div className="space-y-8">
       {/* ID Card */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-primary to-emerald-700 text-white shadow-xl">
+        <div className="absolute inset-0">
+          <img src="/Finding Astro_Header.png" alt="" className="w-full h-full object-cover object-center opacity-20" />
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-600/90 via-primary/90 to-emerald-700/90" />
+        </div>
         <div className="absolute right-0 bottom-0 opacity-[0.07] pointer-events-none transform translate-y-6 translate-x-4">
           <Heart className="w-64 h-64 fill-white" />
         </div>
@@ -211,6 +215,14 @@ export default function UserDashboard() {
         </Link>
       </div>
 
+      {/* Quote Section */}
+      <div className="rounded-2xl bg-surface-container-low border border-outline-variant p-6 sm:p-8 text-center">
+        <p className="text-base sm:text-lg italic text-on-surface-variant leading-relaxed">
+          &ldquo;The greatness of a nation and its moral progress can be judged by the way its animals are treated.&rdquo;
+        </p>
+        <p className="text-sm text-outline mt-2">— Mahatma Gandhi</p>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Recent Cases */}
         <Card className="p-6 lg:col-span-7">
@@ -286,6 +298,12 @@ export default function UserDashboard() {
             </div>
           )}
         </Card>
+      </div>
+
+      {/* Footer Image Section */}
+      <div className="relative rounded-2xl overflow-hidden h-48 sm:h-64">
+        <img src="/Finding Astro_Footer.png" alt="Community" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
       </div>
     </div>
   );
