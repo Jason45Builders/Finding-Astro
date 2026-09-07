@@ -12,6 +12,14 @@ import CameraCapture from "@/components/animals/CameraCapture";
 
 const SPECIES_OPTIONS = ["dog", "cat", "bird", "cow", "goat", "other"] as const;
 const GENDER_OPTIONS = ["male", "female", "unknown"] as const;
+const VISIBILITY_OPTIONS = [
+  { value: "private", label: "Private — only me and rescue teams can see", description: "Default safest option" },
+  { value: "public_emergency", label: "Public for emergency rescue", description: "Visible when injured or in immediate danger" },
+  { value: "public_abc", label: "Public for ABC programme", description: "Visible for sterilisation/vaccination coordination" },
+  { value: "public_medical", label: "Public for medical help", description: "Visible when veterinary care is needed" },
+  { value: "public_adoption", label: "Public for adoption", description: "Visible for rehoming" },
+  { value: "public_general", label: "Public general", description: "Visible to everyone" },
+] as const;
 
 export default function RegisterAnimalPage() {
   const router = useRouter();
@@ -34,6 +42,9 @@ export default function RegisterAnimalPage() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoName, setPhotoName] = useState("");
   const [locationLoading, setLocationLoading] = useState(false);
+  const [visibility, setVisibility] = useState<string>("private");
+  const [visibilityReason, setVisibilityReason] = useState("");
+  const [visibilityExpiresAt, setVisibilityExpiresAt] = useState("");
 
   const getLocation = useCallback(() => {
     return new Promise<void>((resolve) => {
@@ -97,6 +108,9 @@ export default function RegisterAnimalPage() {
         ...(territoryLabel ? { territoryLabel } : {}),
         ...(photoUrl ? { primaryPhotoUrl: photoUrl } : {}),
         ...(locationText ? { lastSeenText: locationText } : {}),
+        visibility: visibility as "private" | "public_emergency" | "public_abc" | "public_medical" | "public_adoption" | "public_general",
+        ...(visibilityReason ? { visibilityReason } : {}),
+        ...(visibilityExpiresAt ? { visibilityExpiresAt } : {}),
       };
 
       const created = await api.createAnimal(payload);
@@ -195,6 +209,33 @@ export default function RegisterAnimalPage() {
           <div>
             <Label>Description</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="General health, behaviour, notes..." />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="mb-0">Visibility <span className="text-error">*</span></Label>
+            <p className="text-xs text-on-surface-variant">Animals are private by default. Make them public only when needed for rescue, ABC, medical help, or adoption.</p>
+            <select
+              value={visibility}
+              onChange={(e) => setVisibility(e.target.value)}
+              className="w-full bg-surface-container-low border-b-2 border-outline focus:border-primary focus:ring-0 focus:outline-none px-4 py-3 rounded-t-md transition-colors font-body-md text-on-surface"
+            >
+              {VISIBILITY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            {visibility !== "private" && (
+              <div className="space-y-2 pt-2">
+                <Label>Reason for public visibility</Label>
+                <Textarea value={visibilityReason} onChange={(e) => setVisibilityReason(e.target.value)} rows={2} placeholder="Why should this animal be publicly visible?" />
+                {visibility !== "public_general" && (
+                  <div>
+                    <Label>Visible until (optional)</Label>
+                    <Input type="date" value={visibilityExpiresAt} onChange={(e) => setVisibilityExpiresAt(e.target.value)} />
+                    <p className="text-xs text-outline mt-1">Leave empty for no expiry. For emergencies, set a short expiry so the record auto-hides later.</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">

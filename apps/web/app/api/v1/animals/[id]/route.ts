@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
-import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
+import { ok, badRequest, serverError, notFound, forbidden } from "@/lib/api-response";
 import { LocationSchema, validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { fuzzyLocation } from "@/lib/geo";
@@ -36,6 +36,9 @@ const CreateAnimalSchema = z.object({
   vaccinationStatus: VaccinationStatusEnum.optional(),
   adoptableSince: z.string().optional(),
   adoptionNotes: z.string().optional(),
+  visibility: z.enum(["private", "public_emergency", "public_abc", "public_medical", "public_adoption", "public_general"]).optional(),
+  visibilityReason: z.string().max(500).optional(),
+  visibilityExpiresAt: z.string().optional(),
 });
 
 const UpdateAnimalSchema = CreateAnimalSchema.partial().extend({
@@ -55,6 +58,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (error) return notFound("Animal not found");
 
   const animal = data as Record<string, unknown>;
+  const isStaff = ["admin", "govt", "ngo", "hospital"].includes(authResult.user.role);
+  const visibility = (animal.visibility as string) ?? "private";
+  const createdBy = animal.created_by_user_id as string | null;
+
+  if (!isStaff && visibility === "private" && createdBy !== authResult.user.id) {
+    return forbidden("This animal record is private");
+  }
+
+  if (!isStaff && visibility.startsWith("public_")) {
+    const expiresAt = animal.visibility_expires_at as string | null;
+    if (expiresAt && expiresAt <= new Date().toISOString()) {
+      return forbidden("This animal record is no longer publicly visible");
+    }
+  }
+
   return ok(mapAnimal({ ...animal, location: fuzzyLocation(animal.location, userTier) }), "Animal loaded");
 }
 
@@ -99,11 +117,26 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       size: body.size ?? null,
       temperament: body.temperament ?? null,
       distinguishing_marks: body.distinguishingMarks ?? null,
+      visibility: body.visibility ?? "private",
+      visibility_reason: body.visibilityReason ?? null,
+      visibility_expires_at: body.visibilityExpiresAt ?? null,
+      visibility_changed_by: authResult.user.id,
+      visibility_changed_at: new Date().toISOString(),
     };
 
     const { data, error } = await supabaseAdmin().from("animals").insert(payload).select("*").single();
     if (error) return serverError(error.message);
-    if (data) await audit({ tableName: "animals", recordId: data.id, action: "INSERT", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
+    if (data) {
+      await audit({ tableName: "animals", recordId: data.id, action: "INSERT", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
+      await supabaseAdmin().from("animal_visibility_audit").insert({
+        animal_id: data.id,
+        actor_id: authResult.user.id,
+        actor_role: authResult.user.role,
+        old_visibility: "private",
+        new_visibility: (data.visibility as string) ?? "private",
+        reason: body.visibilityReason ?? null,
+      });
+    }
     return ok(mapAnimal({ ...data, location: fuzzyLocation(data.location, authResult.user.identityTier ?? 0) }), "Animal record created");
   } catch {
     return serverError();
@@ -147,6 +180,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       disappearanceRiskLevel: "disappearance_risk_level",
       vaccinationStatus: "vaccination_status", adoptableSince: "adoptable_since",
       adoptionNotes: "adoption_notes", status: "status",
+      visibility: "visibility", visibilityReason: "visibility_reason", visibilityExpiresAt: "visibility_expires_at",
     };
     for (const [src, dst] of Object.entries(fieldMap)) {
       if ((body as Record<string, unknown>)[src] !== undefined) {
@@ -156,11 +190,29 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (body.latitude && body.longitude) {
       update.location = `POINT(${body.longitude} ${body.latitude})`;
     }
+    if ((body as Record<string, unknown>).visibility !== undefined) {
+      update.visibility_changed_by = authResult.user.id;
+      update.visibility_changed_at = new Date().toISOString();
+    }
     update.updated_at = new Date().toISOString();
 
     const { data: updateData, error: updateError } = await supabaseAdmin().from("animals").update(update).eq("id", id).select("*").single();
     if (updateError) return serverError(updateError.message);
-    if (updateData) await audit({ tableName: "animals", recordId: id, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: updateData });
+    if (updateData) {
+      await audit({ tableName: "animals", recordId: id, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: updateData });
+      const oldVisibility = (existing as Record<string, unknown>).visibility as string | undefined ?? "private";
+      const newVisibility = (updateData.visibility as string) ?? "private";
+      if (oldVisibility !== newVisibility) {
+        await supabaseAdmin().from("animal_visibility_audit").insert({
+          animal_id: id,
+          actor_id: authResult.user.id,
+          actor_role: authResult.user.role,
+          old_visibility: oldVisibility,
+          new_visibility: newVisibility,
+          reason: ((body as Record<string, unknown>).visibilityReason as string | null) ?? null,
+        });
+      }
+    }
     return ok(mapAnimal({ ...updateData, location: fuzzyLocation(updateData.location, authResult.user.identityTier ?? 0) }), "Animal updated");
   } catch {
     return serverError();

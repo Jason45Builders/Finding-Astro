@@ -34,6 +34,15 @@ export interface Animal {
   disappearanceRiskLevel?: string;
   createdAt: string;
   updatedAt?: string;
+  createdByUserId?: string | null;
+  caretakerUserId?: string | null;
+  adoptableSince?: string | null;
+  adoptionNotes?: string | null;
+  visibility: "private" | "public_emergency" | "public_abc" | "public_medical" | "public_adoption" | "public_general";
+  visibilityReason: string | null;
+  visibilityExpiresAt: string | null;
+  visibilityChangedBy: string | null;
+  visibilityChangedAt: string | null;
 }
 
 export interface AnimalMedicalRecord {
@@ -521,6 +530,7 @@ class ApiClient {
     status?: string; name?: string; breed?: string; color?: string;
     gender?: string; approxAgeMonths?: number; distinguishingMarks?: string;
     description?: string; territoryLabel?: string; primaryPhotoUrl?: string;
+    visibility?: Animal["visibility"]; visibilityReason?: string; visibilityExpiresAt?: string;
   }): Promise<Animal> {
     return this.request<Animal>("/animals", {
       method: "POST",
@@ -532,7 +542,7 @@ class ApiClient {
     return this.request<Animal>(`/animals/${id}`);
   }
 
-  async updateAnimal(id: string, data: { status?: string; name?: string; breed?: string; color?: string; description?: string; isSterilized?: boolean; adoptionNotes?: string; adoptableSince?: string }): Promise<Animal> {
+  async updateAnimal(id: string, data: { status?: string; name?: string; breed?: string; color?: string; description?: string; isSterilized?: boolean; adoptionNotes?: string; adoptableSince?: string; visibility?: Animal["visibility"]; visibilityReason?: string; visibilityExpiresAt?: string | null }): Promise<Animal> {
     return this.request<Animal>(`/animals/${id}`, { method: "PATCH", body: JSON.stringify(data) });
   }
 

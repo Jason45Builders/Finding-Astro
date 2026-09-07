@@ -179,6 +179,9 @@ export default function AnimalProfilePage() {
                 <Leaf className="w-3 h-3" /> Sterilized
               </Badge>
             )}
+            <Badge variant={animal.visibility === "private" ? "warning" : "info"}>
+              {animal.visibility === "private" ? "Private" : animal.visibility.replace("public_", "Public: ").replace(/_/g, " ")}
+            </Badge>
           </div>
 
           {/* Bottom-right primary action */}
@@ -282,6 +285,52 @@ export default function AnimalProfilePage() {
                 ))}
               </div>
             </Card>
+            {(user?.id === animal.createdByUserId || ["admin", "govt", "ngo", "hospital"].includes(user?.role || "")) && (
+              <Card className="p-5">
+                <h3 className="font-bold text-on-surface mb-3">Visibility Controls</h3>
+                <p className="text-xs text-on-surface-variant mb-3">Change who can see this animal record. Keep it private unless rescue, ABC, medical, or adoption needs require public access.</p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <select
+                    value={animal.visibility}
+                    onChange={async (e) => {
+                      const newVisibility = e.target.value as Animal["visibility"];
+                      try {
+                        const updated = await api.updateAnimal(animal.id, {
+                          visibility: newVisibility,
+                          visibilityReason: newVisibility === "private" ? "" : (animal.visibilityReason || "Made public for operational need"),
+                        });
+                        setAnimal({ ...animal, ...updated });
+                      } catch { /* ignore */ }
+                    }}
+                    className="flex-1 bg-surface-container-low border-b-2 border-outline focus:border-primary focus:ring-0 focus:outline-none px-4 py-3 rounded-t-md transition-colors font-body-md text-on-surface"
+                  >
+                    <option value="private">Private</option>
+                    <option value="public_emergency">Public: Emergency</option>
+                    <option value="public_abc">Public: ABC</option>
+                    <option value="public_medical">Public: Medical</option>
+                    <option value="public_adoption">Public: Adoption</option>
+                    <option value="public_general">Public: General</option>
+                  </select>
+                  {animal.visibility !== "public_general" && (
+                    <Input
+                      type="date"
+                      value={animal.visibilityExpiresAt ? new Date(animal.visibilityExpiresAt).toISOString().split("T")[0] : ""}
+                      onChange={async (e) => {
+                        try {
+                          const updated = await api.updateAnimal(animal.id, { visibilityExpiresAt: e.target.value || null });
+                          setAnimal({ ...animal, ...updated });
+                        } catch { /* ignore */ }
+                      }}
+                      placeholder="Expiry date"
+                      className="sm:w-48"
+                    />
+                  )}
+                </div>
+                {animal.visibilityChangedAt && (
+                  <p className="text-[10px] text-outline mt-2">Last changed: {new Date(animal.visibilityChangedAt).toLocaleString("en-IN")}</p>
+                )}
+              </Card>
+            )}
           </div>
           <Card className="overflow-hidden h-72">
             {animal.location?.latitude && animal.location?.longitude ? (

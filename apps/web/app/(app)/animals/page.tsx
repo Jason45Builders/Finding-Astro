@@ -137,6 +137,9 @@ export default function AnimalsDirectory() {
                         {a.name || "Unnamed Stray"}
                       </h3>
                       <StatusBadge token={statusToken.animalStatus(a.status)} className="shrink-0" />
+                      {a.visibility === "private" && (
+                        <span className="text-[10px] font-bold text-outline uppercase tracking-wide">Private</span>
+                      )}
                     </div>
                     <p className="text-xs text-on-surface-variant mt-1 capitalize">
                       {a.species} {a.breed ? `• ${a.breed}` : ""}
@@ -155,7 +158,7 @@ export default function AnimalsDirectory() {
                 </div>
               ))
             ) : (
-              <EmptyState icon={Search} title="No animals found matching criteria." className="border-none bg-transparent py-20" />
+              <EmptyState icon={Search} title="No animals found matching criteria." description="Try adjusting filters or register a new animal." className="border-none bg-transparent py-20" />
             )}
           </div>
         </Card>

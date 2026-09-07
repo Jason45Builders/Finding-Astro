@@ -23,11 +23,11 @@ INSERT INTO users (email, password_hash, full_name, role, identity_tier, is_avai
 ON CONFLICT (email) DO NOTHING;
 
 -- Sample animals (Chennai area)
-INSERT INTO animals (name, species, breed, color, gender, approx_age_months, status, is_sterilized, location, territory_label, last_seen_text, description) VALUES
-('Raja', 'Dog', 'Indie', 'Brown', 'Male', 24, 'community', TRUE, ST_SetSRID(ST_MakePoint(80.2707, 13.0827), 4326)::geography, 'T. Nagar', 'Seen at the market gate every morning', 'Friendly community dog, vaccinated and neutered. Loved by local vendors.'),
-('Luna', 'Dog', 'Indie', 'Black and White', 'Female', 18, 'community', TRUE, ST_SetSRID(ST_MakePoint(80.2500, 13.0600), 4326)::geography, 'Adyar', 'Regular at the beach feeding point', 'Shy but gentle. Does not approach strangers.'),
-('Bruno', 'Dog', 'Labrador Mix', 'Golden', 'Male', 36, 'lost', FALSE, ST_SetSRID(ST_MakePoint(80.2800, 13.0900), 4326)::geography, 'Mylapore', 'Went missing from 3rd Cross Street on 15 May', 'Wearing a red collar with tag. Microchipped. Very friendly, may approach strangers.'),
-('Mittens', 'Cat', 'Indie', 'Calico', 'Female', 12, 'found', FALSE, ST_SetSRID(ST_MakePoint(80.2600, 13.0700), 4326)::geography, 'Besant Nagar', 'Found in a park, appears friendly', 'Found in the park near the playground. Very friendly, likely a pet. No collar.')
+INSERT INTO animals (name, species, breed, color, gender, approx_age_months, status, is_sterilized, location, territory_label, last_seen_text, description, visibility) VALUES
+('Raja', 'Dog', 'Indie', 'Brown', 'Male', 24, 'community', TRUE, ST_SetSRID(ST_MakePoint(80.2707, 13.0827), 4326)::geography, 'T. Nagar', 'Seen at the market gate every morning', 'Friendly community dog, vaccinated and neutered. Loved by local vendors.', 'private'),
+('Luna', 'Dog', 'Indie', 'Black and White', 'Female', 18, 'community', TRUE, ST_SetSRID(ST_MakePoint(80.2500, 13.0600), 4326)::geography, 'Adyar', 'Regular at the beach feeding point', 'Shy but gentle. Does not approach strangers.', 'private'),
+('Bruno', 'Dog', 'Labrador Mix', 'Golden', 'Male', 36, 'lost', FALSE, ST_SetSRID(ST_MakePoint(80.2800, 13.0900), 4326)::geography, 'Mylapore', 'Went missing from 3rd Cross Street on 15 May', 'Wearing a red collar with tag. Microchipped. Very friendly, may approach strangers.', 'public_general'),
+('Mittens', 'Cat', 'Indie', 'Calico', 'Female', 12, 'found', FALSE, ST_SetSRID(ST_MakePoint(80.2600, 13.0700), 4326)::geography, 'Besant Nagar', 'Found in a park, appears friendly', 'Found in the park near the playground. Very friendly, likely a pet. No collar.', 'public_general')
 ON CONFLICT DO NOTHING;
 
 -- Sample cases

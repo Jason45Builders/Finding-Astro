@@ -51,6 +51,11 @@ export interface Animal {
   createdByUserId: string | null;
   adoptableSince: string | null;
   adoptionNotes: string | null;
+  visibility: "private" | "public_emergency" | "public_abc" | "public_medical" | "public_adoption" | "public_general";
+  visibilityReason: string | null;
+  visibilityExpiresAt: string | null;
+  visibilityChangedBy: string | null;
+  visibilityChangedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -412,6 +417,11 @@ export function mapAnimal(row: Record<string, unknown>): Animal {
     createdByUserId: row.created_by_user_id as string | null,
     adoptableSince: row.adoptable_since as string | null,
     adoptionNotes: row.adoption_notes as string | null,
+    visibility: (row.visibility as Animal["visibility"]) ?? "private",
+    visibilityReason: row.visibility_reason as string | null,
+    visibilityExpiresAt: row.visibility_expires_at as string | null,
+    visibilityChangedBy: row.visibility_changed_by as string | null,
+    visibilityChangedAt: row.visibility_changed_at as string | null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   };
