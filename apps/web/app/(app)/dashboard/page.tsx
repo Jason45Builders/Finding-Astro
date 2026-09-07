@@ -111,7 +111,7 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-8">
       {/* ID Card */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-primary to-emerald-700 text-white shadow-xl">
         <div className="absolute inset-0">
@@ -160,10 +160,10 @@ export default function UserDashboard() {
       </div>
 
       {/* Quick Actions Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-stagger">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 animate-stagger">
         <Link
           href="/cases/new?type=emergency"
-          className="group bg-surface-container-lowest p-4 sm:p-6 rounded-xl border border-outline-variant hover:border-secondary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
+          className="group bg-surface-container-lowest p-3 sm:p-4 lg:p-6 rounded-xl border border-outline-variant hover:border-secondary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
         >
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-secondary-container text-on-secondary-container group-hover:coral-gradient group-hover:text-white rounded-md flex items-center justify-center transition-all duration-200 ease-out">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -176,7 +176,7 @@ export default function UserDashboard() {
 
         <Link
           href="/animals"
-          className="group bg-surface-container-lowest p-4 sm:p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
+          className="group bg-surface-container-lowest p-3 sm:p-4 lg:p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
         >
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-container text-on-primary-container group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all duration-200 ease-out">
             <Eye className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -189,7 +189,7 @@ export default function UserDashboard() {
 
         <Link
           href="/partners?type=clinic"
-          className="group bg-surface-container-lowest p-4 sm:p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
+          className="group bg-surface-container-lowest p-3 sm:p-4 lg:p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
         >
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-sky-100 text-sky-600 group-hover:bg-sky-600 group-hover:text-white rounded-md flex items-center justify-center transition-all duration-200 ease-out">
             <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -202,7 +202,7 @@ export default function UserDashboard() {
 
         <Link
           href="/cases"
-          className="group bg-surface-container-lowest p-4 sm:p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
+          className="group bg-surface-container-lowest p-3 sm:p-4 lg:p-6 rounded-xl border border-outline-variant hover:border-primary hover:shadow-lg transition-all shadow-sm duration-200 ease-out flex flex-col justify-between active:scale-[0.98]"
         >
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-surface-container-high text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all duration-200 ease-out">
             <FolderHeart className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -222,9 +222,9 @@ export default function UserDashboard() {
         <p className="text-sm text-outline mt-2">— Mahatma Gandhi</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
         {/* Recent Cases */}
-        <Card className="p-6 lg:col-span-7">
+        <Card className="p-4 sm:p-6 lg:col-span-7">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-title-md text-title-md text-on-surface">My Recent Cases</h2>
             <Link href="/cases" className="text-sm font-bold text-primary hover:underline flex items-center gap-0.5">
@@ -258,7 +258,7 @@ export default function UserDashboard() {
         </Card>
 
         {/* Nearby Stray Alerts */}
-        <Card className="p-6 lg:col-span-5">
+        <Card className="p-4 sm:p-6 lg:col-span-5">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-title-md text-title-md text-on-surface">Strays Nearby</h2>
             <Button size="sm" variant="secondary" onClick={handleFetchNearby} disabled={loadingNearby} className="rounded-full">

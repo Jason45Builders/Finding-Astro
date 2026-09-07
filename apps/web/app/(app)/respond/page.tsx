@@ -67,7 +67,7 @@ export default function RespondersDispatch() {
   });
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col gap-6">
+    <div className="min-h-[calc(100vh-8rem)] sm:h-[calc(100vh-8rem)] flex flex-col gap-4 sm:gap-6">
       {/* Top Header */}
       <div className="shrink-0">
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">Active SOS Dispatch</h1>

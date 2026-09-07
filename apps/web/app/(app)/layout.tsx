@@ -201,7 +201,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 p-4 sm:p-gutter">{children}</main>
+        <main className="flex-1 p-3 sm:p-gutter">{children}</main>
       </div>
 
       {/* Mobile Bottom Nav */}

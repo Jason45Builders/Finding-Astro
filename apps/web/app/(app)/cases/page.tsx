@@ -77,9 +77,9 @@ export default function MyCases() {
       {loading ? (
         <PageSpinner />
       ) : activeCasesList.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-stagger">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 animate-stagger">
           {activeCasesList.map((c) => (
-            <Card key={c.id} className="p-6 flex flex-col justify-between">
+            <Card key={c.id} className="p-4 sm:p-6 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between gap-4">
                   <StatusBadge token={statusToken.caseStatus(c.status)} />
