@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   AlertCircle,
@@ -10,7 +10,8 @@ import {
   MapPin,
   ChevronRight,
   Heart,
-  Camera
+  Camera,
+  RefreshCw
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api, Case, Animal } from "@/lib/api";
@@ -30,54 +31,83 @@ export default function UserDashboard() {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [photoFallback, setPhotoFallback] = useState(false);
   const [optimisticPhoto, setOptimisticPhoto] = useState<string | null>(null);
+  const [casesError, setCasesError] = useState<string | null>(null);
+  const photoUploadAbortRef = useRef<AbortController | null>(null);
+  const geoAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => () => { if (optimisticPhoto) URL.revokeObjectURL(optimisticPhoto); }, [optimisticPhoto]);
 
   useEffect(() => {
+    let cancelled = false;
     const fetchCases = async () => {
       try {
         const data = await api.listCases({ limit: 5 });
+        if (cancelled) return;
         setMyCases(data);
+        setCasesError(null);
       } catch (err) {
+        if (cancelled) return;
         console.error("Failed to load my cases", err);
+        setCasesError(err instanceof Error ? err.message : "Failed to load cases");
       } finally {
-        setLoadingCases(false);
+        if (!cancelled) setLoadingCases(false);
       }
     };
     void fetchCases();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  const retryCases = useCallback(() => {
+    setLoadingCases(true);
+    setCasesError(null);
   }, []);
 
   const handleFetchNearby = () => {
     setLoadingNearby(true);
     setGeoError(null);
+
     if (!navigator.geolocation) {
       setGeoError("Geolocation is not supported by your browser");
       setLoadingNearby(false);
       return;
     }
 
+    const geoAbort = new AbortController();
+    geoAbortRef.current = geoAbort;
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
+          const signal = geoAbortRef.current?.signal;
           const list = await api.listAnimals({
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude,
             radiusKm: 5,
             limit: 5,
           });
+          if (signal?.aborted) return;
           setNearbyAnimals(list);
         } catch (err) {
+          if (geoAbortRef.current?.signal.aborted) return;
           console.error("Failed to load nearby animals", err);
-          setGeoError("Failed to retrieve animals from backend");
+          setGeoError(err instanceof Error ? err.message : "Failed to retrieve animals from backend");
         } finally {
-          setLoadingNearby(false);
+          if (geoAbortRef.current === geoAbort) {
+            setLoadingNearby(false);
+            geoAbortRef.current = null;
+          }
         }
       },
       (err) => {
-        setGeoError(err.message || "Location permission denied");
-        setLoadingNearby(false);
-      }
+        if (geoAbortRef.current === geoAbort) {
+          setGeoError(err.message || "Location permission denied");
+          setLoadingNearby(false);
+          geoAbortRef.current = null;
+        }
+      },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
     );
   };
 
@@ -86,26 +116,72 @@ export default function UserDashboard() {
 
   const handlePhotoLoadError = () => {
     console.warn("[profile] Failed to load profile photo:", user?.profilePhotoUrl);
+    setPhotoFallback(true);
   };
+
+  const retryProfilePhoto = useCallback(() => {
+    setPhotoFallback(false);
+    setPhotoError(null);
+  }, []);
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Please select an image file");
+      return;
+    }
+
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setPhotoError("Image must be smaller than 5MB");
+      return;
+    }
+
     const objectUrl = URL.createObjectURL(file);
     setOptimisticPhoto(objectUrl);
-    setUploadingPhoto(true);
+    setPhotoFallback(false);
     setPhotoError(null);
+    setUploadingPhoto(true);
+
+    const controller = new AbortController();
+    photoUploadAbortRef.current = controller;
+
+    const withTimeout = <T,>(promise: Promise<T>, ms: number) =>
+      Promise.race([
+        promise,
+        new Promise<never>((_, reject) => {
+          const id = setTimeout(() => {
+            controller.abort();
+            reject(new Error("Upload timed out. Please try again."));
+          }, ms);
+          controller.signal.addEventListener("abort", () => clearTimeout(id));
+        }),
+      ]);
+
     try {
-      const { uploadUrl } = await api.uploadMedia(file, "profile");
-      await api.updateProfilePhoto(uploadUrl);
+      const uploadPromise = api.uploadMedia(file, "profile");
+      const { uploadUrl } = await withTimeout(uploadPromise, 60000);
+
+      const savePromise = api.updateProfilePhoto(uploadUrl);
+      await withTimeout(savePromise, 30000);
+
       const refreshed = await api.getMe();
       useAuth.getState().updateUser(refreshed);
       setOptimisticPhoto((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     } catch (err: unknown) {
-      setPhotoError(err instanceof Error ? err.message : "Failed to save profile photo");
+      if (controller.signal.aborted) {
+        setPhotoError("Upload was cancelled or timed out");
+      } else {
+        setPhotoError(err instanceof Error ? err.message : "Failed to save profile photo");
+      }
       setOptimisticPhoto((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     } finally {
-      setUploadingPhoto(false);
+      if (photoUploadAbortRef.current === controller) {
+        setUploadingPhoto(false);
+        photoUploadAbortRef.current = null;
+      }
       e.target.value = "";
     }
   };
@@ -134,6 +210,13 @@ export default function UserDashboard() {
               {photoError && (
                 <div className="mt-3 inline-flex items-center gap-2 bg-red-500/20 border border-red-400/40 text-red-100 px-3 py-1.5 rounded-lg text-xs font-semibold">
                   <span>{photoError}</span>
+                </div>
+              )}
+              {photoFallback && !photoSrc && (
+                <div className="mt-3">
+                  <button onClick={retryProfilePhoto} className="inline-flex items-center gap-1 text-xs font-bold text-white bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors">
+                    <RefreshCw className="w-3.5 h-3.5" /> Retry photo
+                  </button>
                 </div>
               )}
             </div>
@@ -236,6 +319,11 @@ export default function UserDashboard() {
 
           {loadingCases ? (
             <div className="flex justify-center py-10"><Spinner /></div>
+          ) : casesError ? (
+            <div className="p-6 sm:p-8 text-center space-y-3 bg-surface-container-low rounded-md">
+              <p className="text-sm text-on-surface-variant">{casesError}</p>
+              <button onClick={retryCases} className="text-sm font-bold text-primary hover:underline">Retry</button>
+            </div>
           ) : myCases.length > 0 ? (
             <div className="divide-y divide-outline-variant/50">
               {myCases.map((c) => (
