@@ -84,6 +84,11 @@ export default function UserDashboard() {
   const initials = (user?.fullName || "A").split(" ").map((n) => n.charAt(0).toUpperCase()).slice(0, 2).join("");
   const photoSrc = optimisticPhoto || user?.profilePhotoUrl || null;
 
+  const handlePhotoLoadError = () => {
+    console.warn("[profile] Failed to load profile photo:", user?.profilePhotoUrl);
+    setPhotoError("Profile photo failed to load. Storage or URL may be misconfigured.");
+  };
+
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -131,7 +136,7 @@ export default function UserDashboard() {
           <div className="relative shrink-0">
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[3px] border-white/80 shadow-xl overflow-hidden bg-white/20 backdrop-blur-sm">
               {photoSrc ? (
-                <img src={photoSrc} alt="Profile" className="w-full h-full object-cover" />
+                <img src={photoSrc} alt="Profile" className="w-full h-full object-cover" onError={handlePhotoLoadError} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-white/15 text-white text-2xl sm:text-3xl font-black">
                   {initials}

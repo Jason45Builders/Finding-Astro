@@ -72,6 +72,10 @@ export default function ProfilePage() {
     .slice(0, 2)
     .join("");
 
+  const handlePhotoLoadError = () => {
+    console.warn("[profile] Failed to load profile photo:", user.profilePhotoUrl);
+  };
+
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div>
@@ -84,7 +88,7 @@ export default function ProfilePage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
           <div className="w-20 h-20 rounded-full border-4 border-primary/20 overflow-hidden bg-surface-container-high shrink-0">
             {user.profilePhotoUrl ? (
-              <img src={user.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
+              <img src={user.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" onError={handlePhotoLoadError} />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-primary text-on-primary text-2xl font-black">
                 {initials}
