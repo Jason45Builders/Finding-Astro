@@ -33,13 +33,30 @@ export default function RegisterAnimalPage() {
   const [locationText, setLocationText] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoName, setPhotoName] = useState("");
+  const [locationLoading, setLocationLoading] = useState(false);
 
   const getLocation = useCallback(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => setLocationText("Unable to get GPS. Please type the address.")
-    );
+    return new Promise<void>((resolve) => {
+      if (!navigator.geolocation) {
+        setLocationText("Geolocation not supported. Please type the address.");
+        resolve();
+        return;
+      }
+      setLocationLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setLocationLoading(false);
+          resolve();
+        },
+        () => {
+          setLocationText("Unable to get GPS. Please type the address.");
+          setLocationLoading(false);
+          resolve();
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+      );
+    });
   }, []);
 
   const handlePhotoCapture = async (file: File) => {
@@ -55,13 +72,20 @@ export default function RegisterAnimalPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!species) { setError("Species is required"); return; }
-    if (!location) { setError("Please capture GPS location"); getLocation(); return; }
+    if (!location) {
+      setError("Please capture GPS location or type an address");
+      await getLocation();
+      if (!location && !locationText) {
+        setError("Location is required. Please allow GPS or enter an address.");
+        return;
+      }
+    }
     setSubmitting(true);
     setError("");
     try {
       const payload: Parameters<typeof api.createAnimal>[0] = {
         species,
-        location: { latitude: location.lat, longitude: location.lng },
+        location: location ? { latitude: location.lat, longitude: location.lng } : { latitude: 0, longitude: 0 },
         status: "community" as const,
         ...(name ? { name } : {}),
         ...(breed ? { breed } : {}),
@@ -177,8 +201,8 @@ export default function RegisterAnimalPage() {
             <Label className="mb-0">Location <span className="text-error">*</span></Label>
             <div className="flex flex-col sm:flex-row gap-3">
               <Input type="text" value={locationText} onChange={(e) => setLocationText(e.target.value)} placeholder="Address or landmark" className="flex-1 rounded-md" />
-              <Button type="button" variant="ghost" onClick={getLocation} className="bg-surface-container-high shrink-0">
-                <MapPin className="w-4 h-4" /> Detect Location
+              <Button type="button" variant="ghost" onClick={getLocation} disabled={locationLoading} className="bg-surface-container-high shrink-0">
+                <MapPin className="w-4 h-4" /> {locationLoading ? "Detecting..." : "Detect Location"}
               </Button>
             </div>
             {location && <p className="text-xs font-bold text-primary">GPS: {location.lat.toFixed(5)}, {location.lng.toFixed(5)}</p>}

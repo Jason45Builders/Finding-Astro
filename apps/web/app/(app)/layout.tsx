@@ -33,7 +33,6 @@ const BASE_NAV_ITEMS = [
   { label: "My Donations",  href: "/my/donations", icon: Heart },
   { label: "Community",     href: "/community",    icon: Users },
   { label: "Report Cruelty",href: "/cruelty",      icon: ShieldAlert },
-  { label: "Impact & CSR",  href: "/impact",       icon: TrendingUp },
   { label: "Partners",      href: "/partners",     icon: Building },
   { label: "My Profile",    href: "/profile",      icon: UserIcon },
 ];
@@ -46,6 +45,7 @@ const ADMIN_NAV_ITEMS = [
   { label: "Case Oversight",     href: "/admin/cases",             icon: ClipboardList },
   { label: "Partner Requests",   href: "/admin/partner-requests",  icon: Store },
   { label: "Users",              href: "/admin/users",             icon: UsersIcon },
+  { label: "Impact & CSR",       href: "/impact",                  icon: TrendingUp },
 ];
 
 const MOBILE_PRIMARY_ITEMS = [

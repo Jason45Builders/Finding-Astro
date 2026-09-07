@@ -29,6 +29,15 @@ export default function CameraCapture({ onCapture, value, onClear, disabled }: C
   const startCamera = useCallback(async () => {
     setError(null);
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Camera API unavailable in this browser");
+      }
+
+      const permissionResult = await navigator.permissions.query({ name: "camera" as PermissionName });
+      if (permissionResult.state === "denied") {
+        throw new Error("Camera permission denied. Please allow camera access in browser settings, or use the upload button below.");
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
         audio: false,
@@ -40,7 +49,8 @@ export default function CameraCapture({ onCapture, value, onClear, disabled }: C
       }
       setCameraActive(true);
     } catch (err: any) {
-      setError(err?.message ?? "Camera unavailable. Use the file upload fallback.");
+      const message = err?.message ?? "Camera unavailable. Use the file upload fallback.";
+      setError(message);
       setCameraActive(false);
     }
   }, []);
