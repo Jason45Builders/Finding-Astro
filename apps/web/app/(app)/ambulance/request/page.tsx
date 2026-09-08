@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Ambulance, MapPin, CheckCircle, AlertCircle } from "lucide-react";
+import { Ambulance, MapPin, CheckCircle, AlertCircle, Phone } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
@@ -16,8 +16,10 @@ export default function AmbulanceRequestPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedServiceId = searchParams?.get("serviceId") || "";
+  const caseId = searchParams?.get("caseId") || "";
+  const animalId = searchParams?.get("animalId") || "";
 
-  const [services, setServices] = useState<Array<{ id: string; name: string; phone: string; city: string | null }>>([]);
+  const [services, setServices] = useState<Array<{ id: string; name: string; phone: string; city: string | null; vehicleType: string | null; capacity: number | null }>>([]);
   const [serviceId, setServiceId] = useState(preselectedServiceId);
   const [patientCondition, setPatientCondition] = useState("");
   const [pickupText, setPickupText] = useState("");
@@ -32,8 +34,10 @@ export default function AmbulanceRequestPage() {
   const [successId, setSuccessId] = useState<string | null>(null);
   const [detecting, setDetecting] = useState(false);
 
+  const selectedService = services.find((s) => s.id === serviceId);
+
   useEffect(() => {
-    api.request<Array<{ id: string; name: string; phone: string; city: string | null }>>("/ambulance/services?isActive=true")
+    api.request<Array<{ id: string; name: string; phone: string; city: string | null; vehicleType: string | null; capacity: number | null }>>("/ambulance/services?isActive=true")
       .then((data) => setServices(Array.isArray(data) ? data : []))
       .catch(() => setServices([]));
   }, []);
@@ -99,6 +103,8 @@ export default function AmbulanceRequestPage() {
         pickupLocation: { latitude, longitude },
         pickupLocationText: pickupText || undefined,
         notes: notes || undefined,
+        caseId: caseId || undefined,
+        animalId: animalId || undefined,
       };
       if (destLatitude !== null && destLongitude !== null) {
         payload.destinationLocation = { latitude: destLatitude, longitude: destLongitude };
@@ -158,6 +164,14 @@ export default function AmbulanceRequestPage() {
               <option value="">Select a service</option>
               {services.map((s) => <option key={s.id} value={s.id}>{s.name} {s.city ? `— ${s.city}` : ""}</option>)}
             </select>
+            {selectedService && (
+              <div className="p-3 rounded-md bg-surface-container-low border border-outline-variant space-y-1">
+                <p className="text-sm font-bold text-on-surface">{selectedService.name}</p>
+                <p className="text-xs text-on-surface-variant">{selectedService.city ? `${selectedService.city}` : ""}</p>
+                {selectedService.capacity && <p className="text-xs text-on-surface-variant">Capacity: {selectedService.capacity}</p>}
+                <a href={`tel:${selectedService.phone}`} className="inline-flex items-center gap-1 text-xs text-primary font-bold hover:underline"><Phone className="w-3 h-3" /> {selectedService.phone}</a>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
