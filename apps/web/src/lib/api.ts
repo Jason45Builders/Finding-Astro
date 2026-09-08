@@ -443,10 +443,8 @@ class ApiClient {
     if (typeof window !== "undefined") {
       if (token) {
         window.localStorage.setItem("fa_token", token);
-        document.cookie = `fa_token=${token}; path=/; max-age=604800; SameSite=Lax; Secure`;
       } else {
         window.localStorage.removeItem("fa_token");
-        document.cookie = "fa_token=; path=/; max-age=0; SameSite=Lax; Secure";
       }
     }
   }
@@ -456,6 +454,7 @@ class ApiClient {
     if (!headers.has("Content-Type") && !(options?.body instanceof FormData)) {
       headers.set("Content-Type", "application/json");
     }
+    headers.set("X-Requested-With", "Finding-Astro-App");
     if (this.token) {
       headers.set("Authorization", `Bearer ${this.token}`);
     }

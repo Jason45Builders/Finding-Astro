@@ -69,6 +69,35 @@ export async function checkRateLimit(ip: string, userAgent?: string): Promise<{ 
   return { allowed: true };
 }
 
+export async function checkDailyRateLimit(key: string, maxPerDay = 10): Promise<{ allowed: true } | { allowed: false; retryAfter: number }> {
+  const dayKey = `daily:${key}:${new Date().toISOString().slice(0, 10)}`;
+  const ttlSeconds = Math.max(1, 86400 - (Date.now() % 86400));
+  if (redis) {
+    try {
+      const count = (await redis.get<number>(dayKey)) ?? 0;
+      if (count >= maxPerDay) {
+        const resetAt = Date.now() + (86400 - (Date.now() % 86400)) * 1000;
+        return { allowed: false, retryAfter: Math.max(1, Math.ceil((resetAt - Date.now()) / 1000)) };
+      }
+      await redis.incr(dayKey);
+      await redis.expire(dayKey, ttlSeconds);
+      return { allowed: true };
+    } catch {
+      // fall through to in-memory fallback
+    }
+  }
+  const entry = fallbackStore.get(dayKey);
+  if (!entry || Date.now() > entry.resetAt) {
+    fallbackStore.set(dayKey, { count: 1, resetAt: Date.now() + 86400_000 });
+    return { allowed: true };
+  }
+  if (entry.count >= maxPerDay) {
+    return { allowed: false, retryAfter: Math.max(1, Math.ceil((entry.resetAt - Date.now()) / 1000)) };
+  }
+  fallbackStore.set(dayKey, { count: entry.count + 1, resetAt: entry.resetAt });
+  return { allowed: true };
+}
+
 export function getClientIp(req: NextRequest): string {
   const trustedHeaders = [
     "x-vercel-ip-country",

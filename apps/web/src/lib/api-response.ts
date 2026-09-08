@@ -58,5 +58,6 @@ export const serverError = (message = "An unexpected error occurred", error?: un
   } else {
     console.error("[serverError]", message);
   }
-  return fail(500, "INTERNAL_ERROR", message);
+  const safeMessage = process.env.NODE_ENV === "production" ? "An unexpected error occurred" : message;
+  return fail(500, "INTERNAL_ERROR", safeMessage);
 };

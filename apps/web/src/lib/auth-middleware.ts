@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/jwt";
 
 export interface AuthenticatedUser {
@@ -63,6 +63,17 @@ export async function authMiddleware(req: NextRequest): Promise<{ user: Authenti
   } catch {
     return { error: new Response(JSON.stringify({ success: false, code: "INVALID_TOKEN", message: "Invalid or expired token" }), { status: 401, headers: { "Content-Type": "application/json" } }) };
   }
+}
+
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
+export function requireCsrf(req: NextRequest): NextResponse | null {
+  if (SAFE_METHODS.has(req.method)) return null;
+  const requestedWith = req.headers.get("x-requested-with");
+  if (requestedWith !== "Finding-Astro-App") {
+    return NextResponse.json({ success: false, code: "CSRF_INVALID", message: "Invalid request origin" }, { status: 403 });
+  }
+  return null;
 }
 
 export async function optionalAuth(req: NextRequest): Promise<AuthenticatedUser | null> {

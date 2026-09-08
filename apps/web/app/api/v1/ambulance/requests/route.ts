@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { authMiddleware } from "@/lib/auth-middleware";
+import { authMiddleware, requireCsrf } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { validateBody, LocationSchema } from "@/lib/validation";
 import { audit } from "@/lib/audit";
-import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp, checkRateLimit, checkDailyRateLimit } from "@/lib/rate-limit";
 import { getChannel } from "@/lib/notify-channels";
 
 function mapAmbulanceRequest(row: Record<string, unknown>) {
@@ -82,6 +82,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const csrfError = requireCsrf(req);
+  if (csrfError) return csrfError;
+
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 
@@ -120,18 +123,26 @@ export async function POST(req: NextRequest) {
     await audit({ tableName: "ambulance_requests", recordId: (data as Record<string, unknown>).id as string, action: "INSERT", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
 
     const pickupText = (data as Record<string, unknown>).pickup_location_text as string | null;
-    const subject = `New ambulance request${(data as Record<string, unknown>).case_id ? ` for case ${(data as Record<string, unknown>).case_id as string}` : ""}`;
-    const body = `A new ambulance request has been created.\n\nPickup: ${pickupText ?? "Location not provided"}\nCondition: ${(parsed.data.patientCondition ?? "Not provided")}\nNotes: ${(parsed.data.notes ?? "None")}\n\nPlease respond if available.`;
+    const userRateKey = `ambulance-sms-daily:${authResult.user.id}`;
+    const existingRate = await checkDailyRateLimit(userRateKey, 20);
+    if (existingRate.allowed) {
+      const subject = `New ambulance request${(data as Record<string, unknown>).case_id ? ` for case ${(data as Record<string, unknown>).case_id as string}` : ""}`;
+      const body = `A new ambulance request has been created.\n\nPickup: ${pickupText ?? "Location not provided"}\nCondition: ${(parsed.data.patientCondition ?? "Not provided")}\nNotes: ${(parsed.data.notes ?? "None")}\n\nPlease respond if available.`;
 
-    const { data: services } = await supabaseAdmin().from("ambulance_services").select("id, phone, name").eq("is_active", true).limit(20);
-    const serviceRows = (services ?? []) as Array<{ id: string; phone: string | null; name: string | null }>;
-    if (serviceRows.length > 0) {
-      const smsPromises = serviceRows.map((svc) => {
-        if (!svc.phone) return Promise.resolve();
-        const msg = `Finding Astro: New ambulance request. ${pickupText ?? ""}. Respond in app.`;
-        return getChannel("sms").send(svc.phone, subject, msg).catch(() => undefined);
-      });
-      await Promise.allSettled(smsPromises);
+      const serviceQuery = supabaseAdmin().from("ambulance_services").select("id, phone, name").eq("is_active", true).limit(20);
+      if (serviceId) {
+        serviceQuery.eq("id", serviceId);
+      }
+      const { data: services } = await serviceQuery;
+      const serviceRows = (services ?? []) as Array<{ id: string; phone: string | null; name: string | null }>;
+      if (serviceRows.length > 0) {
+        const smsPromises = serviceRows.map((svc) => {
+          if (!svc.phone) return Promise.resolve();
+          const msg = `Finding Astro: New ambulance request. ${pickupText ?? ""}. Respond in app.`;
+          return getChannel("sms").send(svc.phone, subject, msg).catch(() => undefined);
+        });
+        await Promise.allSettled(smsPromises);
+      }
     }
 
     return ok(mapAmbulanceRequest(data), "Ambulance requested");
@@ -141,6 +152,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const csrfError = requireCsrf(req);
+  if (csrfError) return csrfError;
+
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 

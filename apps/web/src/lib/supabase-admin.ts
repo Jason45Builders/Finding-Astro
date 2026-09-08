@@ -29,10 +29,16 @@ function getServerClient() {
   );
 }
 
+// SECURITY NOTE: supabaseAdmin() uses the service role key and bypasses RLS.
+// All routes using this client MUST enforce authorization via authMiddleware or
+// equivalent server-side checks before performing reads/writes. Never expose
+// supabaseAdmin() to client-side code.
 export function supabaseAdmin() {
   return getAdminClient();
 }
 
+// supabaseServer() respects RLS and is intended for user-scoped queries where
+// the caller's JWT is forwarded. Prefer this client for public or user-owned data.
 export function supabaseServer() {
   return getServerClient();
 }
