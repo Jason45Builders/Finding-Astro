@@ -193,7 +193,7 @@ export default function UserDashboard() {
       {/* 1. Welcome Hero */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl text-white shadow-lg sm:shadow-xl">
         <div className="absolute inset-0">
-          <img src="/Finding Astro_Header.png" alt="" className="w-full h-full object-cover" />
+          <img src="/Finding Astro_Header_D.png" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-primary/60 to-transparent" />
         </div>
         <div className="relative p-5 sm:p-8 lg:p-10">
