@@ -6,6 +6,7 @@ import { ok, badRequest, serverError, notFound } from "@/lib/api-response";
 import { validateBody, LocationSchema } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
+import { getChannel } from "@/lib/notify-channels";
 
 function mapAmbulanceRequest(row: Record<string, unknown>) {
   return {
@@ -117,6 +118,22 @@ export async function POST(req: NextRequest) {
     if (error || !data) return serverError(error?.message ?? "Failed to request ambulance");
 
     await audit({ tableName: "ambulance_requests", recordId: (data as Record<string, unknown>).id as string, action: "INSERT", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
+
+    const pickupText = (data as Record<string, unknown>).pickup_location_text as string | null;
+    const subject = `New ambulance request${(data as Record<string, unknown>).case_id ? ` for case ${(data as Record<string, unknown>).case_id as string}` : ""}`;
+    const body = `A new ambulance request has been created.\n\nPickup: ${pickupText ?? "Location not provided"}\nCondition: ${(parsed.data.patientCondition ?? "Not provided")}\nNotes: ${(parsed.data.notes ?? "None")}\n\nPlease respond if available.`;
+
+    const { data: services } = await supabaseAdmin().from("ambulance_services").select("id, phone, name").eq("is_active", true).limit(20);
+    const serviceRows = (services ?? []) as Array<{ id: string; phone: string | null; name: string | null }>;
+    if (serviceRows.length > 0) {
+      const smsPromises = serviceRows.map((svc) => {
+        if (!svc.phone) return Promise.resolve();
+        const msg = `Finding Astro: New ambulance request. ${pickupText ?? ""}. Respond in app.`;
+        return getChannel("sms").send(svc.phone, subject, msg).catch(() => undefined);
+      });
+      await Promise.allSettled(smsPromises);
+    }
+
     return ok(mapAmbulanceRequest(data), "Ambulance requested");
   } catch {
     return serverError();

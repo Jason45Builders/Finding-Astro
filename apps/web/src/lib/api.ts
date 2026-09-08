@@ -13,6 +13,7 @@ export interface User {
   homeLocation: { latitude: number; longitude: number } | null;
   activityCount: number;
   completedCaseCount: number;
+  ambulanceServiceId: string | null;
 }
 
 export interface Animal {

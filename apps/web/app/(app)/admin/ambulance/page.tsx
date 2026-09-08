@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Ambulance, Plus, Search } from "lucide-react";
+import { Ambulance, Plus, MapPin, Phone } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Input } from "@/components/ui/Input";
+import { Input, Label, Textarea } from "@/components/ui/Input";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useAuth } from "@/lib/auth";
@@ -52,6 +52,9 @@ type AmbulanceRequest = {
   updatedAt: string;
 };
 
+const PROVIDER_TYPES = ["private", "government", "ngo", "hospital"];
+const VEHICLE_TYPES = ["ambulance", "small_car", "van", "truck", "bike"];
+
 export default function AdminAmbulancePage() {
   const { user, isLoading } = useAuth();
   const [services, setServices] = useState<AmbulanceService[]>([]);
@@ -61,6 +64,22 @@ export default function AdminAmbulancePage() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [form, setForm] = useState({
+    name: "",
+    providerType: "private",
+    phone: "",
+    alternatePhone: "",
+    vehicleType: "",
+    capacity: "",
+    city: "",
+    locationText: "",
+  });
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
+  const [detecting, setDetecting] = useState(false);
 
   if (!isLoading && (!user || !["admin", "govt", "ngo", "hospital"].includes(user.role))) {
     return (
@@ -100,14 +119,45 @@ export default function AdminAmbulancePage() {
 
   useEffect(() => { loadServices(); loadRequests(); }, []);
 
-  const filteredRequests = requests.filter((r) => {
-    if (statusFilter !== "all" && r.status !== statusFilter) return false;
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      return r.id.toLowerCase().includes(q) || r.patientCondition?.toLowerCase().includes(q) || r.pickupLocationText?.toLowerCase().includes(q);
+  const detectLocation = () => {
+    setDetecting(true);
+    navigator.geolocation?.getCurrentPosition(
+      (pos) => { setLat(pos.coords.latitude); setLng(pos.coords.longitude); setDetecting(false); },
+      () => setDetecting(false)
+    );
+  };
+
+  const handleCreateService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError("");
+    try {
+      const payload: Record<string, unknown> = {
+        name: form.name,
+        providerType: form.providerType,
+        phone: form.phone,
+        alternatePhone: form.alternatePhone || undefined,
+        vehicleType: form.vehicleType || undefined,
+        capacity: form.capacity ? Number(form.capacity) : undefined,
+        city: form.city || undefined,
+        locationText: form.locationText || undefined,
+        isActive: true,
+      };
+      if (lat !== null && lng !== null) {
+        payload.location = { latitude: lat, longitude: lng };
+      }
+      await api.request<any>("/ambulance/services", { method: "POST", body: JSON.stringify(payload) });
+      setShowForm(false);
+      setForm({ name: "", providerType: "private", phone: "", alternatePhone: "", vehicleType: "", capacity: "", city: "", locationText: "" });
+      setLat(null);
+      setLng(null);
+      await loadServices();
+    } catch (err: any) {
+      setError(err?.message || "Failed to create service");
+    } finally {
+      setSubmitting(false);
     }
-    return true;
-  });
+  };
 
   const updateRequestStatus = async (id: string, status: AmbulanceRequest["status"]) => {
     try {
@@ -117,6 +167,15 @@ export default function AdminAmbulancePage() {
       setError("Failed to update request");
     }
   };
+
+  const filteredRequests = requests.filter((r) => {
+    if (statusFilter !== "all" && r.status !== statusFilter) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      return r.id.toLowerCase().includes(q) || r.patientCondition?.toLowerCase().includes(q) || r.pickupLocationText?.toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   if (loadingServices || loadingRequests) return <PageSpinner label="Loading ambulance data..." />;
 
@@ -128,8 +187,79 @@ export default function AdminAmbulancePage() {
           <h1 className="font-headline-lg text-headline-lg text-on-surface mt-2">Ambulance Management</h1>
           <p className="text-sm text-on-surface-variant mt-1">Manage ambulance services and incoming requests.</p>
         </div>
-        <Button variant="ghost" onClick={() => { loadServices(); loadRequests(); }} className="bg-surface-container-high">Refresh</Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={() => { loadServices(); loadRequests(); }} className="bg-surface-container-high">Refresh</Button>
+          <Button variant="primary" onClick={() => setShowForm((v) => !v)}><Plus className="w-4 h-4" /> {showForm ? "Close Form" : "Add Service"}</Button>
+        </div>
       </div>
+
+      {showForm && (
+        <Card className="p-5 sm:p-6">
+          <h2 className="font-title-md text-title-md text-on-surface mb-4">Onboard Ambulance Service</h2>
+          <form onSubmit={handleCreateService} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="mb-0">Service Name <span className="text-error">*</span></Label>
+                <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
+              </div>
+              <div className="space-y-2">
+                <Label className="mb-0">Provider Type <span className="text-error">*</span></Label>
+                <select value={form.providerType} onChange={(e) => setForm((f) => ({ ...f, providerType: e.target.value }))} className="w-full bg-surface-container-low border-b-2 border-outline focus:border-primary focus:ring-0 focus:outline-none px-4 py-3 rounded-t-md font-body-md text-on-surface">
+                  {PROVIDER_TYPES.map((pt) => <option key={pt} value={pt}>{pt}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="mb-0">Phone <span className="text-error">*</span></Label>
+                <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} required />
+              </div>
+              <div className="space-y-2">
+                <Label className="mb-0">Alternate Phone</Label>
+                <Input value={form.alternatePhone} onChange={(e) => setForm((f) => ({ ...f, alternatePhone: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label className="mb-0">Vehicle Type</Label>
+                <select value={form.vehicleType} onChange={(e) => setForm((f) => ({ ...f, vehicleType: e.target.value }))} className="w-full bg-surface-container-low border-b-2 border-outline focus:border-primary focus:ring-0 focus:outline-none px-4 py-3 rounded-t-md font-body-md text-on-surface">
+                  <option value="">Select vehicle type</option>
+                  {VEHICLE_TYPES.map((vt) => <option key={vt} value={vt}>{vt}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="mb-0">Capacity</Label>
+                <Input type="number" value={form.capacity} onChange={(e) => setForm((f) => ({ ...f, capacity: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label className="mb-0">City</Label>
+                <Input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label className="mb-0">Location Text</Label>
+                <Input value={form.locationText} onChange={(e) => setForm((f) => ({ ...f, locationText: e.target.value }))} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="mb-0">Location Coordinates</Label>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1 grid grid-cols-2 gap-2">
+                  <Input type="text" placeholder="Latitude" value={lat !== null ? lat.toFixed(6) : ""} readOnly className="rounded-md" />
+                  <Input type="text" placeholder="Longitude" value={lng !== null ? lng.toFixed(6) : ""} readOnly className="rounded-md" />
+                </div>
+                <Button type="button" variant="ghost" onClick={detectLocation} disabled={detecting} className="bg-surface-container-high shrink-0">
+                  <MapPin className="w-4 h-4" />
+                  {detecting ? "Detecting..." : "Detect Location"}
+                </Button>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button type="submit" disabled={submitting} variant="primary" size="lg" className="flex-1">
+                {submitting ? <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : "Create Service"}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
+            </div>
+          </form>
+        </Card>
+      )}
+
+      {error && <div className="bg-error-container text-on-error-container p-4 rounded-md text-sm font-medium">{error}</div>}
 
       <section className="space-y-3">
         <h2 className="font-title-md text-title-md text-on-surface">Ambulance Services</h2>
@@ -146,8 +276,8 @@ export default function AdminAmbulancePage() {
                   </div>
                   <Badge variant={s.isActive ? "success" : "danger"} className="capitalize">{s.isActive ? "Active" : "Inactive"}</Badge>
                 </div>
-                <p className="text-xs text-on-surface-variant">Phone: {s.phone}</p>
-                {s.city && <p className="text-xs text-on-surface-variant">City: {s.city}</p>}
+                <p className="text-xs text-on-surface-variant flex items-center gap-1"><Phone className="w-3 h-3" /> {s.phone}</p>
+                {s.city && <p className="text-xs text-on-surface-variant flex items-center gap-1"><MapPin className="w-3 h-3" /> {s.city}</p>}
                 {s.capacity && <p className="text-xs text-on-surface-variant">Capacity: {s.capacity}</p>}
               </Card>
             ))}
@@ -160,8 +290,7 @@ export default function AdminAmbulancePage() {
           <h2 className="font-title-md text-title-md text-on-surface">Incoming Requests</h2>
           <div className="flex gap-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-outline" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="pl-9" />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="pl-9 bg-surface-container-low border-b-2 border-outline focus:border-primary focus:ring-0 focus:outline-none px-3 py-2 rounded-t-md font-body-md text-on-surface" />
             </div>
             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-surface-container-low border-b-2 border-outline focus:border-primary focus:ring-0 focus:outline-none px-3 py-2 rounded-t-md font-body-md text-on-surface">
               <option value="all">All</option>
