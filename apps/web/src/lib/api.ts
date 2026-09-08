@@ -116,6 +116,20 @@ export interface CaseResponse {
   createdAt: string;
 }
 
+export interface CaseResponderResponse {
+  id: string;
+  caseId: string;
+  responderUserId: string;
+  responderName: string | null;
+  status: string;
+  notes: string | null;
+  onScenePhotoUrls: string[];
+  pickedUpPhotoUrls: string[];
+  atHospitalPhotoUrls: string[];
+  completedPhotoUrls: string[];
+  createdAt: string;
+}
+
 export interface RecoveryRecord {
   id: string;
   caseId: string;
@@ -298,6 +312,18 @@ export interface TransportRequest {
   slabAmountInr: number;
   fundingSource: string;
   createdAt: string;
+}
+
+export interface NearbyResponder {
+  id: string;
+  fullName: string | null;
+  role: string;
+  vehicleType: string | null;
+  vehicleCapacity: number | null;
+  serviceRadiusKm: number | null;
+  reputationScore: number;
+  distanceKm: number;
+  isAvailable: boolean;
 }
 
 export interface EducationContent {
@@ -735,6 +761,10 @@ class ApiClient {
     return this.request<CaseResponse>(`/emergency/${caseId}/response`);
   }
 
+  async getCaseResponses(caseId: string): Promise<CaseResponderResponse[]> {
+    return this.request<CaseResponderResponse[]>(`/cases/${caseId}/responses`).catch(() => []);
+  }
+
   // ── Funding ───────────────────────────────────────────────────────────────
   async listFundingCases(): Promise<FundingCase[]> {
     return this.request<FundingCase[]>("/funding?limit=50").catch(() => []);
@@ -1005,6 +1035,23 @@ class ApiClient {
         fundingSource: data.fundingSource,
       }),
     });
+  }
+
+  async listOpenTransportRequests(vehicleType?: string): Promise<TransportRequest[]> {
+    const sp = new URLSearchParams();
+    if (vehicleType) sp.append("vehicle_type", vehicleType);
+    const qs = sp.toString();
+    return this.request<TransportRequest[]>(`/transport-requests/open${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async listNearbyResponders(params: { latitude: number; longitude: number; radiusKm?: number; vehicleType?: string; availableOnly?: boolean }): Promise<NearbyResponder[]> {
+    const sp = new URLSearchParams();
+    sp.append("lat", String(params.latitude));
+    sp.append("lng", String(params.longitude));
+    if (params.radiusKm) sp.append("radius_km", String(params.radiusKm));
+    if (params.vehicleType) sp.append("vehicle_type", params.vehicleType);
+    if (params.availableOnly !== undefined) sp.append("available_only", String(params.availableOnly));
+    return this.request<NearbyResponder[]>(`/responders/nearby?${sp.toString()}`).catch(() => []);
   }
 
   async listEducationContent(audience?: string, topicKey?: string): Promise<EducationContent[]> {

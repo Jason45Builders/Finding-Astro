@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Clock, MapPin, AlertTriangle, Home, Activity } from "lucide-react";
-import { api, Case, CaseEvent, CaseResponse, RecoveryRecord } from "@/lib/api";
+import { ChevronLeft, Clock, MapPin, AlertTriangle, Home, Activity, Users } from "lucide-react";
+import { api, Case, CaseEvent, CaseResponse, RecoveryRecord, CaseResponderResponse } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { formatDateTime } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
@@ -22,6 +22,7 @@ export default function CaseDetailPage() {
   const [events, setEvents] = useState<CaseEvent[]>([]);
   const [response, setResponse] = useState<CaseResponse | null>(null);
   const [recovery, setRecovery] = useState<RecoveryRecord[]>([]);
+  const [caseResponses, setCaseResponses] = useState<CaseResponderResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState(false);
@@ -44,6 +45,11 @@ export default function CaseDetailPage() {
         const resp = await api.getActiveResponse(params.id);
         setResponse(resp);
       } catch { /* no active response */ }
+
+      try {
+        const responses = await api.getCaseResponses(params.id);
+        setCaseResponses(responses);
+      } catch { /* no responses */ }
 
       setLoading(false);
     };
@@ -188,6 +194,30 @@ export default function CaseDetailPage() {
               <Button variant="primary" className="mt-4 w-full">Go to Response Dashboard →</Button>
             </Link>
           )}
+        </Card>
+      )}
+
+      {/* Responders on This Case */}
+      {caseResponses.length > 0 && (
+        <Card className="p-5">
+          <h3 className="font-bold text-on-surface mb-4 flex items-center gap-2">
+            <Users className="w-4 h-4 text-primary" /> Responders on This Case ({caseResponses.length})
+          </h3>
+          <div className="space-y-3">
+            {caseResponses.map((r) => (
+              <div key={r.id} className="bg-surface-container-low rounded-xl p-4 flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm shrink-0">
+                  {(r.responderName ?? "R").charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-on-surface text-sm">{r.responderName ?? "Responder"}</p>
+                  <p className="text-xs text-on-surface-variant mt-0.5 capitalize">{r.status.replace(/_/g, " ")}</p>
+                  {r.notes && <p className="text-xs text-outline mt-1">{r.notes}</p>}
+                  <p className="text-[10px] text-outline mt-1">{new Date(r.createdAt).toLocaleString("en-IN")}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </Card>
       )}
 
