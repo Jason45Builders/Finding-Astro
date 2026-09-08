@@ -86,7 +86,7 @@ export default function BetaFeedbackPage() {
     <div className="max-w-xl mx-auto">
       <div className="mb-6">
         <h1 className="font-headline-lg text-headline-lg text-on-surface flex items-center gap-2">
-          <MessageSquare className="w-6 h-6 text-primary" /> Beta Feedback
+          <MessageSquare className="w-6 h-6 text-primary" /> Feedback
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">Found a bug, have an idea, or want to suggest a fix? Submit it here and the team will review it.</p>
       </div>

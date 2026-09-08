@@ -101,7 +101,7 @@ export default function AdminBetaFeedbackPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/admin" className="inline-flex items-center gap-1 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors"><ChevronLeft className="w-4 h-4" /> Admin</Link>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface mt-2">Beta Feedback</h1>
+          <h1 className="font-headline-lg text-headline-lg text-on-surface mt-2">Feedback</h1>
           <p className="text-sm text-on-surface-variant mt-1">Review suggestions, bug reports, and recommendations from testers.</p>
         </div>
         <Button variant="ghost" onClick={load} className="bg-surface-container-high">Refresh</Button>

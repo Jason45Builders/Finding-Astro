@@ -9,7 +9,7 @@ import {
   Menu as MenuIcon, X as XIcon, AlertTriangle, Heart,
   Search, Leaf, Shield, ShieldAlert, Users, TrendingUp, Bird,
   Radio, Users as UsersIcon, ClipboardList, DollarSign, UserCheck,
-  MoreHorizontal, Store, MessageSquare
+  MoreHorizontal, Store, MessageSquare, Ambulance
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api, Notification } from "@/lib/api";
@@ -34,7 +34,8 @@ const BASE_NAV_ITEMS = [
   { label: "Community",     href: "/community",    icon: Users },
   { label: "Report Cruelty",href: "/cruelty",      icon: ShieldAlert },
   { label: "Partners",      href: "/partners",     icon: Building },
-  { label: "Beta Feedback", href: "/beta/feedback",icon: MessageSquare },
+  { label: "Feedback",       href: "/beta/feedback", icon: MessageSquare },
+  { label: "Ambulance",      href: "/ambulance",      icon: Ambulance },
   { label: "My Profile",    href: "/profile",      icon: UserIcon },
   { label: "Legal",         href: "/legal",        icon: ShieldAlert },
   { label: "Privacy",       href: "/privacy",      icon: Shield },
@@ -49,8 +50,9 @@ const ADMIN_NAV_ITEMS = [
   { label: "Case Oversight",     href: "/admin/cases",             icon: ClipboardList },
   { label: "Partner Requests",   href: "/admin/partner-requests",  icon: Store },
   { label: "Users",              href: "/admin/users",             icon: UsersIcon },
-  { label: "Beta Feedback",      href: "/admin/beta/feedback",     icon: MessageSquare },
-  { label: "Impact & CSR",       href: "/impact",                  icon: TrendingUp },
+  { label: "Feedback",      href: "/admin/beta/feedback",     icon: MessageSquare },
+  { label: "Ambulance",      href: "/admin/ambulance",         icon: Ambulance },
+  { label: "Impact & CSR",   href: "/impact",                  icon: TrendingUp },
 ];
 
 const MOBILE_PRIMARY_ITEMS = [

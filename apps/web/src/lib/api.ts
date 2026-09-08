@@ -1219,6 +1219,22 @@ class ApiClient {
     return this.request<{ id: string }>("/beta/feedback", { method: "POST", body: JSON.stringify(data) });
   }
 
+  async listAmbulanceServices(): Promise<any[]> {
+    return this.request<any[]>("/ambulance/services").catch(() => []);
+  }
+
+  async createAmbulanceRequest(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/ambulance/requests", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async listAmbulanceRequests(): Promise<any[]> {
+    return this.request<any[]>("/ambulance/requests").catch(() => []);
+  }
+
+  async updateAmbulanceRequest(id: string, data: Record<string, unknown>): Promise<any> {
+    return this.request<any>(`/ambulance/requests/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+
   async logout(): Promise<void> {
     this.setToken(null);
   }
