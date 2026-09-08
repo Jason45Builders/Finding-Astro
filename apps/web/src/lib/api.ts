@@ -450,7 +450,7 @@ class ApiClient {
     }
   }
 
-  private async request<T>(path: string, options?: RequestInit): Promise<T> {
+  async request<T>(path: string, options?: RequestInit): Promise<T> {
     const headers = new Headers(options?.headers);
     if (!headers.has("Content-Type") && !(options?.body instanceof FormData)) {
       headers.set("Content-Type", "application/json");
@@ -1213,6 +1213,10 @@ class ApiClient {
 
   async getWelfarePaymentReceipt(paymentId: string): Promise<{ receiptNumber: string; welfareGroup: string; amount: number; currency: string; donorName: string | null; paymentDate: string; utr: string; status: string; purpose: string | null; note: string | null }> {
     return this.request(`/welfare-payments/${paymentId}/receipt`);
+  }
+
+  async requestBetaFeedback(data: { category: string; title: string; description: string; severity?: string }): Promise<{ id: string }> {
+    return this.request<{ id: string }>("/beta/feedback", { method: "POST", body: JSON.stringify(data) });
   }
 
   async logout(): Promise<void> {
