@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { authMiddleware, optionalAuth, requireTier, AuthenticatedUser } from "@/lib/auth-middleware";
+import { authMiddleware, optionalAuth, requireTier, requireCsrf, AuthenticatedUser } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError } from "@/lib/api-response";
 import { LocationSchema, validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
@@ -68,6 +68,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const csrfError = requireCsrf(req);
+  if (csrfError) return csrfError;
+
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 

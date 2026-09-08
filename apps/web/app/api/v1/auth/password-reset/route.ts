@@ -6,6 +6,7 @@ import { ok, badRequest, serverError, unauthorized, notFound } from "@/lib/api-r
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
+import { requireCsrf } from "@/lib/auth-middleware";
 
 const PasswordSchema = z.object({
   newPassword: z.string().min(8, "Password must be at least 8 characters"),
@@ -15,6 +16,9 @@ const PasswordSchema = z.object({
 const hashPassword = async (pw: string) => bcrypt.hash(pw, 12);
 
 export async function POST(req: NextRequest) {
+  const csrfError = requireCsrf(req);
+  if (csrfError) return csrfError;
+
   try {
     const ip = getClientIp(req);
     const userAgent = req.headers.get("user-agent") ?? "unknown";

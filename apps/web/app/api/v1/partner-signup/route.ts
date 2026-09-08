@@ -4,6 +4,7 @@ import { ok, badRequest, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { z } from "zod";
 import { audit } from "@/lib/audit";
+import { requireCsrf } from "@/lib/auth-middleware";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 const PartnerSignupSchema = z.object({
@@ -27,6 +28,9 @@ const PartnerSignupSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const csrfError = requireCsrf(req);
+  if (csrfError) return csrfError;
+
   const ip = getClientIp(req);
   const userAgent = req.headers.get("user-agent") ?? "unknown";
   const rate = await checkRateLimit(`partner-signup:${ip}`, userAgent);

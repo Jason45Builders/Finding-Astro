@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { authMiddleware } from "@/lib/auth-middleware";
+import { authMiddleware, requireCsrf } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
@@ -27,6 +27,9 @@ const BetaFeedbackSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const csrfError = requireCsrf(req);
+  if (csrfError) return csrfError;
+
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 

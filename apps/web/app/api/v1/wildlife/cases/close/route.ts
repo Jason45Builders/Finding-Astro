@@ -1,11 +1,14 @@
 import { NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { authMiddleware } from "@/lib/auth-middleware";
+import { authMiddleware, requireCsrf } from "@/lib/auth-middleware";
 import { ok, serverError } from "@/lib/api-response";
 import { audit } from "@/lib/audit";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const csrfError = requireCsrf(req);
+  if (csrfError) return csrfError;
+
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
 

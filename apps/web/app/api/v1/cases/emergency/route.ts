@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { authMiddleware, optionalAuth, AuthenticatedUser } from "@/lib/auth-middleware";
+import { authMiddleware, optionalAuth, requireCsrf, AuthenticatedUser } from "@/lib/auth-middleware";
 import { ok, badRequest, serverError } from "@/lib/api-response";
 import { GUEST_USER_ID } from "@/lib/guest";
 import { LocationSchema, validateBody } from "@/lib/validation";
@@ -27,6 +27,9 @@ const CreateCaseSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const csrfError = requireCsrf(req);
+  if (csrfError) return csrfError;
+
   const ip = getClientIp(req);
   const userAgent = req.headers.get("user-agent") ?? "unknown";
   const rate = await checkRateLimit(ip, userAgent);

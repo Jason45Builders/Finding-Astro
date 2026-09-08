@@ -7,6 +7,7 @@ import { ok, unauthorized, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
+import { requireCsrf } from "@/lib/auth-middleware";
 
 const LoginSchema = z.object({
   email: z.string().email(),
@@ -39,6 +40,9 @@ const mapUser = (row: Record<string, unknown>) => ({
 });
 
 export async function POST(req: NextRequest) {
+  const csrfError = requireCsrf(req);
+  if (csrfError) return csrfError;
+
   try {
     const ip = getClientIp(req);
     const userAgent = req.headers.get("user-agent") ?? "unknown";
