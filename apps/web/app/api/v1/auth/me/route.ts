@@ -42,7 +42,9 @@ export async function GET(req: NextRequest) {
       .single();
 
     if (error || !data) return notFound("User not found");
-    return ok(mapUser(data), "Profile loaded");
+    const mapped = mapUser(data);
+    console.log("[auth/me-debug] profile_photo_url raw:", data.profile_photo_url, "mapped:", mapped.profilePhotoUrl);
+    return ok(mapped, "Profile loaded");
   } catch {
     return serverError("Failed to fetch profile");
   }
@@ -73,6 +75,7 @@ export async function PATCH(req: NextRequest) {
 
     const { data, error } = await supabaseAdmin().from("users").update(update).eq("id", authResult.user.id).select("*").single();
     if (error) return serverError(error.message);
+    console.log("[auth/me-patch-debug] updated profile_photo_url:", data.profile_photo_url);
     return ok(mapUser(data), "Profile photo updated");
   } catch {
     return serverError("Failed to update profile");

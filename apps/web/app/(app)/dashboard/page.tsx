@@ -168,9 +168,11 @@ export default function UserDashboard() {
       await withTimeout(savePromise, 30000);
 
       const refreshed = await api.getMe();
+      console.log("[profile-photo-debug] refreshed user:", refreshed);
       useAuth.getState().updateUser(refreshed);
       setOptimisticPhoto((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     } catch (err: unknown) {
+      console.error("[profile-photo-debug] upload/save error:", err);
       if (controller.signal.aborted) {
         setPhotoError("Upload was cancelled or timed out");
       } else {
