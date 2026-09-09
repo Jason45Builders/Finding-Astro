@@ -6,6 +6,26 @@ import { ok, notFound, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
+const BUCKET = "finding-astro-media";
+
+function extractStorageKey(publicUrl: string): string | null {
+  const marker = `/object/public/${BUCKET}/`;
+  const idx = publicUrl.indexOf(marker);
+  if (idx === -1) return null;
+  return publicUrl.slice(idx + marker.length);
+}
+
+async function deleteStorageByUrl(url: string | null | undefined): Promise<void> {
+  if (!url) return;
+  const key = extractStorageKey(url);
+  if (!key) return;
+  try {
+    await supabaseAdmin().storage.from(BUCKET).remove([key]);
+  } catch {
+    // best-effort cleanup
+  }
+}
+
 const mapUser = (row: Record<string, unknown>) => ({
   id: row.id as string,
   phone: row.email as string,
@@ -43,7 +63,6 @@ export async function GET(req: NextRequest) {
 
     if (error || !data) return notFound("User not found");
     const mapped = mapUser(data);
-    console.log("[auth/me-debug] profile_photo_url raw:", data.profile_photo_url, "mapped:", mapped.profilePhotoUrl);
     return ok(mapped, "Profile loaded");
   } catch {
     return serverError("Failed to fetch profile");
@@ -73,9 +92,18 @@ export async function PATCH(req: NextRequest) {
     const update: Record<string, unknown> = {};
     if (body.profilePhotoUrl !== undefined) update.profile_photo_url = body.profilePhotoUrl;
 
+    const { data: existingUser, error: existingError } = await supabaseAdmin().from("users").select("profile_photo_url").eq("id", authResult.user.id).maybeSingle();
+    const oldPhotoUrl = (existingUser?.profile_photo_url as string | null) ?? null;
+
     const { data, error } = await supabaseAdmin().from("users").update(update).eq("id", authResult.user.id).select("*").single();
     if (error) return serverError(error.message);
-    console.log("[auth/me-patch-debug] updated profile_photo_url:", data.profile_photo_url);
+
+    const newPhotoUrl = (data?.profile_photo_url as string | null) ?? null;
+    if (newPhotoUrl && newPhotoUrl !== oldPhotoUrl) {
+      await deleteStorageByUrl(oldPhotoUrl);
+    } else if (!newPhotoUrl && oldPhotoUrl) {
+      await deleteStorageByUrl(oldPhotoUrl);
+    }
     return ok(mapUser(data), "Profile photo updated");
   } catch {
     return serverError("Failed to update profile");
