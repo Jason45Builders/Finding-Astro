@@ -326,6 +326,28 @@ export interface NearbyResponder {
   isAvailable: boolean;
 }
 
+export interface MemorialPost {
+  id: string;
+  dogName: string;
+  category: "natural_death" | "suspicious_death";
+  description: string;
+  bestMemory: string | null;
+  location: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  dateOfDeath: string;
+  causeOfDeath: string | null;
+  evidenceUrls: string[];
+  reporterUserId: string;
+  isAnonymous: boolean;
+  isVerified: boolean;
+  isPublic: boolean;
+  verifiedBy: string | null;
+  verifiedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface EducationContent {
   id: string;
   topicKey: string;
@@ -1052,6 +1074,39 @@ class ApiClient {
     if (params.vehicleType) sp.append("vehicle_type", params.vehicleType);
     if (params.availableOnly !== undefined) sp.append("available_only", String(params.availableOnly));
     return this.request<NearbyResponder[]>(`/responders/nearby?${sp.toString()}`).catch(() => []);
+  }
+
+  async listMemorials(category?: string, limit = 20): Promise<MemorialPost[]> {
+    const sp = new URLSearchParams();
+    if (category) sp.append("category", category);
+    sp.append("limit", String(limit));
+    return this.request<MemorialPost[]>(`/memorials?${sp.toString()}`).catch(() => []);
+  }
+
+  async getMemorial(id: string): Promise<MemorialPost> {
+    return this.request<MemorialPost>(`/memorials/${id}`);
+  }
+
+  async createMemorial(data: {
+    dogName: string; category: "natural_death" | "suspicious_death"; description: string; bestMemory?: string;
+    location?: string; latitude?: number; longitude?: number; dateOfDeath: string; causeOfDeath?: string;
+    evidenceUrls?: string[]; isAnonymous?: boolean;
+  }): Promise<MemorialPost> {
+    return this.request<MemorialPost>("/memorials", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async verifyMemorial(id: string, isVerified: boolean, isPublic?: boolean, adminNotes?: string): Promise<MemorialPost> {
+    return this.request<MemorialPost>(`/memorials/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ isVerified, isPublic, adminNotes }),
+    });
+  }
+
+  async deleteMemorial(id: string): Promise<void> {
+    await this.request<void>(`/memorials/${id}`, { method: "DELETE" });
   }
 
   async listEducationContent(audience?: string, topicKey?: string): Promise<EducationContent[]> {

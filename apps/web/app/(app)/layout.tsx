@@ -32,6 +32,7 @@ const BASE_NAV_ITEMS = [
   { label: "Funding",       href: "/funding",      icon: Heart },
   { label: "My Donations",  href: "/my/donations", icon: Heart },
   { label: "Community",     href: "/community",    icon: Users },
+  { label: "Memorial Wall", href: "/memorials",    icon: Heart },
   { label: "Report Cruelty",href: "/cruelty",      icon: ShieldAlert },
   { label: "Partners",      href: "/partners",     icon: Building },
   { label: "Feedback",       href: "/beta/feedback", icon: MessageSquare },
@@ -52,6 +53,7 @@ const ADMIN_NAV_ITEMS = [
   { label: "Users",              href: "/admin/users",             icon: UsersIcon },
   { label: "Feedback",      href: "/admin/beta/feedback",     icon: MessageSquare },
   { label: "Ambulance",      href: "/admin/ambulance",         icon: Ambulance },
+  { label: "Memorial Wall",   href: "/admin/memorials",         icon: Heart },
   { label: "Impact & CSR",   href: "/impact",                  icon: TrendingUp },
 ];
 
