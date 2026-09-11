@@ -14,6 +14,7 @@ import { Input, Textarea, Select, Label } from "@/components/ui/Input";
 import { TabBar, TabButton } from "@/components/ui/Tabs";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Photo } from "@/components/ui/Photo";
 
 type Tab = "lost" | "found" | "report-lost" | "report-found";
 
@@ -157,7 +158,7 @@ export default function LostFoundPage() {
                   <Card interactive className="p-5">
                     <div className="h-40 bg-surface-container-high rounded-md mb-4 flex items-center justify-center overflow-hidden">
                       {animal.primaryPhotoUrl
-                        ? <img src={animal.primaryPhotoUrl} alt={animal.name ?? "Animal"} className="w-full h-full object-cover rounded-md" />
+                        ? <Photo src={animal.primaryPhotoUrl} alt={animal.name ?? "Animal"} className="w-full h-full object-cover rounded-md" />
                         : <Search className="w-12 h-12 text-outline" />}
                     </div>
                     <div className="flex items-center justify-between gap-2">

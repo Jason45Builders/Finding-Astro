@@ -15,6 +15,7 @@ import { StatusBadge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageSpinner, Spinner } from "@/components/ui/Spinner";
+import { Photo } from "@/components/ui/Photo";
 import { statusToken } from "@/lib/status";
 
 type AdoptTab = "browse" | "my-applications";
@@ -148,7 +149,7 @@ function AdoptPageInner() {
                 <Card key={animal.id} interactive className="overflow-hidden p-0">
                   <div className="h-48 bg-surface-container-high relative flex items-center justify-center">
                     {animal.primaryPhotoUrl
-                      ? <img src={animal.primaryPhotoUrl} alt={animal.name ?? "Animal"} className="w-full h-full object-cover" />
+                      ? <Photo src={animal.primaryPhotoUrl} alt={animal.name ?? "Animal"} className="w-full h-full object-cover" />
                       : <Heart className="w-16 h-16 text-outline-variant" />}
                     <StatusBadge token={statusToken.animalStatus(animal.status)} className="absolute top-3 left-3" />
                     {animal.isSterilized && (

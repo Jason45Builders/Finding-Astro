@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Photo } from "@/components/ui/Photo";
 import { api, MemorialPost } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
@@ -84,7 +85,7 @@ export default function AdminMemorialsPage() {
                 <p className="text-xs text-on-surface-variant line-clamp-3">{post.description}</p>
                 {post.evidenceUrls.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
-                    {post.evidenceUrls.slice(0, 4).map((url, i) => <img key={i} src={url} alt="" className="w-16 h-16 rounded-md object-cover border border-outline-variant" />)}
+                    {post.evidenceUrls.slice(0, 4).map((url, i) => <Photo key={i} src={url} alt="" className="w-16 h-16 rounded-md object-cover border border-outline-variant" />)}
                   </div>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">
@@ -116,7 +117,7 @@ export default function AdminMemorialsPage() {
                 <p className="text-xs text-on-surface-variant line-clamp-2">{post.description}</p>
                 {post.evidenceUrls.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
-                    {post.evidenceUrls.slice(0, 3).map((url, i) => <img key={i} src={url} alt="" className="w-12 h-12 rounded-md object-cover border border-outline-variant" />)}
+                    {post.evidenceUrls.slice(0, 3).map((url, i) => <Photo key={i} src={url} alt="" className="w-12 h-12 rounded-md object-cover border border-outline-variant" />)}
                   </div>
                 )}
               </Card>

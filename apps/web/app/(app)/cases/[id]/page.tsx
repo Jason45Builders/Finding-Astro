@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Photo } from "@/components/ui/Photo";
 import { VerticalStepper, type StepItem } from "@/components/ui/Stepper";
 import { statusToken } from "@/lib/status";
 

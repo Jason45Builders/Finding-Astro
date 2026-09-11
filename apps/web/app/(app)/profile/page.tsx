@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { KpiStat } from "@/components/ui/KpiStat";
+import { Photo } from "@/components/ui/Photo";
 
 const ROLE_LABELS: Record<string, string> = {
   citizen: "Citizen",
@@ -88,7 +89,7 @@ export default function ProfilePage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
           <div className="w-20 h-20 rounded-full border-4 border-primary/20 overflow-hidden bg-surface-container-high shrink-0">
             {user.profilePhotoUrl ? (
-              <img src={user.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" onError={handlePhotoLoadError} />
+              <Photo src={user.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-primary text-on-primary text-2xl font-black">
                 {initials}

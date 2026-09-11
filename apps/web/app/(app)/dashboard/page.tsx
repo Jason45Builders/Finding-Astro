@@ -20,6 +20,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
+import { Photo } from "@/components/ui/Photo";
 import { statusToken } from "@/lib/status";
 
 export default function UserDashboard() {
@@ -223,7 +224,7 @@ export default function UserDashboard() {
             <div className="relative shrink-0">
               <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-[3px] border-white/80 shadow-xl overflow-hidden bg-white/20">
                 {photoSrc ? (
-                  <img src={photoSrc} alt="Profile" className="w-full h-full object-cover" onError={handlePhotoLoadError} />
+                  <Photo src={photoSrc} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-white/15 text-white text-xl sm:text-2xl font-black">
                     {initials}

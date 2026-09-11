@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Photo } from "@/components/ui/Photo";
 import { api, MemorialPost } from "@/lib/api";
 
 type Filter = "all" | "natural_death" | "suspicious_death";
@@ -74,7 +75,7 @@ export default function MemorialsPage() {
               {post.evidenceUrls.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {post.evidenceUrls.slice(0, 4).map((url, i) => (
-                    <img key={i} src={url} alt="" className="w-14 h-14 rounded-md object-cover border border-outline-variant" />
+                    <Photo key={i} src={url} alt="" className="w-14 h-14 rounded-md object-cover border border-outline-variant" />
                   ))}
                 </div>
               )}

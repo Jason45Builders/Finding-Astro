@@ -13,8 +13,9 @@ import { useAuth } from "@/lib/auth";
 import { formatDateTime } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Badge, StatusBadge } from "@/components/ui/Badge";
+import { StatusBadge, Badge } from "@/components/ui/Badge";
 import { PageSpinner } from "@/components/ui/Spinner";
+import { Photo } from "@/components/ui/Photo";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TabBar, TabButton } from "@/components/ui/Tabs";
 import { Modal } from "@/components/ui/Modal";
@@ -167,7 +168,7 @@ export default function AnimalProfilePage() {
       <Card className="overflow-hidden">
         <div className="h-64 bg-surface-container-high relative flex items-center justify-center">
           {animal.primaryPhotoUrl
-            ? <img src={animal.primaryPhotoUrl} alt={animal.name ?? "Animal"} className="w-full h-full object-cover" />
+            ? <Photo src={animal.primaryPhotoUrl} alt={animal.name ?? "Animal"} className="w-full h-full object-cover" />
             : <Heart className="w-20 h-20 text-outline-variant" />}
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-inverse-surface/50 to-transparent pointer-events-none" />
 
