@@ -66,9 +66,11 @@ export default function LostFoundPage() {
     );
   };
 
+  const hasLocation = form.latitude !== null && form.longitude !== null;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.latitude === null || form.longitude === null) { setError("Please detect your location first"); return; }
+    if (!hasLocation) { setError("Please detect your location or enter latitude/longitude manually"); return; }
     setSubmitting(true); setError(null);
     try {
       let evidenceUrls: string[] = [];
@@ -80,6 +82,8 @@ export default function LostFoundPage() {
           primaryPhotoUrl = publicUrl;
         } catch { /* ignore */ }
       }
+      const latitude = form.latitude as number;
+      const longitude = form.longitude as number;
       const animalStatus = tab === "report-lost" ? "lost" : "found";
       const animal = await api.createAnimal({
         species: form.species,
@@ -88,7 +92,7 @@ export default function LostFoundPage() {
         breed: form.breed || undefined,
         color: form.color || undefined,
         description: form.description || undefined,
-        location: { latitude: form.latitude, longitude: form.longitude },
+        location: { latitude, longitude },
         territoryLabel: form.locationText || undefined,
         primaryPhotoUrl,
       });
@@ -96,8 +100,8 @@ export default function LostFoundPage() {
         caseType: "lost_pet",
         title: `${tab === "report-lost" ? "Lost" : "Found"} ${form.species}${form.name ? ` — ${form.name}` : ""}`,
         description: `${form.description}\n\nColor: ${form.color || "Not specified"}\nBreed: ${form.breed || "Not specified"}`,
-        latitude: form.latitude,
-        longitude: form.longitude,
+        latitude,
+        longitude,
         evidenceUrls,
         animalId: animal.id,
       });
@@ -241,16 +245,17 @@ export default function LostFoundPage() {
                     placeholder="Distinguishing marks, collar, microchip, behaviour..." />
                 </div>
                 <div className="space-y-2">
-                  <Label className="mb-0">GPS Location</Label>
+                  <Label className="mb-0">GPS Location <span className="text-error">*</span></Label>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <div className="flex-1 grid grid-cols-2 gap-2">
-                      <Input readOnly value={form.latitude?.toFixed(5) ?? ""} placeholder="Latitude" className="rounded-md" />
-                      <Input readOnly value={form.longitude?.toFixed(5) ?? ""} placeholder="Longitude" className="rounded-md" />
+                      <Input type="number" step="any" value={form.latitude ?? ""} onChange={e => setForm(p => ({ ...p, latitude: e.target.value ? Number(e.target.value) : null }))} placeholder="Latitude" className="rounded-md" />
+                      <Input type="number" step="any" value={form.longitude ?? ""} onChange={e => setForm(p => ({ ...p, longitude: e.target.value ? Number(e.target.value) : null }))} placeholder="Longitude" className="rounded-md" />
                     </div>
                     <Button type="button" variant="ghost" onClick={detectLocation} disabled={detectingLocation} className="bg-surface-container-high shrink-0">
                       <MapPin className="w-4 h-4" />{detectingLocation ? "Detecting..." : "Detect Location"}
                     </Button>
                   </div>
+                  {hasLocation && <p className="text-[10px] text-primary font-bold">Location ready</p>}
                 </div>
                 <div>
                   <Label>Photo</Label>
