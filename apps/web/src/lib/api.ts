@@ -1199,6 +1199,7 @@ class ApiClient {
     if (this.token) {
       headers.set("Authorization", `Bearer ${this.token}`);
     }
+    headers.set("X-Requested-With", "Finding-Astro-App");
 
     const res = await fetch(`${this.baseUrl}/media/upload`, { method: "POST", body: fd, headers });
     let payload: unknown;
