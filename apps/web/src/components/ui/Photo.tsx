@@ -17,5 +17,5 @@ export function Photo({ src, fallbackSrc, alt, className, ...rest }: PhotoProps)
   const finalSrc = (!normalized || errored) ? fallbackSrc : normalized;
   if (!finalSrc) return null;
 
-  return <img src={finalSrc} alt={alt ?? ""} className={className} onError={() => { console.error("[Photo] load error src=" + normalized); setErrored(true); }} {...rest} />;
+  return <img src={finalSrc} alt={alt ?? ""} className={className} onError={() => setErrored(true)} {...rest} />;
 }

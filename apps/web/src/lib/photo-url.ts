@@ -1,12 +1,17 @@
 const BUCKET = "finding-astro-media";
+const PROXY_PATH = "/api/v1/media/proxy";
 
 export function normalizePhotoUrl(rawUrl: string | null | undefined): string | null {
   if (!rawUrl || typeof rawUrl !== "string") return null;
   if (rawUrl.startsWith("data:")) return rawUrl;
-  if (rawUrl.startsWith("http")) return rawUrl;
+  if (rawUrl.startsWith("/")) return rawUrl;
 
-  if (rawUrl.startsWith("/")) {
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}/storage/v1/object/public/${BUCKET}${rawUrl}`;
+  if (rawUrl.includes(`/object/public/${BUCKET}/`)) {
+    const marker = `/object/public/${BUCKET}/`;
+    const idx = rawUrl.indexOf(marker);
+    const key = rawUrl.slice(idx + marker.length);
+    const encodedKey = encodeURIComponent(key);
+    return `${PROXY_PATH}?key=${encodedKey}`;
   }
 
   return rawUrl;
