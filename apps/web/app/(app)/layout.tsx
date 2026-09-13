@@ -61,21 +61,15 @@ const ADMIN_NAV_ITEMS = [
 ];
 
 const ORG_NAV_ITEMS = [
-  { label: "Org Dashboard", href: "/org/dashboard", icon: LayoutDashboard },
-  { label: "Animals", href: "/org/animals", icon: Cat },
-  { label: "Tasks", href: "/org/tasks", icon: ClipboardList },
-  { label: "Events", href: "/org/events", icon: Calendar },
-  { label: "Expenses", href: "/org/expenses", icon: DollarSign },
-  { label: "Volunteers", href: "/org/volunteers", icon: Users },
-  { label: "Foster", href: "/org/foster", icon: Heart },
-  { label: "Shelters", href: "/org/shelters", icon: HomeIcon },
-  { label: "Campaigns", href: "/org/campaigns", icon: Activity },
-  { label: "Follow-ups", href: "/org/followups", icon: CheckCircle2 },
-  { label: "Reports", href: "/org/reports", icon: TrendingUp },
-  { label: "Medical", href: "/org/medical", icon: Stethoscope },
-  { label: "Documents", href: "/org/documents", icon: FileCheck2 },
-  { label: "Team", href: "/org/members", icon: UsersIcon },
-  { label: "Settings", href: "/org/settings", icon: Settings },
+  { label: "Dashboard",  href: "/org/dashboard", icon: LayoutDashboard },
+  { label: "Animals",    href: "/org/animals",   icon: Cat },
+  { label: "Volunteers", href: "/org/volunteers",icon: Users },
+  { label: "Tasks",      href: "/org/tasks",     icon: ClipboardList },
+  { label: "Events",     href: "/org/events",    icon: Calendar },
+  { label: "Expenses",   href: "/org/expenses",  icon: DollarSign },
+  { label: "Documents",  href: "/org/documents", icon: FileCheck2 },
+  { label: "Team",       href: "/org/members",   icon: UsersIcon },
+  { label: "Settings",   href: "/org/settings",  icon: Settings },
 ];
 
 const MOBILE_PRIMARY_ITEMS = [
@@ -93,7 +87,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isNgo = user?.role === "ngo";
   // SECURITY NOTE: Client-side role gating is UI-only. Every API route must enforce
   // its own authorization server-side. Never rely on this `isStaff` check for security.
-  const navItems = isStaff ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS] : isNgo ? [...BASE_NAV_ITEMS, ...ORG_NAV_ITEMS] : BASE_NAV_ITEMS;
+  const navItems = isStaff ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS] : isNgo ? ORG_NAV_ITEMS : BASE_NAV_ITEMS;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
