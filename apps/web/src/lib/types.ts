@@ -906,6 +906,8 @@ export interface OrganizationMember {
   id: string;
   welfareGroupId: string;
   userId: string;
+  userName: string | null;
+  userEmail: string | null;
   orgRole: "org_admin" | "rescue_coordinator" | "medical_coordinator" | "adoption_coordinator" | "finance" | "volunteer" | "vet" | "foster";
   permissions: Record<string, boolean>;
   isActive: boolean;
@@ -1037,6 +1039,8 @@ export function mapOrganizationMember(row: Record<string, unknown>): Organizatio
     id: row.id as string,
     welfareGroupId: row.welfare_group_id as string,
     userId: row.user_id as string,
+    userName: (row.user as { full_name?: string } | null)?.full_name ?? (row.user_name as string | null),
+    userEmail: (row.user as { email?: string } | null)?.email ?? (row.user_email as string | null),
     orgRole: row.org_role as OrganizationMember["orgRole"],
     permissions: (row.permissions as Record<string, boolean>) ?? {},
     isActive: (row.is_active as boolean) ?? true,
@@ -1184,6 +1188,8 @@ export interface VolunteerProfile {
   id: string;
   userId: string;
   welfareGroupId: string;
+  userName: string | null;
+  userEmail: string | null;
   skills: string[];
   isAvailable: boolean;
   availabilityNotes: string | null;
@@ -1309,6 +1315,8 @@ export function mapVolunteerProfile(row: Record<string, unknown>): VolunteerProf
     id: row.id as string,
     userId: row.user_id as string,
     welfareGroupId: row.welfare_group_id as string,
+    userName: (row.user as { full_name?: string } | null)?.full_name ?? (row.user_name as string | null),
+    userEmail: (row.user as { email?: string } | null)?.email ?? (row.user_email as string | null),
     skills: (row.skills as string[]) ?? [],
     isAvailable: (row.is_available as boolean) ?? true,
     availabilityNotes: row.availability_notes as string | null,

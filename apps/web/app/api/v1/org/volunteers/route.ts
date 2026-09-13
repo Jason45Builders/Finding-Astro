@@ -19,7 +19,14 @@ export async function GET(req: NextRequest) {
 
     let query = supabaseAdmin()
       .from("volunteer_profiles")
-      .select("*")
+      .select(`
+        *,
+        user:users!volunteer_profiles_user_id_fkey (
+          id,
+          full_name,
+          email
+        )
+      `)
       .eq("welfare_group_id", org.welfareGroupId)
       .order("created_at", { ascending: false });
 
@@ -81,7 +88,14 @@ export async function POST(req: NextRequest) {
         emergency_contact_phone: body.emergencyContactPhone ?? null,
         notes: body.notes ?? null,
       }, { onConflict: "user_id,welfare_group_id" })
-      .select("*")
+      .select(`
+        *,
+        user:users!volunteer_profiles_user_id_fkey (
+          id,
+          full_name,
+          email
+        )
+      `)
       .single();
 
     if (error) return serverError(error.message);

@@ -15,7 +15,14 @@ export async function GET(req: NextRequest) {
   try {
     const { data, error } = await supabaseAdmin()
       .from("organization_members")
-      .select("*")
+      .select(`
+        *,
+        user:users!organization_members_user_id_fkey (
+          id,
+          full_name,
+          email
+        )
+      `)
       .eq("welfare_group_id", org.welfareGroupId)
       .order("created_at", { ascending: false });
 
@@ -65,7 +72,14 @@ export async function POST(req: NextRequest) {
         permissions: body.permissions ?? {},
         is_active: true,
       }, { onConflict: "welfare_group_id,user_id" })
-      .select("*")
+      .select(`
+        *,
+        user:users!organization_members_user_id_fkey (
+          id,
+          full_name,
+          email
+        )
+      `)
       .single();
 
     if (error) return serverError(error.message);

@@ -89,7 +89,7 @@ export default function OrgMembersPage() {
 
       {members.length === 0 ? (
         <Card className="p-8">
-          <EmptyState icon={Users} title="No team members yet" description="Add members by their user ID." />
+          <EmptyState icon={Users} title="No team members yet" description="Add members by their email address." />
         </Card>
       ) : (
         <div className="space-y-3">
@@ -97,9 +97,12 @@ export default function OrgMembersPage() {
             <Card key={member.id} className="p-4">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="font-bold text-on-surface">User ID: {member.userId}</p>
+                  <p className="font-bold text-on-surface">{member.userName || member.userEmail || "Unknown User"}</p>
+                  {member.userEmail && <p className="text-xs text-on-surface-variant">{member.userEmail}</p>}
                   <Badge variant="neutral" className="mt-1">{member.orgRole.replace("_", " ")}</Badge>
-                  <p className="text-xs text-on-surface-variant mt-1">Permissions: {Object.keys(member.permissions).length > 0 ? JSON.stringify(member.permissions) : "default"}</p>
+                  <p className="text-xs text-on-surface-variant mt-1">
+                    Permissions: {Object.keys(member.permissions).length === 1 && member.permissions["*"] ? "All" : Object.keys(member.permissions).length > 0 ? Object.keys(member.permissions).join(", ") : "default"}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={member.isActive ? "success" : "danger"}>{member.isActive ? "Active" : "Inactive"}</Badge>

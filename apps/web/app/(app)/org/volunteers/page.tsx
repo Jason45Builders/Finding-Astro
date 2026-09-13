@@ -158,10 +158,11 @@ export default function OrgVolunteersPage() {
             <Card key={v.id} className="p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-on-surface">User ID: {v.userId}</p>
-                    <Badge variant={v.isAvailable ? "success" : "danger"}>{v.isAvailable ? "Available" : "Unavailable"}</Badge>
-                  </div>
+                 <div className="flex items-center gap-2">
+                   <p className="font-bold text-on-surface">{v.userName || v.userEmail || "Unknown User"}</p>
+                   {v.userEmail && <span className="text-xs text-on-surface-variant">{v.userEmail}</span>}
+                   <Badge variant={v.isAvailable ? "success" : "danger"}>{v.isAvailable ? "Available" : "Unavailable"}</Badge>
+                 </div>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {v.skills.map((skill) => (
                       <Badge key={skill} variant="neutral">{skill}</Badge>
