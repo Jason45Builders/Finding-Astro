@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { formatDateSafe } from "@/lib/utils";
 
 export default function OrgMedicalPage() {
   const { user } = useAuth();
@@ -95,7 +96,7 @@ export default function OrgMedicalPage() {
                           <div key={record.id} className="p-3 bg-surface-container-high rounded-lg">
                             <div className="flex items-center justify-between">
                               <Badge variant="neutral">{record.entryType}</Badge>
-                               <span className="text-xs text-on-surface-variant">{record.treatmentDate ? new Date(record.treatmentDate).toLocaleDateString() : "No date"}</span>
+                                <span className="text-xs text-on-surface-variant">{formatDateSafe(record.treatmentDate, "No date")}</span>
                             </div>
                             <p className="text-sm font-bold text-on-surface mt-1">{record.title}</p>
                             {record.notes && <p className="text-xs text-on-surface-variant mt-1">{record.notes}</p>}

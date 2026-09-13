@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { formatDateSafe } from "@/lib/utils";
 
 type DocTab = "organization" | "animals";
 
@@ -119,7 +120,7 @@ export default function OrgDocumentsPage() {
                       <a href={doc.url} target="_blank" rel="noopener" className="text-xs text-primary hover:underline flex items-center gap-1 mt-1">
                         <ExternalLink className="w-3 h-3" /> View Document
                       </a>
-                      {doc.expiryDate && <p className="text-xs text-on-surface-variant mt-1">Expires: {new Date(doc.expiryDate).toLocaleDateString()}</p>}
+                       {doc.expiryDate && <p className="text-xs text-on-surface-variant mt-1">Expires: {formatDateSafe(doc.expiryDate)}</p>}
                     </div>
                   </div>
                 </Card>

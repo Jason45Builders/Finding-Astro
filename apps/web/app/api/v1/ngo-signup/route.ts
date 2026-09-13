@@ -68,15 +68,12 @@ export async function POST(req: NextRequest) {
       .insert({
         name: orgName,
         org_type: orgType,
-        registration_number: registrationNumber ?? null,
         address: address ?? null,
         phone: phone ?? null,
         email: normalizedEmail,
         website: website ?? null,
-        is_verified: true,
+        is_verified: false,
         is_active: true,
-        payment_enabled: false,
-        upi_verified: false,
       })
       .select("id")
       .single();

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Plus, Heart, MapPin, Users, Home as HomeIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
-import { FosterHome, FosterAssignment } from "@/lib/types";
+import { FosterHome, FosterAssignment, Animal } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Label, Select } from "@/components/ui/Input";
@@ -21,6 +21,7 @@ export default function OrgFosterPage() {
   const { user } = useAuth();
   const [homes, setHomes] = useState<FosterHome[]>([]);
   const [assignments, setAssignments] = useState<FosterAssignment[]>([]);
+  const [animals, setAnimals] = useState<Animal[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("homes");
   const [showHomeForm, setShowHomeForm] = useState(false);
@@ -44,13 +45,15 @@ export default function OrgFosterPage() {
     let cancelled = false;
     const load = async () => {
       try {
-        const [homesData, assignmentsData] = await Promise.all([
+        const [homesData, assignmentsData, animalsData] = await Promise.all([
           api.listOrgFosterHomes(),
           api.listOrgFosterAssignments(),
+          api.listOrgAnimals(),
         ]);
         if (!cancelled) {
           setHomes(homesData);
           setAssignments(assignmentsData);
+          setAnimals(animalsData);
         }
       } catch (err) {
         console.error("Failed to load foster data", err);
@@ -252,12 +255,22 @@ export default function OrgFosterPage() {
       <Modal open={showAssignForm} onClose={() => setShowAssignForm(false)} title="New Foster Assignment">
         <form onSubmit={handleAssignSubmit} className="space-y-4">
           <div>
-            <Label>Foster Home ID</Label>
-            <Input value={assignForm.fosterHomeId} onChange={(e) => setAssignForm({ ...assignForm, fosterHomeId: e.target.value })} required />
+            <Label>Foster Home</Label>
+            <Select value={assignForm.fosterHomeId} onChange={(e) => setAssignForm({ ...assignForm, fosterHomeId: e.target.value })} required>
+              <option value="">Select a foster home</option>
+              {homes.map((home) => (
+                <option key={home.id} value={home.id}>{home.name}</option>
+              ))}
+            </Select>
           </div>
           <div>
-            <Label>Animal ID</Label>
-            <Input value={assignForm.animalId} onChange={(e) => setAssignForm({ ...assignForm, animalId: e.target.value })} required />
+            <Label>Animal</Label>
+            <Select value={assignForm.animalId} onChange={(e) => setAssignForm({ ...assignForm, animalId: e.target.value })} required>
+              <option value="">Select an animal</option>
+              {animals.map((animal) => (
+                <option key={animal.id} value={animal.id}>{animal.name || animal.species} ({animal.id})</option>
+              ))}
+            </Select>
           </div>
           <div>
             <Label>Case ID (optional)</Label>

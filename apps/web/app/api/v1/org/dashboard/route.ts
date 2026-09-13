@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       activeVolunteersRes,
       openTasksRes,
       upcomingEventsRes,
-    ] = await Promise.all([
+    ] = await Promise.allSettled([
       hasMembers
         ? admin.from("animals").select("id", { count: "exact", head: true }).in("caretaker_user_id", userIds)
         : admin.from("animals").select("id", { count: "exact", head: true }).eq("caretaker_user_id", gid),
@@ -61,21 +61,21 @@ export async function GET(req: NextRequest) {
       admin.from("events").select("id", { count: "exact", head: true }).eq("welfare_group_id", gid).eq("status", "planned"),
     ]);
 
-    const donationsTotal = (donationsRes.data ?? []).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
-    const expensesTotal = (expensesRes.data ?? []).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
+    const donationsTotal = (donationsRes.status === "fulfilled" ? donationsRes.value.data ?? [] : []).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
+    const expensesTotal = (expensesRes.status === "fulfilled" ? expensesRes.value.data ?? [] : []).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
 
     const stats = {
-      total_animals: totalAnimalsRes.count ?? 0,
-      active_rescues: activeRescuesRes.count ?? 0,
-      adoption_ready: adoptionReadyRes.count ?? 0,
-      medical_cases: medicalCasesRes.count ?? 0,
-      vaccinations_due: vaccinationsDueRes.count ?? 0,
-      pending_adoptions: pendingAdoptionsRes.count ?? 0,
+      total_animals: totalAnimalsRes.status === "fulfilled" ? totalAnimalsRes.value.count ?? 0 : 0,
+      active_rescues: activeRescuesRes.status === "fulfilled" ? activeRescuesRes.value.count ?? 0 : 0,
+      adoption_ready: adoptionReadyRes.status === "fulfilled" ? adoptionReadyRes.value.count ?? 0 : 0,
+      medical_cases: medicalCasesRes.status === "fulfilled" ? medicalCasesRes.value.count ?? 0 : 0,
+      vaccinations_due: vaccinationsDueRes.status === "fulfilled" ? vaccinationsDueRes.value.count ?? 0 : 0,
+      pending_adoptions: pendingAdoptionsRes.status === "fulfilled" ? pendingAdoptionsRes.value.count ?? 0 : 0,
       donations_this_month: donationsTotal,
       expenses_this_month: expensesTotal,
-      active_volunteers: activeVolunteersRes.count ?? 0,
-      open_tasks: openTasksRes.count ?? 0,
-      upcoming_events: upcomingEventsRes.count ?? 0,
+      active_volunteers: activeVolunteersRes.status === "fulfilled" ? activeVolunteersRes.value.count ?? 0 : 0,
+      open_tasks: openTasksRes.status === "fulfilled" ? openTasksRes.value.count ?? 0 : 0,
+      upcoming_events: upcomingEventsRes.status === "fulfilled" ? upcomingEventsRes.value.count ?? 0 : 0,
     };
 
     return ok(mapOrgDashboardStats(stats), "Dashboard stats loaded");

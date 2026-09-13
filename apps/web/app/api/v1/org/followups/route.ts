@@ -49,6 +49,24 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const type = body.followupType && FOLLOWUP_TYPES.includes(body.followupType) ? body.followupType : "general";
 
+    if (body.animalId) {
+      const { data: animalRow } = await supabaseAdmin()
+        .from("animals")
+        .select("id")
+        .eq("id", body.animalId)
+        .maybeSingle();
+      if (!animalRow) return badRequest("INVALID_ANIMAL", "Animal not found");
+    }
+
+    if (body.adoptionApplicationId) {
+      const { data: adoptionRow } = await supabaseAdmin()
+        .from("adoption_applications")
+        .select("id")
+        .eq("id", body.adoptionApplicationId)
+        .maybeSingle();
+      if (!adoptionRow) return badRequest("INVALID_ADOPTION", "Adoption application not found");
+    }
+
     const { data, error } = await supabaseAdmin()
       .from("post_adoption_followups")
       .insert({

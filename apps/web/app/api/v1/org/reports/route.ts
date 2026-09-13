@@ -49,6 +49,10 @@ export async function POST(req: NextRequest) {
     const periodStart = body.periodStart ?? new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split("T")[0];
     const periodEnd = body.periodEnd ?? new Date().toISOString().split("T")[0];
 
+    if (periodEnd < periodStart) {
+      return badRequest("INVALID_DATE_RANGE", "periodEnd must be on or after periodStart");
+    }
+
     const { data: members } = await supabaseAdmin()
       .from("organization_members")
       .select("user_id")

@@ -39,7 +39,7 @@ export interface Animal {
   photoUrls: string[];
   isSterilized: boolean;
   lastSeenText: string | null;
-  location: { latitude: number; longitude: number };
+  location: { latitude: number; longitude: number } | null;
   territoryLabel: string | null;
   visualSignature: unknown;
   lastSeenAt: string | null;
@@ -407,7 +407,7 @@ export function mapAnimal(row: Record<string, unknown>): Animal {
     photoUrls: (row.photo_urls as string[]) ?? [],
     isSterilized: (row.is_sterilized as boolean) ?? false,
     lastSeenText: row.last_seen_text as string | null,
-    location: (row.location as { latitude: number; longitude: number }) ?? { latitude: 0, longitude: 0 },
+    location: (row.location as { latitude: number; longitude: number } | null) ?? null,
     territoryLabel: row.territory_label as string | null,
     visualSignature: row.visual_signature,
     lastSeenAt: row.last_seen_at as string | null,

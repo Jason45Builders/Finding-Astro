@@ -63,7 +63,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (body.description !== undefined) allowed.description = body.description ?? null;
     if (body.receiptUrl !== undefined) allowed.receipt_url = body.receiptUrl ?? null;
     if (body.reimbursable !== undefined) allowed.reimbursable = body.reimbursable;
-    if (body.approved !== undefined) allowed.approved = body.approved;
+    if (body.approved !== undefined) {
+      if (body.approved && !hasOrgPermission(org.permissions, "expenses:approve")) {
+        return forbidden("Insufficient permissions to approve expenses");
+      }
+      allowed.approved = body.approved;
+    }
     if (body.approved && body.reimbursedAt) allowed.reimbursed_at = body.reimbursedAt;
 
     if (Object.keys(allowed).length === 0) return badRequest("NO_CHANGES", "No updatable fields provided");

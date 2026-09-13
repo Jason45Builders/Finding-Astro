@@ -44,6 +44,16 @@ export async function POST(req: NextRequest) {
     const targetUserId = body.userId as string | undefined;
     if (!targetUserId) return badRequest("INVALID_BODY", "userId is required");
 
+    const { data: userRow, error: userError } = await supabaseAdmin()
+      .from("users")
+      .select("id")
+      .eq("id", targetUserId)
+      .maybeSingle();
+
+    if (userError || !userRow) {
+      return badRequest("USER_NOT_FOUND", "The specified user does not exist");
+    }
+
     const orgRole = body.orgRole && ORG_ROLES.includes(body.orgRole) ? body.orgRole : "volunteer";
 
     const { data, error } = await supabaseAdmin()
