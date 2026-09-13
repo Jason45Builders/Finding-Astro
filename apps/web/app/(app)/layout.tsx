@@ -85,9 +85,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout, isLoading, bootstrap } = useAuth();
   const isStaff = user?.role === "admin" || user?.role === "govt";
   const isNgo = user?.role === "ngo";
+  const [hasOrgMembership, setHasOrgMembership] = useState(false);
   // SECURITY NOTE: Client-side role gating is UI-only. Every API route must enforce
   // its own authorization server-side. Never rely on this `isStaff` check for security.
-  const navItems = isStaff ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS] : isNgo ? ORG_NAV_ITEMS : BASE_NAV_ITEMS;
+  const showOrgNav = isNgo || hasOrgMembership;
+  const navItems = isStaff ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS] : showOrgNav ? [...BASE_NAV_ITEMS, ...ORG_NAV_ITEMS] : BASE_NAV_ITEMS;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -96,6 +98,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (!user) void bootstrap();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!user || isNgo) return;
+    let cancelled = false;
+    const checkOrgMembership = async () => {
+      try {
+        const res = await api.getMyOrgMemberships();
+        if (!cancelled) setHasOrgMembership((res.memberships?.length ?? 0) > 0);
+      } catch { /* ignore */ }
+    };
+    void checkOrgMembership();
+    return () => { cancelled = true; };
+  }, [user, isNgo]);
 
   useEffect(() => {
     if (!isLoading && !user) {

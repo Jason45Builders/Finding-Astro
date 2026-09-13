@@ -584,6 +584,10 @@ class ApiClient {
     return this.request<User>("/auth/me");
   }
 
+  async getMyOrgMemberships(): Promise<{ memberships: Array<{ orgId: string; orgRole: string; isAdmin: boolean }> }> {
+    return this.request<{ memberships: Array<{ orgId: string; orgRole: string; isAdmin: boolean }> }>("/auth/me/org-memberships");
+  }
+
   async updateProfilePhoto(profilePhotoUrl: string | null): Promise<User> {
     return this.request<User>("/auth/me", {
       method: "PATCH",
