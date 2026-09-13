@@ -72,16 +72,16 @@ export async function requireOrg(req: { headers: Headers }): Promise<{ user: { i
   const admin = supabaseAdmin();
   const { data: userRow } = await admin
     .from("users")
-    .select("role, is_banned")
+    .select("role, is_banned, ban_reason")
     .eq("id", payload.sub)
     .single();
 
-  if (!userRow || userRow.is_banned) {
-    return new Response(JSON.stringify({ success: false, code: "FORBIDDEN", message: "Account not found or banned" }), { status: 403, headers: { "Content-Type": "application/json" } });
+  if (!userRow) {
+    return new Response(JSON.stringify({ success: false, code: "ACCOUNT_NOT_FOUND", message: "Your account was not found. Please log in again." }), { status: 403, headers: { "Content-Type": "application/json" } });
   }
 
-  if (userRow.role !== "ngo" && userRow.role !== "govt" && userRow.role !== "admin") {
-    return new Response(JSON.stringify({ success: false, code: "FORBIDDEN", message: "Organization access required" }), { status: 403, headers: { "Content-Type": "application/json" } });
+  if (userRow.is_banned) {
+    return new Response(JSON.stringify({ success: false, code: "ACCOUNT_BANNED", message: `Your account has been suspended. Reason: ${userRow.ban_reason ?? "Violation of platform rules"}. Contact support if you believe this is an error.` }), { status: 403, headers: { "Content-Type": "application/json" } });
   }
 
   const org = await getOrgContext(payload.sub);
