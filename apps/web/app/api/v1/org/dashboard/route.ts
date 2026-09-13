@@ -64,7 +64,14 @@ export async function GET(req: NextRequest) {
     const donationsTotal = (donationsRes.status === "fulfilled" ? donationsRes.value.data ?? [] : []).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
     const expensesTotal = (expensesRes.status === "fulfilled" ? expensesRes.value.data ?? [] : []).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
 
+    const { data: orgRow } = await admin
+      .from("welfare_orgs")
+      .select("name")
+      .eq("id", gid)
+      .maybeSingle();
+
     const stats = {
+      ...(orgRow?.name ? { org_name: orgRow.name } : {}),
       total_animals: totalAnimalsRes.status === "fulfilled" ? totalAnimalsRes.value.count ?? 0 : 0,
       active_rescues: activeRescuesRes.status === "fulfilled" ? activeRescuesRes.value.count ?? 0 : 0,
       adoption_ready: adoptionReadyRes.status === "fulfilled" ? adoptionReadyRes.value.count ?? 0 : 0,

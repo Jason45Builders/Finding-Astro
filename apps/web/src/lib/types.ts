@@ -1018,6 +1018,7 @@ export interface OrganizationDocument {
 }
 
 export interface OrgDashboardStats {
+  orgName?: string;
   totalAnimals: number;
   activeRescues: number;
   adoptionReady: number;
@@ -1164,6 +1165,7 @@ export function mapOrganizationDocument(row: Record<string, unknown>): Organizat
 
 export function mapOrgDashboardStats(row: Record<string, unknown>): OrgDashboardStats {
   return {
+    orgName: row.org_name as string | undefined,
     totalAnimals: Number(row.total_animals ?? 0),
     activeRescues: Number(row.active_rescues ?? 0),
     adoptionReady: Number(row.adoption_ready ?? 0),

@@ -82,7 +82,7 @@ export default function OrgDashboardPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface">Organization Dashboard</h1>
+          <h1 className="font-headline-lg text-headline-lg text-on-surface">{stats?.orgName ? `${stats.orgName} Dashboard` : "Organization Dashboard"}</h1>
           <p className="text-sm text-on-surface-variant">Good morning, {user?.fullName || "Team"}</p>
         </div>
         <Link href="/org/animals"><Button variant="primary"><PawPrint className="w-4 h-4 mr-2" />New Animal</Button></Link>
