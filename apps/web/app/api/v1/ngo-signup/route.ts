@@ -6,6 +6,7 @@ import { ok, serverError, badRequest } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
+import { requireCsrf } from "@/lib/auth-middleware";
 
 const NgoSignupSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -33,6 +34,9 @@ export async function POST(req: NextRequest) {
     if (!rate.allowed) {
       return new NextResponse(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many signup attempts. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
     }
+
+    const csrfError = requireCsrf(req);
+    if (csrfError) return csrfError;
 
     const raw = await req.json();
     const parsed = validateBody(NgoSignupSchema, raw);

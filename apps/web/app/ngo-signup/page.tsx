@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Building2, Lock, Upload } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { requireCsrf } from "@/lib/auth-middleware";
 import { Input, Textarea, Select, Label } from "@/components/ui/Input";
 
 const ORG_TYPES = [
@@ -27,12 +28,14 @@ export default function NgoSignupPage() {
     website: "",
   });
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
     setSubmitting(true);
     try {
       const res = await fetch("/api/v1/ngo-signup", {
@@ -41,7 +44,19 @@ export default function NgoSignupPage() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Signup failed");
+      if (!res.ok) {
+        if (data.fields && Array.isArray(data.fields)) {
+          const errors: Record<string, string> = {};
+          data.fields.forEach((f: { field: string; message: string }) => {
+            errors[f.field] = f.message;
+          });
+          setFieldErrors(errors);
+          setError(data.message || "Please fix the errors below");
+        } else {
+          throw new Error(data.message || "Signup failed");
+        }
+        return;
+      }
       setSuccess(true);
     } catch (err: any) {
       setError(err?.message || "Failed to create account");
@@ -76,7 +91,7 @@ export default function NgoSignupPage() {
           <p className="text-sm text-on-surface-variant mt-1">Create an account for your animal welfare organization</p>
         </div>
 
-        {error && (
+        {error && Object.keys(fieldErrors).length === 0 && (
           <div className="p-3 bg-error/10 border border-error/20 rounded-lg text-sm text-error">{error}</div>
         )}
 
@@ -86,14 +101,17 @@ export default function NgoSignupPage() {
             <div>
               <Label>Full Name</Label>
               <Input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required />
+              {fieldErrors.fullName && <p className="text-xs text-error mt-1">{fieldErrors.fullName}</p>}
             </div>
             <div>
               <Label>Email</Label>
               <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+              {fieldErrors.email && <p className="text-xs text-error mt-1">{fieldErrors.email}</p>}
             </div>
             <div>
               <Label>Password</Label>
-              <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} />
+              <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={8} />
+              {fieldErrors.password && <p className="text-xs text-error mt-1">{fieldErrors.password}</p>}
             </div>
           </div>
 
@@ -102,6 +120,7 @@ export default function NgoSignupPage() {
             <div>
               <Label>Organization Name</Label>
               <Input value={form.orgName} onChange={(e) => setForm({ ...form, orgName: e.target.value })} required />
+              {fieldErrors.orgName && <p className="text-xs text-error mt-1">{fieldErrors.orgName}</p>}
             </div>
             <div>
               <Label>Organization Type</Label>
