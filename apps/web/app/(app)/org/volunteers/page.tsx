@@ -22,7 +22,7 @@ export default function OrgVolunteersPage() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<VolunteerProfile | null>(null);
   const [form, setForm] = useState({
-    userId: "",
+    email: "",
     skills: [] as string[],
     isAvailable: true,
     availabilityNotes: "",
@@ -60,7 +60,7 @@ export default function OrgVolunteersPage() {
   const openCreate = () => {
     setEditing(null);
     setForm({
-      userId: "", skills: [], isAvailable: true, availabilityNotes: "", hasVehicle: false,
+      email: "", skills: [], isAvailable: true, availabilityNotes: "", hasVehicle: false,
       vehicleType: "", vehicleCapacity: "", canFoster: false, fosterCapacity: "0",
       fosterSpeciesAccepted: [], canRescue: false, canTransport: false, hasMedicalKnowledge: false,
       emergencyContactName: "", emergencyContactPhone: "", notes: "",
@@ -71,7 +71,7 @@ export default function OrgVolunteersPage() {
   const openEdit = (v: VolunteerProfile) => {
     setEditing(v);
     setForm({
-      userId: v.userId,
+      email: v.userId,
       skills: v.skills,
       isAvailable: v.isAvailable,
       availabilityNotes: v.availabilityNotes || "",
@@ -103,7 +103,7 @@ export default function OrgVolunteersPage() {
     setSubmitting(true);
     try {
       const payload = {
-        userId: form.userId,
+        email: form.email,
         skills: form.skills,
         isAvailable: form.isAvailable,
         availabilityNotes: form.availabilityNotes || undefined,
@@ -188,8 +188,8 @@ export default function OrgVolunteersPage() {
       <Modal open={showForm} onClose={() => setShowForm(false)} title={editing ? "Edit Volunteer" : "Add Volunteer"}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label>User ID</Label>
-            <Input value={form.userId} onChange={(e) => setForm({ ...form, userId: e.target.value })} required />
+            <Label>Email</Label>
+            <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="user@example.com" required />
           </div>
           <div>
             <Label>Skills</Label>

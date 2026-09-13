@@ -29,7 +29,7 @@ export default function OrgMembersPage() {
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [userId, setUserId] = useState("");
+  const [email, setEmail] = useState("");
   const [orgRole, setOrgRole] = useState<OrganizationMember["orgRole"]>("volunteer");
   const [submitting, setSubmitting] = useState(false);
 
@@ -53,9 +53,9 @@ export default function OrgMembersPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const member = await api.addOrgMember({ userId, orgRole });
+      const member = await api.addOrgMember({ email, orgRole });
       setMembers((prev) => [member, ...prev]);
-      setUserId("");
+      setEmail("");
       setOrgRole("volunteer");
       setShowForm(false);
     } catch (err: any) {
@@ -114,8 +114,8 @@ export default function OrgMembersPage() {
       <Modal open={showForm} onClose={() => setShowForm(false)} title="Add Team Member">
         <form onSubmit={handleAdd} className="space-y-4">
           <div>
-            <Label>User ID</Label>
-            <Input value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="UUID of the user to add" required />
+            <Label>Email</Label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="user@example.com" required />
           </div>
           <div>
             <Label>Role</Label>

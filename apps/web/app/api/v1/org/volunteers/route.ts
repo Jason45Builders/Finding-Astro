@@ -47,24 +47,24 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const targetUserId = body.userId as string | undefined;
-    if (!targetUserId) return badRequest("INVALID_BODY", "userId is required");
+    const email = String(body.email ?? "").trim().toLowerCase();
+    if (!email) return badRequest("INVALID_BODY", "Email is required");
 
     const { data: userRow, error: userError } = await supabaseAdmin()
       .from("users")
       .select("id")
-      .eq("id", targetUserId)
+      .eq("email", email)
       .maybeSingle();
 
     if (userError || !userRow) {
-      return badRequest("USER_NOT_FOUND", "The specified user does not exist");
+      return badRequest("USER_NOT_FOUND", "No account found with this email");
     }
 
     const { data, error } = await supabaseAdmin()
       .from("volunteer_profiles")
       .upsert({
         welfare_group_id: org.welfareGroupId,
-        user_id: targetUserId,
+        user_id: userRow.id,
         skills: body.skills ?? [],
         is_available: body.isAvailable ?? true,
         availability_notes: body.availabilityNotes ?? null,

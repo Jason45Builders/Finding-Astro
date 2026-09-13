@@ -41,17 +41,17 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const targetUserId = body.userId as string | undefined;
-    if (!targetUserId) return badRequest("INVALID_BODY", "userId is required");
+    const email = String(body.email ?? "").trim().toLowerCase();
+    if (!email) return badRequest("INVALID_BODY", "Email is required");
 
     const { data: userRow, error: userError } = await supabaseAdmin()
       .from("users")
       .select("id")
-      .eq("id", targetUserId)
+      .eq("email", email)
       .maybeSingle();
 
     if (userError || !userRow) {
-      return badRequest("USER_NOT_FOUND", "The specified user does not exist");
+      return badRequest("USER_NOT_FOUND", "No account found with this email");
     }
 
     const orgRole = body.orgRole && ORG_ROLES.includes(body.orgRole) ? body.orgRole : "volunteer";
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       .from("organization_members")
       .upsert({
         welfare_group_id: org.welfareGroupId,
-        user_id: targetUserId,
+        user_id: userRow.id,
         org_role: orgRole,
         permissions: body.permissions ?? {},
         is_active: true,

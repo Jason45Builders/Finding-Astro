@@ -1436,7 +1436,7 @@ class ApiClient {
     return this.request<any[]>("/org/members").catch(() => []);
   }
 
-  async addOrgMember(data: { userId: string; orgRole?: string; permissions?: Record<string, boolean> }): Promise<any> {
+  async addOrgMember(data: { email: string; orgRole?: string; permissions?: Record<string, boolean> }): Promise<any> {
     return this.request<any>("/org/members", { method: "POST", body: JSON.stringify(data) });
   }
 
