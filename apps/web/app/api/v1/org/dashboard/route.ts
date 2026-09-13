@@ -38,27 +38,27 @@ export async function GET(req: NextRequest) {
     ] = await Promise.allSettled([
       hasMembers
         ? admin.from("animals").select("id", { count: "exact", head: true }).in("caretaker_user_id", userIds)
-        : admin.from("animals").select("id", { count: "exact", head: true }).eq("caretaker_user_id", gid),
+        : Promise.resolve({ count: 0 } as any),
       hasMembers
-        ? admin.from("cases").select("id", { count: "exact", head: true }).in("assigned_to_user_id", userIds).in("status", ["open", "in_review"])
-        : admin.from("cases").select("id", { count: "exact", head: true }).eq("assigned_to_user_id", gid).in("status", ["open", "in_review"]),
+        ? admin.from("cases").select("id", { count: "exact", head: true }).in("assigned_to_user_id", userIds).in("status", ["open", "in_review"]).eq("case_type", "rescue")
+        : Promise.resolve({ count: 0 } as any),
       hasMembers
         ? admin.from("animals").select("id", { count: "exact", head: true }).in("caretaker_user_id", userIds).eq("status", "community").not("adoptable_since", "is", null)
-        : admin.from("animals").select("id", { count: "exact", head: true }).eq("caretaker_user_id", gid).eq("status", "community").not("adoptable_since", "is", null),
+        : Promise.resolve({ count: 0 } as any),
       hasMembers
-        ? admin.from("medical_history").select("id", { count: "exact", head: true }).in("created_by_user_id", userIds)
-        : admin.from("medical_history").select("id", { count: "exact", head: true }).eq("created_by_user_id", gid),
+        ? admin.from("medical_history").select("case_id", { count: "exact", head: true }).in("created_by_user_id", userIds).not("case_id", "is", null)
+        : Promise.resolve({ count: 0 } as any),
       hasMembers
-        ? admin.from("vaccinations").select("id", { count: "exact", head: true }).in("administered_by_user_id", userIds).lt("expires_at", new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
-        : admin.from("vaccinations").select("id", { count: "exact", head: true }).eq("administered_by_user_id", gid).lt("expires_at", new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()),
+        ? admin.from("vaccinations").select("id", { count: "exact", head: true }).in("administered_by_user_id", userIds).gte("expires_at", new Date().toISOString()).lt("expires_at", new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
+        : Promise.resolve({ count: 0 } as any),
       hasMembers
-        ? admin.from("adoption_applications").select("id", { count: "exact", head: true }).in("reviewed_by_user_id", userIds).eq("status", "pending_review")
-        : admin.from("adoption_applications").select("id", { count: "exact", head: true }).eq("reviewed_by_user_id", gid).eq("status", "pending_review"),
+        ? admin.from("adoption_applications").select("id", { count: "exact", head: true }).in("reviewed_by_user_id", userIds).eq("status", "pending_review").or("reviewed_by_user_id.is.null")
+        : Promise.resolve({ count: 0 } as any),
       admin.from("welfare_payments").select("amount").eq("welfare_group_id", gid).eq("status", "VERIFIED").gte("payment_date", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split("T")[0]),
-      admin.from("expenses").select("amount").eq("welfare_group_id", gid).gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
-      admin.from("organization_members").select("id", { count: "exact", head: true }).eq("welfare_group_id", gid).eq("is_active", true),
+      admin.from("expenses").select("amount").eq("welfare_group_id", gid).gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split("T")[0]),
+      admin.from("organization_members").select("id", { count: "exact", head: true }).eq("welfare_group_id", gid).eq("is_active", true).eq("org_role", "volunteer"),
       admin.from("tasks").select("id", { count: "exact", head: true }).eq("welfare_group_id", gid).neq("status", "completed"),
-      admin.from("events").select("id", { count: "exact", head: true }).eq("welfare_group_id", gid).eq("status", "planned"),
+      admin.from("events").select("id", { count: "exact", head: true }).eq("welfare_group_id", gid).eq("status", "planned").gte("date", new Date().toISOString()),
     ]);
 
     const donationsTotal = (donationsRes.status === "fulfilled" ? donationsRes.value.data ?? [] : []).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
