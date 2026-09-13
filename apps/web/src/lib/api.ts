@@ -51,6 +51,9 @@ export interface Animal {
 export interface AnimalMedicalRecord {
   id: string;
   animalId: string;
+  caseId: string | null;
+  abcEventId: string | null;
+  createdByUserId: string | null;
   entryType: "treatment" | "vaccination" | "surgery" | "observation";
   title: string;
   notes: string | null;
@@ -86,6 +89,16 @@ export interface Case {
   description: string;
   locationText: string | null;
   evidenceUrls: string[];
+  resolutionNotes: string | null;
+  assignmentScore: number | null;
+  assignmentReason: string | null;
+  wildlifeSpeciesCategory: string | null;
+  wildlifeCondition: string | null;
+  publicGuidanceShown: boolean;
+  heldForReview: boolean;
+  ngoVerified: boolean;
+  ngoVerifiedBy: string | null;
+  ngoVerifiedAt: string | null;
   guestPhone?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -95,9 +108,11 @@ export interface Case {
 export interface CaseEvent {
   id: string;
   caseId: string;
-  eventType: string;
-  actorRole: string;
-  actorUserId: string | null;
+  actorId: string | null;
+  eventType: string | null;
+  fromStatus: string | null;
+  toStatus: string | null;
+  actorRole: string | null;
   notes: string | null;
   createdAt: string;
 }
@@ -1336,6 +1351,237 @@ class ApiClient {
 
   async updateAmbulanceRequest(id: string, data: Record<string, unknown>): Promise<any> {
     return this.request<any>(`/ambulance/requests/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Organization Workspace
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  async getOrgDashboard(): Promise<any> {
+    return this.request<any>("/org/dashboard");
+  }
+
+  async listOrgTasks(filters?: { status?: string; assignee?: string }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.status) sp.append("status", filters.status);
+    if (filters?.assignee) sp.append("assignee", filters.assignee);
+    const qs = sp.toString();
+    return this.request<any[]>(`/org/tasks${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async createOrgTask(data: { title: string; description?: string; assigneeUserId?: string; caseId?: string; animalId?: string; dueDate?: string; priority?: string; status?: string }): Promise<any> {
+    return this.request<any>("/org/tasks", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async getOrgTask(id: string): Promise<any> {
+    return this.request<any>(`/org/tasks/${id}`);
+  }
+
+  async updateOrgTask(id: string, data: Record<string, unknown>): Promise<any> {
+    return this.request<any>(`/org/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  async deleteOrgTask(id: string): Promise<void> {
+    await this.request(`/org/tasks/${id}`, { method: "DELETE" });
+  }
+
+  async listOrgEvents(filters?: { status?: string }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.status) sp.append("status", filters.status);
+    const qs = sp.toString();
+    return this.request<any[]>(`/org/events${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async createOrgEvent(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/events", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async getOrgEvent(id: string): Promise<any> {
+    return this.request<any>(`/org/events/${id}`);
+  }
+
+  async updateOrgEvent(id: string, data: Record<string, unknown>): Promise<any> {
+    return this.request<any>(`/org/events/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  async deleteOrgEvent(id: string): Promise<void> {
+    await this.request(`/org/events/${id}`, { method: "DELETE" });
+  }
+
+  async listOrgExpenses(filters?: { category?: string; approved?: boolean }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.category) sp.append("category", filters.category);
+    if (filters?.approved !== undefined) sp.append("approved", String(filters.approved));
+    const qs = sp.toString();
+    return this.request<any[]>(`/org/expenses${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async createOrgExpense(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/expenses", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async getOrgExpense(id: string): Promise<any> {
+    return this.request<any>(`/org/expenses/${id}`);
+  }
+
+  async updateOrgExpense(id: string, data: Record<string, unknown>): Promise<any> {
+    return this.request<any>(`/org/expenses/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  async deleteOrgExpense(id: string): Promise<void> {
+    await this.request(`/org/expenses/${id}`, { method: "DELETE" });
+  }
+
+  async listOrgMembers(): Promise<any[]> {
+    return this.request<any[]>("/org/members").catch(() => []);
+  }
+
+  async addOrgMember(data: { userId: string; orgRole?: string; permissions?: Record<string, boolean> }): Promise<any> {
+    return this.request<any>("/org/members", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async updateOrgMember(id: string, data: { orgRole?: string; permissions?: Record<string, boolean>; isActive?: boolean }): Promise<any> {
+    return this.request<any>(`/org/members/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  async removeOrgMember(id: string): Promise<void> {
+    await this.request(`/org/members/${id}`, { method: "DELETE" });
+  }
+
+  async listOrgAnimals(filters?: { status?: string }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.status) sp.append("status", filters.status);
+    const qs = sp.toString();
+    return this.request<any[]>(`/org/animals${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async getOrgSettings(): Promise<any> {
+    return this.request<any>("/org/settings");
+  }
+
+  async updateOrgSettings(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/settings", { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  async listOrgVolunteers(filters?: { available?: boolean; skill?: string }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.available) sp.append("available", "true");
+    if (filters?.skill) sp.append("skill", filters.skill);
+    const qs = sp.toString();
+    return this.request<any[]>(`/org/volunteers${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async createOrgVolunteer(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/volunteers", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async updateOrgVolunteer(id: string, data: Record<string, unknown>): Promise<any> {
+    return this.request<any>(`/org/volunteers/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  async listOrgFosterHomes(filters?: { available?: boolean }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.available) sp.append("available", "true");
+    const qs = sp.toString();
+    return this.request<any[]>(`/org/foster${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async createOrgFosterHome(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/foster", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async getOrgFosterHome(id: string): Promise<any> {
+    return this.request<any>(`/org/foster/${id}`);
+  }
+
+  async updateOrgFosterHome(id: string, data: Record<string, unknown>): Promise<any> {
+    return this.request<any>(`/org/foster/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  async deleteOrgFosterHome(id: string): Promise<void> {
+    await this.request(`/org/foster/${id}`, { method: "DELETE" });
+  }
+
+  async listOrgFosterAssignments(filters?: { fosterHomeId?: string; animalId?: string; status?: string }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.fosterHomeId) sp.append("fosterHomeId", filters.fosterHomeId);
+    if (filters?.animalId) sp.append("animalId", filters.animalId);
+    if (filters?.status) sp.append("status", filters.status);
+    const qs = sp.toString();
+    return this.request<any[]>(`/org/foster/assignments${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async createOrgFosterAssignment(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/foster/assignments", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async listOrgShelters(): Promise<any[]> {
+    return this.request<any[]>("/org/shelters").catch(() => []);
+  }
+
+  async createOrgShelter(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/shelters", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async listOrgCampaigns(filters?: { status?: string }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.status) sp.append("status", filters.status);
+    const qs = sp.toString();
+    return this.request<any[]>(`/org/campaigns${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async createOrgCampaign(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/campaigns", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async listOrgCaseComments(caseId: string): Promise<any[]> {
+    return this.request<any[]>(`/org/case-comments/${caseId}`).catch(() => []);
+  }
+
+  async createOrgCaseComment(caseId: string, data: Record<string, unknown>): Promise<any> {
+    return this.request<any>(`/org/case-comments/${caseId}`, { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async listOrgFollowups(filters?: { type?: string; status?: string }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.type) sp.append("type", filters.type);
+    if (filters?.status) sp.append("status", filters.status);
+    const qs = sp.toString();
+    return this.request<any[]>(`/org/followups${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async createOrgFollowup(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/followups", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async listOrgReports(filters?: { reportType?: string }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.reportType) sp.append("reportType", filters.reportType);
+    const qs = sp.toString();
+    return this.request<any[]>(`/org/reports${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async createOrgReport(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/reports", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async listOrgDocuments(): Promise<any[]> {
+    return this.request<any[]>("/org/documents").catch(() => []);
+  }
+
+  async createOrgDocument(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/documents", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async listOrgAnimalDocuments(filters?: { animalId?: string }): Promise<any[]> {
+    const sp = new URLSearchParams();
+    if (filters?.animalId) sp.append("animalId", filters.animalId);
+    const qs = sp.toString();
+    return this.request<any[]>(`/org/animal-documents${qs ? `?${qs}` : ""}`).catch(() => []);
+  }
+
+  async createOrgAnimalDocument(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/animal-documents", { method: "POST", body: JSON.stringify(data) });
   }
 
   async logout(): Promise<void> {

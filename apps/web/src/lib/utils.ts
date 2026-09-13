@@ -17,3 +17,14 @@ export function formatDateTime(dateString: string): string {
     return "N/A";
   }
 }
+
+export function formatDateSafe(dateString: string | null | undefined, fallback = "N/A"): string {
+  if (!dateString) return fallback;
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return fallback;
+    return d.toLocaleDateString("en-IN");
+  } catch {
+    return fallback;
+  }
+}

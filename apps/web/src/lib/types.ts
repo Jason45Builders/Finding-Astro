@@ -92,7 +92,7 @@ export interface AnimalVaccination {
 export interface Case {
   id: string;
   animalId: string | null;
-  reporterUserId: string;
+  reporterUserId: string | null;
   assignedToUserId: string | null;
   caseType: "rescue" | "lost_pet" | "abc" | "conflict" | "abuse" | "wildlife";
   status: "open" | "in_review" | "action_taken" | "resolved" | "closed";
@@ -107,22 +107,24 @@ export interface Case {
   wildlifeSpeciesCategory: string | null;
   wildlifeCondition: string | null;
   publicGuidanceShown: boolean;
-  guestPhone: string | null;
+  guestPhone?: string | null;
   heldForReview: boolean;
   ngoVerified: boolean;
   ngoVerifiedBy: string | null;
   ngoVerifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  location: { latitude: number; longitude: number };
+  location?: { latitude: number; longitude: number } | null;
 }
 
 export interface CaseEvent {
   id: string;
   caseId: string;
   actorId: string | null;
+  eventType: string | null;
   fromStatus: string | null;
   toStatus: string | null;
+  actorRole: string | null;
   notes: string | null;
   createdAt: string;
 }
@@ -704,8 +706,10 @@ export function mapCaseEvent(row: Record<string, unknown>): CaseEvent {
     id: row.id as string,
     caseId: row.case_id as string,
     actorId: row.actor_id as string | null,
+    eventType: row.event_type as string | null,
     fromStatus: row.from_status as string | null,
     toStatus: row.to_status as string | null,
+    actorRole: row.actor_role as string | null,
     notes: row.notes as string | null,
     createdAt: row.created_at as string,
   };
@@ -894,6 +898,544 @@ export function mapWelfareOrgAdmin(row: Record<string, unknown>): WelfareOrgAdmi
     id: row.id as string,
     welfareGroupId: row.welfare_group_id as string,
     userId: row.user_id as string,
+    createdAt: row.created_at as string,
+  };
+}
+
+export interface OrganizationMember {
+  id: string;
+  welfareGroupId: string;
+  userId: string;
+  orgRole: "org_admin" | "rescue_coordinator" | "medical_coordinator" | "adoption_coordinator" | "finance" | "volunteer" | "vet" | "foster";
+  permissions: Record<string, boolean>;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Task {
+  id: string;
+  welfareGroupId: string;
+  assigneeUserId: string | null;
+  caseId: string | null;
+  animalId: string | null;
+  title: string;
+  description: string | null;
+  dueDate: string | null;
+  priority: "low" | "medium" | "high" | "urgent";
+  status: "pending" | "in_progress" | "completed" | "cancelled";
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Event {
+  id: string;
+  welfareGroupId: string;
+  title: string;
+  description: string | null;
+  eventType: string | null;
+  date: string;
+  locationText: string | null;
+  location: { latitude: number; longitude: number } | null;
+  capacity: number | null;
+  registrationsCount: number;
+  status: "planned" | "active" | "completed" | "cancelled";
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Expense {
+  id: string;
+  welfareGroupId: string;
+  caseId: string | null;
+  animalId: string | null;
+  amount: number;
+  currency: string;
+  category: "veterinary" | "medicine" | "food" | "transport" | "shelter" | "utilities" | "supplies" | "abc" | "adoption" | "other";
+  vendor: string | null;
+  description: string | null;
+  receiptUrl: string | null;
+  paidBy: string;
+  reimbursable: boolean;
+  approved: boolean;
+  reimbursedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Shelter {
+  id: string;
+  welfareGroupId: string;
+  name: string;
+  locationText: string | null;
+  location: { latitude: number; longitude: number } | null;
+  totalCapacity: number;
+  occupiedCount: number;
+  quarantineCount: number;
+  medicalCount: number;
+  adoptionReadyCount: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShelterAssignment {
+  id: string;
+  shelterId: string;
+  animalId: string;
+  caseId: string | null;
+  assignedDate: string;
+  releasedDate: string | null;
+  notes: string | null;
+  status: "active" | "released";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AnimalDocument {
+  id: string;
+  animalId: string;
+  caseId: string | null;
+  welfareGroupId: string | null;
+  documentType: string;
+  url: string;
+  notes: string | null;
+  uploadedBy: string;
+  createdAt: string;
+}
+
+export interface OrganizationDocument {
+  id: string;
+  welfareGroupId: string;
+  documentType: string;
+  url: string;
+  expiryDate: string | null;
+  verified: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrgDashboardStats {
+  totalAnimals: number;
+  activeRescues: number;
+  adoptionReady: number;
+  medicalCases: number;
+  vaccinationsDue: number;
+  pendingAdoptions: number;
+  donationsThisMonth: number;
+  expensesThisMonth: number;
+  activeVolunteers: number;
+  openTasks: number;
+  upcomingEvents: number;
+}
+
+export function mapOrganizationMember(row: Record<string, unknown>): OrganizationMember {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    userId: row.user_id as string,
+    orgRole: row.org_role as OrganizationMember["orgRole"],
+    permissions: (row.permissions as Record<string, boolean>) ?? {},
+    isActive: (row.is_active as boolean) ?? true,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapTask(row: Record<string, unknown>): Task {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    assigneeUserId: row.assignee_user_id as string | null,
+    caseId: row.case_id as string | null,
+    animalId: row.animal_id as string | null,
+    title: row.title as string,
+    description: row.description as string | null,
+    dueDate: row.due_date as string | null,
+    priority: row.priority as Task["priority"],
+    status: row.status as Task["status"],
+    createdBy: row.created_by as string,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapEvent(row: Record<string, unknown>): Event {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    title: row.title as string,
+    description: row.description as string | null,
+    eventType: row.event_type as string | null,
+    date: row.date as string,
+    locationText: row.location_text as string | null,
+    location: row.location == null ? null : { latitude: Number((row.location as any).latitude ?? 0), longitude: Number((row.location as any).longitude ?? 0) },
+    capacity: row.capacity == null ? null : Number(row.capacity),
+    registrationsCount: Number(row.registrations_count ?? 0),
+    status: row.status as Event["status"],
+    createdBy: row.created_by as string,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapExpense(row: Record<string, unknown>): Expense {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    caseId: row.case_id as string | null,
+    animalId: row.animal_id as string | null,
+    amount: Number(row.amount ?? 0),
+    currency: (row.currency as string) ?? "INR",
+    category: row.category as Expense["category"],
+    vendor: row.vendor as string | null,
+    description: row.description as string | null,
+    receiptUrl: row.receipt_url as string | null,
+    paidBy: row.paid_by as string,
+    reimbursable: (row.reimbursable as boolean) ?? false,
+    approved: (row.approved as boolean) ?? false,
+    reimbursedAt: row.reimbursed_at as string | null,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapShelter(row: Record<string, unknown>): Shelter {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    name: row.name as string,
+    locationText: row.location_text as string | null,
+    location: row.location == null ? null : { latitude: Number((row.location as any).latitude ?? 0), longitude: Number((row.location as any).longitude ?? 0) },
+    totalCapacity: Number(row.total_capacity ?? 0),
+    occupiedCount: Number(row.occupied_count ?? 0),
+    quarantineCount: Number(row.quarantine_count ?? 0),
+    medicalCount: Number(row.medical_count ?? 0),
+    adoptionReadyCount: Number(row.adoption_ready_count ?? 0),
+    isActive: (row.is_active as boolean) ?? true,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapShelterAssignment(row: Record<string, unknown>): ShelterAssignment {
+  return {
+    id: row.id as string,
+    shelterId: row.shelter_id as string,
+    animalId: row.animal_id as string,
+    caseId: row.case_id as string | null,
+    assignedDate: row.assigned_date as string,
+    releasedDate: row.released_date as string | null,
+    notes: row.notes as string | null,
+    status: row.status as ShelterAssignment["status"],
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapAnimalDocument(row: Record<string, unknown>): AnimalDocument {
+  return {
+    id: row.id as string,
+    animalId: row.animal_id as string,
+    caseId: row.case_id as string | null,
+    welfareGroupId: row.welfare_group_id as string | null,
+    documentType: row.document_type as string,
+    url: row.url as string,
+    notes: row.notes as string | null,
+    uploadedBy: row.uploaded_by as string,
+    createdAt: row.created_at as string,
+  };
+}
+
+export function mapOrganizationDocument(row: Record<string, unknown>): OrganizationDocument {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    documentType: row.document_type as string,
+    url: row.url as string,
+    expiryDate: row.expiry_date as string | null,
+    verified: (row.verified as boolean) ?? false,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapOrgDashboardStats(row: Record<string, unknown>): OrgDashboardStats {
+  return {
+    totalAnimals: Number(row.total_animals ?? 0),
+    activeRescues: Number(row.active_rescues ?? 0),
+    adoptionReady: Number(row.adoption_ready ?? 0),
+    medicalCases: Number(row.medical_cases ?? 0),
+    vaccinationsDue: Number(row.vaccinations_due ?? 0),
+    pendingAdoptions: Number(row.pending_adoptions ?? 0),
+    donationsThisMonth: Number(row.donations_this_month ?? 0),
+    expensesThisMonth: Number(row.expenses_this_month ?? 0),
+    activeVolunteers: Number(row.active_volunteers ?? 0),
+    openTasks: Number(row.open_tasks ?? 0),
+    upcomingEvents: Number(row.upcoming_events ?? 0),
+  };
+}
+
+export interface VolunteerProfile {
+  id: string;
+  userId: string;
+  welfareGroupId: string;
+  skills: string[];
+  isAvailable: boolean;
+  availabilityNotes: string | null;
+  hasVehicle: boolean;
+  vehicleType: string | null;
+  vehicleCapacity: number | null;
+  canFoster: boolean;
+  fosterCapacity: number;
+  fosterSpeciesAccepted: string[];
+  canRescue: boolean;
+  canTransport: boolean;
+  hasMedicalKnowledge: boolean;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FosterHome {
+  id: string;
+  welfareGroupId: string;
+  fosterUserId: string | null;
+  name: string;
+  address: string | null;
+  location: { latitude: number; longitude: number } | null;
+  capacity: number;
+  currentAnimalsCount: number;
+  speciesAccepted: string[];
+  acceptsSpecialNeeds: boolean;
+  hasOtherAnimals: boolean;
+  hasChildren: boolean;
+  experienceYears: number;
+  notes: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FosterAssignment {
+  id: string;
+  welfareGroupId: string;
+  fosterHomeId: string;
+  animalId: string;
+  caseId: string | null;
+  startDate: string;
+  endDate: string | null;
+  actualEndDate: string | null;
+  status: "pending" | "active" | "completed" | "returned";
+  notes: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CaseComment {
+  id: string;
+  caseId: string;
+  welfareGroupId: string;
+  actorUserId: string;
+  actorName: string;
+  actorRole: string | null;
+  message: string;
+  attachmentUrl: string | null;
+  createdAt: string;
+}
+
+export interface PostAdoptionFollowup {
+  id: string;
+  welfareGroupId: string;
+  adoptionApplicationId: string;
+  animalId: string;
+  adopterUserId: string;
+  followupType: "adoption_7day" | "adoption_30day" | "adoption_90day" | "medical" | "general";
+  scheduledDate: string;
+  completedDate: string | null;
+  notes: string | null;
+  status: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AbcCampaign {
+  id: string;
+  welfareGroupId: string;
+  title: string;
+  description: string | null;
+  locationText: string | null;
+  location: { latitude: number; longitude: number } | null;
+  startDate: string;
+  endDate: string | null;
+  targetAnimals: number | null;
+  capturedCount: number;
+  sterilizedCount: number;
+  vaccinatedCount: number;
+  returnedCount: number;
+  complicationsCount: number;
+  mortalityCount: number;
+  totalCostInr: number;
+  clinicName: string | null;
+  vetName: string | null;
+  status: "planned" | "active" | "completed" | "cancelled";
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ImpactReport {
+  id: string;
+  welfareGroupId: string;
+  reportType: string;
+  periodStart: string;
+  periodEnd: string;
+  data: Record<string, unknown>;
+  fileUrl: string | null;
+  generatedBy: string;
+  createdAt: string;
+}
+
+export function mapVolunteerProfile(row: Record<string, unknown>): VolunteerProfile {
+  return {
+    id: row.id as string,
+    userId: row.user_id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    skills: (row.skills as string[]) ?? [],
+    isAvailable: (row.is_available as boolean) ?? true,
+    availabilityNotes: row.availability_notes as string | null,
+    hasVehicle: (row.has_vehicle as boolean) ?? false,
+    vehicleType: row.vehicle_type as string | null,
+    vehicleCapacity: row.vehicle_capacity == null ? null : Number(row.vehicle_capacity),
+    canFoster: (row.can_foster as boolean) ?? false,
+    fosterCapacity: Number(row.foster_capacity ?? 0),
+    fosterSpeciesAccepted: (row.foster_species_accepted as string[]) ?? [],
+    canRescue: (row.can_rescue as boolean) ?? false,
+    canTransport: (row.can_transport as boolean) ?? false,
+    hasMedicalKnowledge: (row.has_medical_knowledge as boolean) ?? false,
+    emergencyContactName: row.emergency_contact_name as string | null,
+    emergencyContactPhone: row.emergency_contact_phone as string | null,
+    notes: row.notes as string | null,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapFosterHome(row: Record<string, unknown>): FosterHome {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    fosterUserId: row.foster_user_id as string | null,
+    name: row.name as string,
+    address: row.address as string | null,
+    location: row.location == null ? null : { latitude: Number((row.location as any).latitude ?? 0), longitude: Number((row.location as any).longitude ?? 0) },
+    capacity: Number(row.capacity ?? 1),
+    currentAnimalsCount: Number(row.current_animals_count ?? 0),
+    speciesAccepted: (row.species_accepted as string[]) ?? [],
+    acceptsSpecialNeeds: (row.accepts_special_needs as boolean) ?? false,
+    hasOtherAnimals: (row.has_other_animals as boolean) ?? false,
+    hasChildren: (row.has_children as boolean) ?? false,
+    experienceYears: Number(row.experience_years ?? 0),
+    notes: row.notes as string | null,
+    isActive: (row.is_active as boolean) ?? true,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapFosterAssignment(row: Record<string, unknown>): FosterAssignment {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    fosterHomeId: row.foster_home_id as string,
+    animalId: row.animal_id as string,
+    caseId: row.case_id as string | null,
+    startDate: row.start_date as string,
+    endDate: row.end_date as string | null,
+    actualEndDate: row.actual_end_date as string | null,
+    status: row.status as FosterAssignment["status"],
+    notes: row.notes as string | null,
+    createdBy: row.created_by as string,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapCaseComment(row: Record<string, unknown>): CaseComment {
+  return {
+    id: row.id as string,
+    caseId: row.case_id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    actorUserId: row.actor_user_id as string,
+    actorName: row.actor_name as string,
+    actorRole: row.actor_role as string | null,
+    message: row.message as string,
+    attachmentUrl: row.attachment_url as string | null,
+    createdAt: row.created_at as string,
+  };
+}
+
+export function mapPostAdoptionFollowup(row: Record<string, unknown>): PostAdoptionFollowup {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    adoptionApplicationId: row.adoption_application_id as string,
+    animalId: row.animal_id as string,
+    adopterUserId: row.adopter_user_id as string,
+    followupType: row.followup_type as PostAdoptionFollowup["followupType"],
+    scheduledDate: row.scheduled_date as string,
+    completedDate: row.completed_date as string | null,
+    notes: row.notes as string | null,
+    status: row.status as string,
+    createdBy: row.created_by as string,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapAbcCampaign(row: Record<string, unknown>): AbcCampaign {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    title: row.title as string,
+    description: row.description as string | null,
+    locationText: row.location_text as string | null,
+    location: row.location == null ? null : { latitude: Number((row.location as any).latitude ?? 0), longitude: Number((row.location as any).longitude ?? 0) },
+    startDate: row.start_date as string,
+    endDate: row.end_date as string | null,
+    targetAnimals: row.target_animals == null ? null : Number(row.target_animals),
+    capturedCount: Number(row.captured_count ?? 0),
+    sterilizedCount: Number(row.sterilized_count ?? 0),
+    vaccinatedCount: Number(row.vaccinated_count ?? 0),
+    returnedCount: Number(row.returned_count ?? 0),
+    complicationsCount: Number(row.complications_count ?? 0),
+    mortalityCount: Number(row.mortality_count ?? 0),
+    totalCostInr: Number(row.total_cost_inr ?? 0),
+    clinicName: row.clinic_name as string | null,
+    vetName: row.vet_name as string | null,
+    status: row.status as AbcCampaign["status"],
+    createdBy: row.created_by as string,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export function mapImpactReport(row: Record<string, unknown>): ImpactReport {
+  return {
+    id: row.id as string,
+    welfareGroupId: row.welfare_group_id as string,
+    reportType: row.report_type as string,
+    periodStart: row.period_start as string,
+    periodEnd: row.period_end as string,
+    data: (row.data as Record<string, unknown>) ?? {},
+    fileUrl: row.file_url as string | null,
+    generatedBy: row.generated_by as string,
     createdAt: row.created_at as string,
   };
 }

@@ -9,7 +9,10 @@ import {
   Menu as MenuIcon, X as XIcon, AlertTriangle, Heart,
   Search, Leaf, Shield, ShieldAlert, Users, TrendingUp, Bird,
   Radio, Users as UsersIcon, ClipboardList, DollarSign, UserCheck,
-  MoreHorizontal, Store, MessageSquare, Ambulance
+  MoreHorizontal, Store, MessageSquare, Ambulance,
+  PawPrint, Calendar, Activity,
+  Home as HomeIcon, CheckCircle2, Settings,
+  Stethoscope, FileCheck2
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api, Notification } from "@/lib/api";
@@ -57,6 +60,24 @@ const ADMIN_NAV_ITEMS = [
   { label: "Impact & CSR",   href: "/impact",                  icon: TrendingUp },
 ];
 
+const ORG_NAV_ITEMS = [
+  { label: "Org Dashboard", href: "/org/dashboard", icon: LayoutDashboard },
+  { label: "Animals", href: "/org/animals", icon: Cat },
+  { label: "Tasks", href: "/org/tasks", icon: ClipboardList },
+  { label: "Events", href: "/org/events", icon: Calendar },
+  { label: "Expenses", href: "/org/expenses", icon: DollarSign },
+  { label: "Volunteers", href: "/org/volunteers", icon: Users },
+  { label: "Foster", href: "/org/foster", icon: Heart },
+  { label: "Shelters", href: "/org/shelters", icon: HomeIcon },
+  { label: "Campaigns", href: "/org/campaigns", icon: Activity },
+  { label: "Follow-ups", href: "/org/followups", icon: CheckCircle2 },
+  { label: "Reports", href: "/org/reports", icon: TrendingUp },
+  { label: "Medical", href: "/org/medical", icon: Stethoscope },
+  { label: "Documents", href: "/org/documents", icon: FileCheck2 },
+  { label: "Team", href: "/org/members", icon: UsersIcon },
+  { label: "Settings", href: "/org/settings", icon: Settings },
+];
+
 const MOBILE_PRIMARY_ITEMS = [
   { label: "Home",   href: "/dashboard", icon: LayoutDashboard },
   { label: "Cases",  href: "/cases",     icon: FolderHeart },
@@ -69,9 +90,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout, isLoading, bootstrap } = useAuth();
   const isStaff = user?.role === "admin" || user?.role === "govt";
+  const isNgo = user?.role === "ngo";
   // SECURITY NOTE: Client-side role gating is UI-only. Every API route must enforce
   // its own authorization server-side. Never rely on this `isStaff` check for security.
-  const navItems = isStaff ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS] : BASE_NAV_ITEMS;
+  const navItems = isStaff ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS] : isNgo ? [...BASE_NAV_ITEMS, ...ORG_NAV_ITEMS] : BASE_NAV_ITEMS;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);

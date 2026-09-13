@@ -277,6 +277,7 @@ export default async function RootPage() {
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link className="text-sm text-on-surface-variant hover:text-primary transition-colors duration-150 ease-out" href="/auth/login">Sign In</Link>
             <Link className="text-sm text-on-surface-variant hover:text-primary transition-colors duration-150 ease-out" href="/auth/signup">Create Account</Link>
+            <Link className="text-sm text-on-surface-variant hover:text-primary transition-colors duration-150 ease-out" href="/ngo-signup">NGO / Trust Sign-Up</Link>
             <Link className="text-sm text-on-surface-variant hover:text-primary transition-colors duration-150 ease-out" href="/partner-signup">Partner With Us</Link>
           </div>
         </div>

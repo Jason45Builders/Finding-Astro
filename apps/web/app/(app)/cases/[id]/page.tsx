@@ -3,8 +3,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Clock, MapPin, AlertTriangle, Home, Activity, Users } from "lucide-react";
-import { api, Case, CaseEvent, CaseResponse, RecoveryRecord, CaseResponderResponse } from "@/lib/api";
+import { ChevronLeft, Clock, MapPin, AlertTriangle, Home, Activity, Users, MessageSquare } from "lucide-react";
+import { api, CaseResponse, CaseResponderResponse } from "@/lib/api";
+import { Case, CaseEvent, RecoveryRecord, CaseComment } from "@/lib/types";
+import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/lib/auth";
 import { formatDateTime } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
@@ -24,6 +26,9 @@ export default function CaseDetailPage() {
   const [response, setResponse] = useState<CaseResponse | null>(null);
   const [recovery, setRecovery] = useState<RecoveryRecord[]>([]);
   const [caseResponses, setCaseResponses] = useState<CaseResponderResponse[]>([]);
+  const [comments, setComments] = useState<CaseComment[]>([]);
+  const [commentText, setCommentText] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState(false);
@@ -52,6 +57,11 @@ export default function CaseDetailPage() {
         setCaseResponses(responses);
       } catch { /* no responses */ }
 
+      try {
+        const caseComments = await api.listOrgCaseComments(params.id);
+        setComments(caseComments);
+      } catch { /* no comments */ }
+
       setLoading(false);
     };
     load();
@@ -68,6 +78,19 @@ export default function CaseDetailPage() {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to claim case");
     } finally { setClaiming(false); }
+  };
+
+  const handlePostComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim() || !caseData) return;
+    setPostingComment(true);
+    try {
+      const comment = await api.createOrgCaseComment(caseData.id, { message: commentText.trim() });
+      setComments((prev) => [...prev, comment]);
+      setCommentText("");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to post comment");
+    } finally { setPostingComment(false); }
   };
 
   if (loading) return <PageSpinner label="Loading case file..." />;
@@ -243,6 +266,41 @@ export default function CaseDetailPage() {
           </div>
         </Card>
       )}
+
+      {/* Comments */}
+      <Card className="p-5">
+        <h3 className="font-bold text-on-surface mb-4 flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-primary" /> Discussion ({comments.length})
+        </h3>
+        <div className="space-y-3 mb-4">
+          {comments.length === 0 ? (
+            <p className="text-sm text-on-surface-variant">No comments yet. Start the discussion.</p>
+          ) : (
+            comments.map((c) => (
+              <div key={c.id} className="bg-surface-container-low rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <p className="font-bold text-sm text-on-surface">{c.actorName}</p>
+                  <span className="text-[10px] text-outline">{new Date(c.createdAt).toLocaleString("en-IN")}</span>
+                </div>
+                {c.actorRole && <p className="text-xs text-on-surface-variant capitalize">{c.actorRole}</p>}
+                <p className="text-sm text-on-surface mt-1">{c.message}</p>
+              </div>
+            ))
+          )}
+        </div>
+        <form onSubmit={handlePostComment} className="flex gap-2">
+          <Input
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            placeholder="Add a comment..."
+            disabled={postingComment}
+            className="flex-1"
+          />
+          <Button type="submit" size="sm" disabled={postingComment || !commentText.trim()}>
+            {postingComment ? "Posting..." : "Post"}
+          </Button>
+        </form>
+      </Card>
 
       {/* Timeline */}
       <Card className="p-5">

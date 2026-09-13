@@ -1677,18 +1677,384 @@ EXCEPTION
 END;
 $$;
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 29. ORGANIZATION WORKSPACE
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- Org role enum
 DO $$
-DECLARE
-  t TEXT;
 BEGIN
-  FOR t IN
-    SELECT table_name
-    FROM information_schema.tables
-    WHERE table_schema = 'public'
-      AND table_type = 'BASE TABLE'
-  LOOP
-    EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
-  END LOOP;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'org_role') THEN
+    CREATE TYPE org_role AS ENUM ('org_admin', 'rescue_coordinator', 'medical_coordinator', 'adoption_coordinator', 'finance', 'volunteer', 'vet', 'foster');
+  END IF;
 END;
 $$;
+
+-- Task status enum
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'task_status') THEN
+    CREATE TYPE task_status AS ENUM ('pending', 'in_progress', 'completed', 'cancelled');
+  END IF;
+END;
+$$;
+
+-- Task priority enum
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'task_priority') THEN
+    CREATE TYPE task_priority AS ENUM ('low', 'medium', 'high', 'urgent');
+  END IF;
+END;
+$$;
+
+-- Event status enum
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'event_status') THEN
+    CREATE TYPE event_status AS ENUM ('planned', 'active', 'completed', 'cancelled');
+  END IF;
+END;
+$$;
+
+-- Expense category enum
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'expense_category') THEN
+    CREATE TYPE expense_category AS ENUM ('veterinary', 'medicine', 'food', 'transport', 'shelter', 'utilities', 'supplies', 'abc', 'adoption', 'other');
+  END IF;
+END;
+$$;
+
+-- Shelter assignment status enum
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'shelter_assignment_status') THEN
+    CREATE TYPE shelter_assignment_status AS ENUM ('active', 'released');
+  END IF;
+END;
+$$;
+
+-- Organization members (org roles and permissions)
+CREATE TABLE IF NOT EXISTS organization_members (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  org_role org_role NOT NULL DEFAULT 'volunteer',
+  permissions JSONB DEFAULT '{}',
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(welfare_group_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_organization_members_group ON organization_members(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_organization_members_user ON organization_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_organization_members_role ON organization_members(org_role);
+
+-- Tasks
+CREATE TABLE IF NOT EXISTS tasks (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  assignee_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  case_id UUID REFERENCES cases(id) ON DELETE SET NULL,
+  animal_id UUID REFERENCES animals(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  due_date TIMESTAMPTZ,
+  priority task_priority NOT NULL DEFAULT 'medium',
+  status task_status NOT NULL DEFAULT 'pending',
+  created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_group ON tasks(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_assignee ON tasks(assignee_user_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_case ON tasks(case_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_animal ON tasks(animal_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
+
+-- Events / Camps
+CREATE TABLE IF NOT EXISTS events (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  event_type TEXT,
+  date TIMESTAMPTZ NOT NULL,
+  location_text TEXT,
+  location GEOGRAPHY(POINT, 4326),
+  capacity INT,
+  registrations_count INT NOT NULL DEFAULT 0,
+  status event_status NOT NULL DEFAULT 'planned',
+  created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_group ON events(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
+CREATE INDEX IF NOT EXISTS idx_events_status ON events(status);
+CREATE INDEX IF NOT EXISTS idx_events_location ON events USING GIST(location) WHERE location IS NOT NULL;
+
+-- Expenses
+CREATE TABLE IF NOT EXISTS expenses (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  case_id UUID REFERENCES cases(id) ON DELETE SET NULL,
+  animal_id UUID REFERENCES animals(id) ON DELETE SET NULL,
+  amount NUMERIC NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'INR',
+  category expense_category NOT NULL DEFAULT 'other',
+  vendor TEXT,
+  description TEXT,
+  receipt_url TEXT,
+  paid_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  reimbursable BOOLEAN NOT NULL DEFAULT FALSE,
+  approved BOOLEAN NOT NULL DEFAULT FALSE,
+  reimbursed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_expenses_group ON expenses(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_case ON expenses(case_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_animal ON expenses(animal_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category);
+CREATE INDEX IF NOT EXISTS idx_expenses_approved ON expenses(approved);
+
+-- Shelters
+CREATE TABLE IF NOT EXISTS shelters (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  location_text TEXT,
+  location GEOGRAPHY(POINT, 4326),
+  total_capacity INT NOT NULL DEFAULT 0,
+  occupied_count INT NOT NULL DEFAULT 0,
+  quarantine_count INT NOT NULL DEFAULT 0,
+  medical_count INT NOT NULL DEFAULT 0,
+  adoption_ready_count INT NOT NULL DEFAULT 0,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_shelters_group ON shelters(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_shelters_location ON shelters USING GIST(location) WHERE location IS NOT NULL;
+
+-- Shelter assignments (kennel / enclosure)
+CREATE TABLE IF NOT EXISTS shelter_assignments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  shelter_id UUID NOT NULL REFERENCES shelters(id) ON DELETE CASCADE,
+  animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+  case_id UUID REFERENCES cases(id) ON DELETE SET NULL,
+  assigned_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  released_date TIMESTAMPTZ,
+  notes TEXT,
+  status shelter_assignment_status NOT NULL DEFAULT 'active',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_shelter_assignments_shelter ON shelter_assignments(shelter_id);
+CREATE INDEX IF NOT EXISTS idx_shelter_assignments_animal ON shelter_assignments(animal_id);
+CREATE INDEX IF NOT EXISTS idx_shelter_assignments_case ON shelter_assignments(case_id);
+CREATE INDEX IF NOT EXISTS idx_shelter_assignments_status ON shelter_assignments(status);
+
+-- Animal documents
+CREATE TABLE IF NOT EXISTS animal_documents (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+  case_id UUID REFERENCES cases(id) ON DELETE SET NULL,
+  welfare_group_id UUID REFERENCES welfare_orgs(id) ON DELETE SET NULL,
+  document_type TEXT NOT NULL,
+  url TEXT NOT NULL,
+  notes TEXT,
+  uploaded_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_animal_documents_animal ON animal_documents(animal_id);
+CREATE INDEX IF NOT EXISTS idx_animal_documents_case ON animal_documents(case_id);
+CREATE INDEX IF NOT EXISTS idx_animal_documents_group ON animal_documents(welfare_group_id);
+
+-- Organization documents
+CREATE TABLE IF NOT EXISTS organization_documents (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  document_type TEXT NOT NULL,
+  url TEXT NOT NULL,
+  expiry_date TIMESTAMPTZ,
+  verified BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_organization_documents_group ON organization_documents(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_organization_documents_type ON organization_documents(document_type);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 30. VOLUNTEER PROFILES
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS volunteer_profiles (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  skills volunteer_skill[] DEFAULT '{}',
+  is_available BOOLEAN NOT NULL DEFAULT TRUE,
+  availability_notes TEXT,
+  has_vehicle BOOLEAN NOT NULL DEFAULT FALSE,
+  vehicle_type TEXT,
+  vehicle_capacity INT,
+  can_foster BOOLEAN NOT NULL DEFAULT FALSE,
+  foster_capacity INT DEFAULT 0,
+  foster_species_accepted TEXT[] DEFAULT '{}',
+  can_rescue BOOLEAN NOT NULL DEFAULT FALSE,
+  can_transport BOOLEAN NOT NULL DEFAULT FALSE,
+  has_medical_knowledge BOOLEAN NOT NULL DEFAULT FALSE,
+  emergency_contact_name TEXT,
+  emergency_contact_phone TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, welfare_group_id)
+);
+
+CREATE TABLE IF NOT EXISTS foster_homes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  foster_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  name TEXT NOT NULL,
+  address TEXT,
+  location GEOGRAPHY(POINT, 4326),
+  capacity INT NOT NULL DEFAULT 1,
+  current_animals_count INT NOT NULL DEFAULT 0,
+  species_accepted TEXT[] DEFAULT '{}',
+  accepts_special_needs BOOLEAN NOT NULL DEFAULT FALSE,
+  has_other_animals BOOLEAN NOT NULL DEFAULT FALSE,
+  has_children BOOLEAN NOT NULL DEFAULT FALSE,
+  experience_years INT DEFAULT 0,
+  notes TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS foster_assignments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  foster_home_id UUID NOT NULL REFERENCES foster_homes(id) ON DELETE CASCADE,
+  animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+  case_id UUID REFERENCES cases(id) ON DELETE SET NULL,
+  start_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  end_date TIMESTAMPTZ,
+  actual_end_date TIMESTAMPTZ,
+  status foster_assignment_status NOT NULL DEFAULT 'pending',
+  notes TEXT,
+  created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS case_comments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  case_id UUID NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  actor_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  actor_name TEXT NOT NULL,
+  actor_role TEXT,
+  message TEXT NOT NULL,
+  attachment_url TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS post_adoption_followups (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  adoption_application_id UUID NOT NULL REFERENCES adoption_applications(id) ON DELETE CASCADE,
+  animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+  adopter_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  followup_type followup_type NOT NULL,
+  scheduled_date TIMESTAMPTZ NOT NULL,
+  completed_date TIMESTAMPTZ,
+  notes TEXT,
+  status TEXT NOT NULL DEFAULT 'scheduled',
+  created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS abc_campaigns (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  location_text TEXT,
+  location GEOGRAPHY(POINT, 4326),
+  start_date TIMESTAMPTZ NOT NULL,
+  end_date TIMESTAMPTZ,
+  target_animals INT,
+  captured_count INT NOT NULL DEFAULT 0,
+  sterilized_count INT NOT NULL DEFAULT 0,
+  vaccinated_count INT NOT NULL DEFAULT 0,
+  returned_count INT NOT NULL DEFAULT 0,
+  complications_count INT NOT NULL DEFAULT 0,
+  mortality_count INT NOT NULL DEFAULT 0,
+  total_cost_inr NUMERIC DEFAULT 0,
+  clinic_name TEXT,
+  vet_name TEXT,
+  status campaign_status NOT NULL DEFAULT 'planned',
+  created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS impact_reports (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  welfare_group_id UUID NOT NULL REFERENCES welfare_orgs(id) ON DELETE CASCADE,
+  report_type TEXT NOT NULL,
+  period_start DATE NOT NULL,
+  period_end DATE NOT NULL,
+  data JSONB NOT NULL DEFAULT '{}',
+  file_url TEXT,
+  generated_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_volunteer_profiles_user ON volunteer_profiles(user_id);
+CREATE INDEX IF NOT EXISTS idx_volunteer_profiles_group ON volunteer_profiles(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_volunteer_profiles_available ON volunteer_profiles(is_available) WHERE is_available = TRUE;
+
+CREATE INDEX IF NOT EXISTS idx_foster_homes_group ON foster_homes(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_foster_homes_user ON foster_homes(foster_user_id);
+CREATE INDEX IF NOT EXISTS idx_foster_homes_active ON foster_homes(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_foster_homes_location ON foster_homes USING GIST(location) WHERE location IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_foster_assignments_group ON foster_assignments(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_foster_assignments_foster ON foster_assignments(foster_home_id);
+CREATE INDEX IF NOT EXISTS idx_foster_assignments_animal ON foster_assignments(animal_id);
+CREATE INDEX IF NOT EXISTS idx_foster_assignments_case ON foster_assignments(case_id);
+CREATE INDEX IF NOT EXISTS idx_foster_assignments_status ON foster_assignments(status);
+
+CREATE INDEX IF NOT EXISTS idx_case_comments_case ON case_comments(case_id);
+CREATE INDEX IF NOT EXISTS idx_case_comments_group ON case_comments(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_case_comments_actor ON case_comments(actor_user_id);
+
+CREATE INDEX IF NOT EXISTS idx_post_adoption_followups_group ON post_adoption_followups(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_post_adoption_followups_application ON post_adoption_followups(adoption_application_id);
+CREATE INDEX IF NOT EXISTS idx_post_adoption_followups_animal ON post_adoption_followups(animal_id);
+CREATE INDEX IF NOT EXISTS idx_post_adoption_followups_adopter ON post_adoption_followups(adopter_user_id);
+CREATE INDEX IF NOT EXISTS idx_post_adoption_followups_scheduled ON post_adoption_followups(scheduled_date);
+
+CREATE INDEX IF NOT EXISTS idx_abc_campaigns_group ON abc_campaigns(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_abc_campaigns_status ON abc_campaigns(status);
+CREATE INDEX IF NOT EXISTS idx_abc_campaigns_dates ON abc_campaigns(start_date, end_date);
+
+CREATE INDEX IF NOT EXISTS idx_impact_reports_group ON impact_reports(welfare_group_id);
+CREATE INDEX IF NOT EXISTS idx_impact_reports_period ON impact_reports(period_start, period_end);
+CREATE INDEX IF NOT EXISTS idx_impact_reports_type ON impact_reports(report_type);
 -- ══════════════════════════════════════════════════════════════════════════════
