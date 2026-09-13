@@ -40,7 +40,10 @@ export default function NgoSignupPage() {
     try {
       const res = await fetch("/api/v1/ngo-signup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-requested-with": "Finding-Astro-App",
+        },
         body: JSON.stringify(form),
       });
       const data = await res.json();
