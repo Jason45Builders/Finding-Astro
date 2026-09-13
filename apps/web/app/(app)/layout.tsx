@@ -151,7 +151,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex md:flex-col md:w-64 bg-surface-container-low border-r border-outline-variant h-screen sticky top-0">
         <div className="p-5 border-b border-outline-variant shrink-0">
-          <Link href="/dashboard">
+          <Link href={isNgo ? "/org/dashboard" : "/dashboard"}>
             <Logo showTagline />
           </Link>
         </div>
