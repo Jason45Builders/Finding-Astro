@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireOrg, OrgContext, hasOrgPermission } from "@/lib/org-auth";
 import { ok, serverError, badRequest, forbidden } from "@/lib/api-response";
@@ -63,15 +64,35 @@ export async function POST(req: NextRequest) {
       .eq("email", email)
       .maybeSingle();
 
-    if (userError || !userRow) {
-      return badRequest("USER_NOT_FOUND", "No account found with this email");
+    let targetUserId = userRow?.id;
+    let createdPassword: string | null = null;
+
+    if (!targetUserId) {
+      createdPassword = crypto.randomUUID().slice(0, 12);
+      const passwordHash = await bcrypt.hash(createdPassword, 10);
+      const { data: newUser, error: createError } = await supabaseAdmin()
+        .from("users")
+        .insert({
+          email,
+          password_hash: passwordHash,
+          full_name: email.split("@")[0],
+          role: "citizen",
+          is_active: true,
+        })
+        .select("id")
+        .single();
+
+      if (createError || !newUser) {
+        return serverError("Failed to create account for volunteer");
+      }
+      targetUserId = newUser.id;
     }
 
     const { data, error } = await supabaseAdmin()
       .from("volunteer_profiles")
       .upsert({
         welfare_group_id: org.welfareGroupId,
-        user_id: userRow.id,
+        user_id: targetUserId,
         skills: body.skills ?? [],
         is_available: body.isAvailable ?? true,
         availability_notes: body.availabilityNotes ?? null,
@@ -99,7 +120,13 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) return serverError(error.message);
-    return ok(mapVolunteerProfile(data), "Volunteer profile saved");
+
+    const responsePayload: Record<string, unknown> = { volunteer: mapVolunteerProfile(data) };
+    if (createdPassword) {
+      responsePayload.tempPassword = createdPassword;
+      responsePayload.message = "Account created. Share these credentials with the volunteer.";
+    }
+    return ok(responsePayload, createdPassword ? "Volunteer added with new account" : "Volunteer profile saved");
   } catch {
     return serverError();
   }

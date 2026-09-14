@@ -32,6 +32,7 @@ export default function OrgMembersPage() {
   const [email, setEmail] = useState("");
   const [orgRole, setOrgRole] = useState<OrganizationMember["orgRole"]>("volunteer");
   const [submitting, setSubmitting] = useState(false);
+  const [inviteInfo, setInviteInfo] = useState<{ email: string; tempPassword: string; message?: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,12 +53,18 @@ export default function OrgMembersPage() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setInviteInfo(null);
     try {
-      const member = await api.addOrgMember({ email, orgRole });
+      const result = await api.addOrgMember({ email, orgRole }) as any;
+      const member = result.member ?? result;
       setMembers((prev) => [member, ...prev]);
-      setEmail("");
-      setOrgRole("volunteer");
-      setShowForm(false);
+      if (result.tempPassword) {
+        setInviteInfo({ email, tempPassword: result.tempPassword, message: result.message });
+      } else {
+        setEmail("");
+        setOrgRole("volunteer");
+        setShowForm(false);
+      }
     } catch (err: any) {
       alert(err?.message || "Failed to add member");
     } finally {
@@ -132,6 +139,28 @@ export default function OrgMembersPage() {
           </div>
         </form>
       </Modal>
+
+      {inviteInfo && (
+        <Modal open={!!inviteInfo} onClose={() => setInviteInfo(null)} title="Account Created">
+          <div className="space-y-4">
+            <p className="text-sm text-on-surface-variant">{inviteInfo.message}</p>
+            <div className="bg-surface-container-low rounded-lg p-4 space-y-2">
+              <div>
+                <p className="text-xs text-on-surface-variant">Email</p>
+                <p className="font-mono text-sm text-on-surface">{inviteInfo.email}</p>
+              </div>
+              <div>
+                <p className="text-xs text-on-surface-variant">Temporary Password</p>
+                <p className="font-mono text-sm text-on-surface">{inviteInfo.tempPassword}</p>
+              </div>
+            </div>
+            <p className="text-xs text-on-surface-variant">Share these credentials with the member. They can change the password after logging in.</p>
+            <div className="flex justify-end">
+              <Button onClick={() => setInviteInfo(null)}>Done</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

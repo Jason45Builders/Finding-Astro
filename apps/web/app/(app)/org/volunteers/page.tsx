@@ -40,6 +40,7 @@ export default function OrgVolunteersPage() {
     notes: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [inviteInfo, setInviteInfo] = useState<{ email: string; tempPassword: string; message?: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -101,6 +102,7 @@ export default function OrgVolunteersPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setInviteInfo(null);
     try {
       const payload = {
         email: form.email,
@@ -124,11 +126,17 @@ export default function OrgVolunteersPage() {
       if (editing) {
         const updated = await api.updateOrgVolunteer(editing.id, payload);
         setVolunteers((prev) => prev.map((v) => (v.id === editing.id ? updated : v)));
+        setShowForm(false);
       } else {
-        const created = await api.createOrgVolunteer(payload);
-        setVolunteers((prev) => [created, ...prev]);
+        const result = await api.createOrgVolunteer(payload) as any;
+        const volunteer = result.volunteer ?? result;
+        setVolunteers((prev) => [volunteer, ...prev]);
+        if (result.tempPassword) {
+          setInviteInfo({ email: form.email, tempPassword: result.tempPassword, message: result.message });
+        } else {
+          setShowForm(false);
+        }
       }
-      setShowForm(false);
     } catch (err: any) {
       alert(err?.message || "Failed to save volunteer");
     } finally {
@@ -255,6 +263,28 @@ export default function OrgVolunteersPage() {
           </div>
         </form>
       </Modal>
+
+      {inviteInfo && (
+        <Modal open={!!inviteInfo} onClose={() => setInviteInfo(null)} title="Account Created">
+          <div className="space-y-4">
+            <p className="text-sm text-on-surface-variant">{inviteInfo.message}</p>
+            <div className="bg-surface-container-low rounded-lg p-4 space-y-2">
+              <div>
+                <p className="text-xs text-on-surface-variant">Email</p>
+                <p className="font-mono text-sm text-on-surface">{inviteInfo.email}</p>
+              </div>
+              <div>
+                <p className="text-xs text-on-surface-variant">Temporary Password</p>
+                <p className="font-mono text-sm text-on-surface">{inviteInfo.tempPassword}</p>
+              </div>
+            </div>
+            <p className="text-xs text-on-surface-variant">Share these credentials with the volunteer. They can change the password after logging in.</p>
+            <div className="flex justify-end">
+              <Button onClick={() => setInviteInfo(null)}>Done</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
