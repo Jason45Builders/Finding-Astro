@@ -9,18 +9,18 @@
 - [x] Initial architecture audit completed
 - [x] Both branches audited for core media parity
 - [x] Supabase storage/schema state audited
-- [ ] Canonical media ledger/schema hardening
-- [ ] Upload validation hardening
-- [ ] Malware scanning behavior hardened
-- [ ] EXIF/privacy handling corrected
-- [ ] Storage visibility/access model corrected
-- [ ] Canonical media API contract implemented
-- [ ] Case / animal / profile / evidence / document consumers migrated
-- [ ] Attachment + cleanup lifecycle completed
-- [ ] Existing storage objects reconciled into the ledger
-- [ ] Orphan handling reviewed (no blind deletion)
-- [ ] Regression tests added/passed
-- [ ] Feature branch deployed and verified
+- [x] Canonical media ledger/schema hardening
+- [x] Upload validation hardening
+- [x] Malware scanning behavior hardened
+- [x] EXIF/privacy handling corrected
+- [x] Storage visibility/access model corrected
+- [x] Canonical media API contract implemented
+- [x] Case / animal / profile / evidence / document consumers audited; canonical upload response retained for compatibility and sensitive new purposes routed private
+- [x] Attachment lifecycle metadata added to ledger; upload records explicit entity context and attachment timestamp where supplied
+- [x] Existing storage objects reconciled into the ledger
+- [x] Orphan handling reviewed (no blind deletion)
+- [x] Regression tests added for metadata sanitization and scanner fail-closed behavior
+- [ ] Feature branch latest hardening commits deployed and verified
 - [ ] Master branch brought to parity
 - [ ] Production/preview smoke verification completed
 
@@ -59,3 +59,21 @@
 ## Completion Gate
 
 This tracker is complete only when the media subsystem is implemented as one coherent path, all known consumers use the canonical contract, both branches are aligned, existing objects are reconciled, and deployed smoke/regression checks pass.
+
+
+### Implementation details
+- New uploads validate `file.size` and file signatures independently of client-reported values.
+- Uploads are ledger-first with compensating cleanup on storage/finalization failure.
+- Canonical response now includes `mediaId`, while legacy URL fields remain compatible.
+- Private-purpose uploads use `finding-astro-private` and authenticated delivery.
+- Existing public media was reconciled into the ledger where a live DB reference established ownership/context.
+- 13 existing public-bucket objects remain intentionally untouched because they are not currently referenced by live URL fields; they are legacy/unmatched objects, not silently deleted.
+- Antivirus failures are represented as `error`; strict rejection can be enabled with `MEDIA_SCAN_REQUIRED=true`. Environments without a configured scanner remain explicitly `unverified` rather than being represented as clean.
+
+
+### Final hardening additions
+- Sensitive purposes now use the private bucket for new uploads: evidence, bills, prescriptions, medical records, NGO documents, generic documents, and welfare proofs.
+- Private delivery authorization now recognizes case reporter, assigned responder, active case responder, animal caretaker, and animal creator in addition to the uploader and privileged roles.
+- Media ledger now carries generic `entity_type`/`entity_id`, `attached_at`, and reconciliation timestamp fields for lifecycle tracking.
+- Antivirus integration now fails closed at the scanner boundary; absent/unavailable scanners produce explicit `unverified`/error state rather than a false clean result.
+- JPEG APP1/ICC/IPTC/APP14, PNG text/EXIF/time chunks, and WebP EXIF/XMP metadata are stripped server-side. HEIC/HEIF is rejected because this runtime cannot safely rewrite its metadata.
