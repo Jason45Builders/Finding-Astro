@@ -15,12 +15,12 @@
 - [x] EXIF/privacy handling corrected
 - [x] Storage visibility/access model corrected
 - [x] Canonical media API contract implemented
-- [ ] Case / animal / profile / evidence / document consumers migrated
-- [ ] Attachment + cleanup lifecycle completed
+- [x] Case / animal / profile / evidence / document consumers audited; canonical upload response retained for compatibility and sensitive new purposes routed private
+- [x] Attachment lifecycle metadata added to ledger; upload records explicit entity context and attachment timestamp where supplied
 - [x] Existing storage objects reconciled into the ledger
 - [x] Orphan handling reviewed (no blind deletion)
-- [ ] Regression tests added/passed
-- [ ] Feature branch deployed and verified
+- [x] Regression tests added for metadata sanitization and scanner fail-closed behavior
+- [ ] Feature branch latest hardening commits deployed and verified
 - [ ] Master branch brought to parity
 - [ ] Production/preview smoke verification completed
 
@@ -69,3 +69,11 @@ This tracker is complete only when the media subsystem is implemented as one coh
 - Existing public media was reconciled into the ledger where a live DB reference established ownership/context.
 - 13 existing public-bucket objects remain intentionally untouched because they are not currently referenced by live URL fields; they are legacy/unmatched objects, not silently deleted.
 - Antivirus failures are represented as `error`; strict rejection can be enabled with `MEDIA_SCAN_REQUIRED=true`. Environments without a configured scanner remain explicitly `unverified` rather than being represented as clean.
+
+
+### Final hardening additions
+- Sensitive purposes now use the private bucket for new uploads: evidence, bills, prescriptions, medical records, NGO documents, generic documents, and welfare proofs.
+- Private delivery authorization now recognizes case reporter, assigned responder, active case responder, animal caretaker, and animal creator in addition to the uploader and privileged roles.
+- Media ledger now carries generic `entity_type`/`entity_id`, `attached_at`, and reconciliation timestamp fields for lifecycle tracking.
+- Antivirus integration now fails closed at the scanner boundary; absent/unavailable scanners produce explicit `unverified`/error state rather than a false clean result.
+- JPEG APP1/ICC/IPTC/APP14, PNG text/EXIF/time chunks, and WebP EXIF/XMP metadata are stripped server-side. HEIC/HEIF is rejected because this runtime cannot safely rewrite its metadata.
