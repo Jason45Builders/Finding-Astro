@@ -116,6 +116,7 @@ export async function GET(req: NextRequest) {
       },
       donations: rows.map(mapDonation),
       currentUserIsDonationAdmin: settings?.donation_admin_user_id === user.id,
+      canInitialize: !settings && org.orgRole === "org_admin",
     }, "Rescue collective donations loaded");
   } catch {
     return serverError();
