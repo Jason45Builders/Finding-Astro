@@ -492,16 +492,30 @@ export interface Notification {
 
 class ApiClient {
   private baseUrl: string;
-  private token: string | null = null;\n  private activeOrgId: string | null = null;
+  private token: string | null = null;
+  private activeOrgId: string | null = null;
 
   constructor(baseUrl?: string) {
     this.baseUrl = baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/v1";
     if (typeof window !== "undefined") {
-      this.token = window.localStorage.getItem("fa_token");\n      this.activeOrgId = window.localStorage.getItem("fa_active_org_id");
+      this.token = window.localStorage.getItem("fa_token");
+      this.activeOrgId = window.localStorage.getItem("fa_active_org_id");
     }
   }
 
-  setActiveOrgId(orgId: string | null): void {\n    this.activeOrgId = orgId;\n    if (typeof window !== "undefined") {\n      if (orgId) window.localStorage.setItem("fa_active_org_id", orgId);\n      else window.localStorage.removeItem("fa_active_org_id");\n    }\n  }\n\n  getActiveOrgId(): string | null {\n    return this.activeOrgId;\n  }\n\n  setToken(token: string | null): void {
+  setActiveOrgId(orgId: string | null): void {
+    this.activeOrgId = orgId;
+    if (typeof window !== "undefined") {
+      if (orgId) window.localStorage.setItem("fa_active_org_id", orgId);
+      else window.localStorage.removeItem("fa_active_org_id");
+    }
+  }
+
+  getActiveOrgId(): string | null {
+    return this.activeOrgId;
+  }
+
+  setToken(token: string | null): void {
     this.token = token;
     if (typeof window !== "undefined") {
       if (token) {
