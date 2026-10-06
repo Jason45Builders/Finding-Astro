@@ -39,6 +39,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cas
   }
 
   try {
+    const { data: caseRow, error: caseError } = await supabaseAdmin()
+      .from("cases").select("id").eq("id", caseId).eq("welfare_group_id", org.welfareGroupId).maybeSingle();
+    if (caseError) return serverError(caseError.message);
+    if (!caseRow) return badRequest("INVALID_CASE", "Case not found in this organization");
+
     const body = await req.json();
     const message = String(body.message ?? "").trim();
     if (!message) return badRequest("INVALID_BODY", "Message is required");
