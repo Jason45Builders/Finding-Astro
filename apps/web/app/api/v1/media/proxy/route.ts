@@ -21,17 +21,22 @@ function isPrivilegedRole(role: string) {
 async function canReadPrivateMedia(media: {
   uploaded_by_id: string;
   linked_case_id: string | null;
+  linked_animal_id: string | null;
 }, userId: string, role: string) {
   if (media.uploaded_by_id === userId || isPrivilegedRole(role)) return true;
   if (!media.linked_case_id) return false;
 
   const admin = supabaseAdmin();
-  const [{ data: caseRow }, { data: responseRow }] = await Promise.all([
-    admin.from("cases").select("reporter_user_id").eq("id", media.linked_case_id).maybeSingle(),
-    admin.from("case_responses").select("responder_user_id").eq("case_id", media.linked_case_id).eq("responder_user_id", userId).limit(1).maybeSingle(),
-  ]);
-
-  return caseRow?.reporter_user_id === userId || Boolean(responseRow);
+  const checks: PromiseLike<any>[] = [];
+  if (media.linked_case_id) {
+    checks.push(admin.from("cases").select("reporter_user_id, assigned_to_user_id").eq("id", media.linked_case_id).maybeSingle());
+    checks.push(admin.from("case_responses").select("responder_user_id").eq("case_id", media.linked_case_id).eq("responder_user_id", userId).limit(1).maybeSingle());
+  }
+  if (media.linked_animal_id) {
+    checks.push(admin.from("animals").select("caretaker_user_id, created_by_user_id").eq("id", media.linked_animal_id).maybeSingle());
+  }
+  const results = await Promise.all(checks);
+  return results.some((result) => result.data?.reporter_user_id === userId || result.data?.assigned_to_user_id === userId || result.data?.responder_user_id === userId || result.data?.caretaker_user_id === userId || result.data?.created_by_user_id === userId);
 }
 
 export async function GET(req: NextRequest) {
@@ -47,7 +52,7 @@ export async function GET(req: NextRequest) {
 
       const { data: media, error: mediaError } = await supabaseAdmin()
         .from("media_uploads")
-        .select("id, uploaded_by_id, linked_case_id, storage_bucket, storage_key, visibility, status, content_type")
+        .select("id, uploaded_by_id, linked_case_id, linked_animal_id, storage_bucket, storage_key, visibility, status, content_type")
         .eq("id", mediaId)
         .maybeSingle();
 
@@ -59,7 +64,7 @@ export async function GET(req: NextRequest) {
       }
 
       const allowed = await canReadPrivateMedia(
-        { uploaded_by_id: media.uploaded_by_id, linked_case_id: media.linked_case_id },
+        { uploaded_by_id: media.uploaded_by_id, linked_case_id: media.linked_case_id, linked_animal_id: media.linked_animal_id },
         authResult.user.id,
         authResult.user.role,
       );
