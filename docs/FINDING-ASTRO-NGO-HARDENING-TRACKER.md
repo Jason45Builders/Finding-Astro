@@ -4,7 +4,7 @@
 **Repository:** `Jason45Builders/Finding-Astro`  
 **Branch:** `master`  
 **Program status:** 🟡 IN PROGRESS  
-**Last updated:** 2026-10-06
+**Last updated:** 2026-10-06 — Heavy Work Block 1
 
 ---
 
@@ -24,9 +24,9 @@
 | Pass | Area | Status | Verification |
 |---|---|---:|---|
 | 0 | Baseline | 🔵 Audited | Repository + Supabase + route/RBAC review |
-| 1 | Authorization Architecture | ⬜ | Pending |
-| 2 | Multi-NGO Membership | ⬜ | Pending |
-| 3 | NGO Onboarding & Verification | ⬜ | Pending |
+| 1 | Authorization Architecture | 🟡 | Heavy Block 1 foundation implemented; full endpoint audit pending |
+| 2 | Multi-NGO Membership | 🟡 | Active-org context implemented; full isolation audit pending |
+| 3 | NGO Onboarding & Verification | 🟡 | Canonical pending/approval flow implemented; frontend + migration/regression audit pending |
 | 4 | Invitations & Member Lifecycle | ⬜ | Pending |
 | 5 | Member Administration & Privilege Security | ⬜ | Pending |
 | 6 | Case & Rescue Coordination | ⬜ | Pending |
@@ -91,16 +91,16 @@
 
 ### Tasks
 
-- [ ] Define canonical organization permission constants.
-- [ ] Define role-to-permission profiles.
-- [ ] Centralize permission evaluation.
-- [ ] Define platform-role vs organization-role boundaries.
-- [ ] Define active organization context.
-- [ ] Define authorization failure semantics.
+- [x] Define canonical organization permission constants.
+- [x] Define role-to-permission profiles.
+- [x] Centralize permission evaluation.
+- [x] Define platform-role vs organization-role boundaries.
+- [x] Define active organization context.
+- [x] Define authorization failure semantics.
 - [ ] Audit all org routes against the matrix.
-- [ ] Remove client authority over arbitrary permissions.
-- [ ] Add authorization unit tests.
-- [ ] Add privilege-escalation tests.
+- [x] Remove client authority over arbitrary permissions.
+- [x] Add authorization unit tests.
+- [x] Add initial privilege-escalation protection/tests.
 
 ### Exit criteria
 
@@ -117,14 +117,14 @@
 
 ### Tasks
 
-- [ ] Support multiple memberships per user.
-- [ ] Define active organization context.
+- [x] Support multiple memberships per user.
+- [x] Define active organization context.
 - [ ] Implement organization switching.
-- [ ] Scope API requests to active organization.
+- [x] Scope API requests to active organization.
 - [ ] Scope dashboard data.
 - [ ] Scope notifications.
-- [ ] Scope member permissions.
-- [ ] Prevent membership collision.
+- [x] Scope member permissions.
+- [x] Prevent membership collision.
 - [ ] Add multi-NGO database tests.
 - [ ] Add cross-NGO API tests.
 
@@ -143,13 +143,13 @@
 
 ### Tasks
 
-- [ ] Reconcile public NGO signup and verification.
-- [ ] Define pending state.
-- [ ] Define verified state.
+- [x] Reconcile public NGO signup and verification.
+- [x] Define pending state.
+- [x] Define verified state.
 - [ ] Define rejected state.
 - [ ] Define suspended state.
-- [ ] Prevent premature operational access.
-- [ ] Preserve approved organization identity.
+- [x] Prevent premature operational access.
+- [x] Preserve approved organization identity.
 - [ ] Handle resubmission.
 - [ ] Update NGO frontend messaging.
 - [ ] Add onboarding tests.
@@ -503,7 +503,7 @@ The live database currently has RLS enabled on many application tables, but the 
 
 # Change Log
 
-## 2026-10-06 — Initial baseline
+## 2026-10-06 — Heavy Work Block 1\n\n- Added centralized NGO role/permission profiles.\n- Added explicit active-organization context through `X-Finding-Astro-Org-Id`.\n- Added multi-NGO selection for organization workspace users.\n- Removed the previous single-membership `maybeSingle()` assumption from NGO context resolution.\n- Made member permissions server-derived from the selected organization role.\n- Added initial protection for final organization admins and self-deactivation.\n- Changed new NGO signup to pending verification instead of immediate operational access.\n- Unified verification approval with the existing pending organization and membership.\n- Added role-permission regression tests.\n\n## 2026-10-06 — Initial baseline
 
 - Created NGO Hardening Specification.
 - Created NGO Hardening Tracker.
