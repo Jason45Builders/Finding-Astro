@@ -77,12 +77,12 @@ export default function OrgSettingsPage() {
       <div className="flex items-center gap-3">
         <Settings className="w-8 h-8 text-primary" />
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface">Organization Settings</h1>
-          <p className="text-sm text-on-surface-variant">Manage your welfare group profile and donation settings</p>
+          <h1 className="font-headline-lg text-headline-lg text-on-surface">{settings.orgType === "rescue_collective" ? "Rescue Collective Settings" : "Organization Settings"}</h1>
+          <p className="text-sm text-on-surface-variant">Manage your welfare group profile and donation settings.</p>
         </div>
       </div>
 
-      <Card className="p-6 space-y-5">
+      <Card className="p-6 space-y-5">\n        <div className="rounded-lg border border-outline-variant p-4 bg-surface-container-low"><p className="text-xs uppercase tracking-wide font-bold text-on-surface-variant">Welfare Group Type</p><p className="font-bold text-on-surface mt-1">{settings.orgType === "rescue_collective" ? "Rescue Collective" : "NGO"}</p><p className="text-xs text-on-surface-variant mt-1">This type is fixed when the group is created.</p></div>
         <div className="space-y-4">
           <div>
             <Label>Organization Name</Label>
@@ -165,7 +165,7 @@ export default function OrgSettingsPage() {
         <p className="text-xs text-on-surface-variant mt-2">
           {settings.isVerified
             ? "Your organization has been verified by the platform. Donors will see a verified badge."
-            : "Submit verification documents via /ngo-verification to unlock full features."}
+            : "Submit verification documents through the existing NGO verification workflow to unlock verified-organization features."}
         </p>
       </Card>
     </div>
