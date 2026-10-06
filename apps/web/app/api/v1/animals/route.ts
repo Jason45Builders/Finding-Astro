@@ -65,13 +65,13 @@ export async function GET(req: NextRequest) {
   if (species) query = query.eq("species", species);
   if (queryText) {
     const sanitized = queryText.replace(/[%_]/g, "\\$&");
-    query = query.or(\`name.ilike.%\${sanitized}%,breed.ilike.%\${sanitized}%,color.ilike.%\${sanitized}%\`);
+    query = query.or(`name.ilike.%${sanitized}%,breed.ilike.%${sanitized}%,color.ilike.%${sanitized}%`);
   }
 
   const isStaff = ["admin", "govt", "ngo", "hospital"].includes(authResult.user.role);
   if (!isStaff && userTier < 2) {
     const sanitizedUserId = authResult.user.id.replace(/[^a-f0-9-]/gi, "");
-    query = query.or(\`status.eq.community,created_by_user_id.eq.\${sanitizedUserId}\`);
+    query = query.or(`status.eq.community,created_by_user_id.eq.${sanitizedUserId}`);
   }
 
   const { data, error } = await query.limit(limit);
@@ -110,8 +110,8 @@ export async function POST(req: NextRequest) {
 
   const ip = getClientIp(req);
   const userAgent = req.headers.get("user-agent") ?? "unknown";
-  const rate = await checkRateLimit(\`animal-create:\${authResult.user.id}:\${ip}\`, userAgent);
-  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: \`Too many requests. Retry after \${rate.retryAfter}s\` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  const rate = await checkRateLimit(`animal-create:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
 
   try {
     const parsed = validateBody(CreateAnimalSchema, await req.json());
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
 
     const payload: Record<string, unknown> = {
       species: body.species,
-      location: \`POINT(\${body.location.longitude} \${body.location.latitude})\`,
+      location: `POINT(${body.location.longitude} ${body.location.latitude})`,
       status: body.status ?? "community",
       name: body.name ?? null,
       breed: body.breed ?? null,
@@ -183,8 +183,8 @@ export async function PATCH(req: NextRequest) {
   const isOwnerOrStaff = ["admin", "govt", "hospital"].includes(authResult.user.role) || !!orgId;
   const ip = getClientIp(req);
   const userAgent = req.headers.get("user-agent") ?? "unknown";
-  const rate = await checkRateLimit(\`animal-update:\${authResult.user.id}:\${ip}\`, userAgent);
-  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: \`Too many requests. Retry after \${rate.retryAfter}s\` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  const rate = await checkRateLimit(`animal-update:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
 
   try {
     let existingQuery = supabaseAdmin().from("animals").select("created_by_user_id, welfare_group_id, visibility").eq("id", id);
@@ -213,7 +213,7 @@ export async function PATCH(req: NextRequest) {
     for (const [src, dst] of Object.entries(fieldMap)) {
       if ((body as Record<string, unknown>)[src] !== undefined) update[dst] = (body as Record<string, unknown>)[src];
     }
-    if (body.latitude !== undefined && body.longitude !== undefined) update.location = \`POINT(\${body.longitude} \${body.latitude})\`;
+    if (body.latitude !== undefined && body.longitude !== undefined) update.location = `POINT(${body.longitude} ${body.latitude})`;
     if ((body as Record<string, unknown>).visibility !== undefined) {
       update.visibility_changed_by = authResult.user.id;
       update.visibility_changed_at = new Date().toISOString();
