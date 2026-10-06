@@ -26,20 +26,26 @@ const ORG_ROLES: { value: OrganizationMember["orgRole"]; label: string }[] = [
 
 export default function OrgMembersPage() {
   const { user } = useAuth();
-  const [members, setMembers] = useState<OrganizationMember[]>([]);\n  const [groupType, setGroupType] = useState<"ngo" | "rescue_collective">("ngo");
+  const [members, setMembers] = useState<OrganizationMember[]>([]);
+  const [groupType, setGroupType] = useState<"ngo" | "rescue_collective">("ngo");
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
   const [orgRole, setOrgRole] = useState<OrganizationMember["orgRole"]>("volunteer");
   const [submitting, setSubmitting] = useState(false);
-  const [inviteInfo, setInviteInfo] = useState<{ email: string; acceptPath: string; message?: string } | null>(null);\n  const [copied, setCopied] = useState(false);
+  const [inviteInfo, setInviteInfo] = useState<{ email: string; acceptPath: string; message?: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       try {
-        const [data, memberships] = await Promise.all([api.listOrgMembers(), api.getMyOrgMemberships()]);\n        const active = memberships.memberships.find((membership) => membership.orgId === api.getActiveOrgId());
-        if (!cancelled) {\n          setMembers(data);\n          setGroupType(active?.orgType === "rescue_collective" ? "rescue_collective" : "ngo");\n        }
+        const [data, memberships] = await Promise.all([api.listOrgMembers(), api.getMyOrgMemberships()]);
+        const active = memberships.memberships.find((membership) => membership.orgId === api.getActiveOrgId());
+        if (!cancelled) {
+          setMembers(data);
+          setGroupType(active?.orgType === "rescue_collective" ? "rescue_collective" : "ngo");
+        }
       } catch (err) {
         console.error("Failed to load members", err);
       } finally {
@@ -56,15 +62,12 @@ export default function OrgMembersPage() {
     setInviteInfo(null);
     try {
       const result = await api.addOrgMember({ email, orgRole }) as any;
-      const member = result.member ?? result;
-      setMembers((prev) => [member, ...prev]);
-      if (result.tempPassword) {
-        setInviteInfo({ email, tempPassword: result.tempPassword, message: result.message });
-      } else {
-        setEmail("");
-        setOrgRole("volunteer");
-        setShowForm(false);
-      }
+      const member = result.member;
+      if (member) setMembers((prev) => [member, ...prev]);
+      setInviteInfo({ email, acceptPath: result.acceptPath, message: result.message });
+      setEmail("");
+      setOrgRole("volunteer");
+      setShowForm(false);
     } catch (err: any) {
       alert(err?.message || "Failed to add member");
     } finally {
@@ -82,13 +85,23 @@ export default function OrgMembersPage() {
     }
   };
 
-  if (loading) return <PageSpinner />;\n\n  const copyInvite = async () => {\n    if (!inviteInfo) return;\n    await navigator.clipboard.writeText(new URL(inviteInfo.acceptPath, window.location.origin).toString());\n    setCopied(true);\n    window.setTimeout(() => setCopied(false), 1500);\n  };\n\n  const groupLabel = groupType === "rescue_collective" ? "Rescue Collective" : "NGO";
+  if (loading) return <PageSpinner />;
+
+  const copyInvite = async () => {
+    if (!inviteInfo) return;
+    await navigator.clipboard.writeText(new URL(inviteInfo.acceptPath, window.location.origin).toString());
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1500);
+  };
+
+  const groupLabel = groupType === "rescue_collective" ? "Rescue Collective" : "NGO";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface">Team Members</h1>\n          <Badge variant="neutral">{groupLabel}</Badge>
+          <h1 className="font-headline-lg text-headline-lg text-on-surface">Team Members</h1>
+          <Badge variant="neutral">{groupLabel}</Badge>
           <p className="text-sm text-on-surface-variant">Manage the people who coordinate this {groupLabel.toLowerCase()} and their organization roles.</p>
         </div>
         <Button variant="primary" onClick={() => setShowForm(true)}><Plus className="w-4 h-4 mr-2" />Invite Member</Button>
@@ -149,15 +162,10 @@ export default function OrgMembersPage() {
                 <p className="text-xs text-on-surface-variant">Email</p>
                 <p className="font-mono text-sm text-on-surface">{inviteInfo.email}</p>
               </div>
-              <div>
-                <p className="text-xs text-on-surface-variant">Temporary Password</p>
-                <p className="font-mono text-sm text-on-surface">{inviteInfo.tempPassword}</p>
-              </div>
+              <div><p className="text-xs text-on-surface-variant">Invitation link</p><p className="font-mono text-sm break-all text-on-surface">{new URL(inviteInfo.acceptPath, window.location.origin).toString()}</p></div>
             </div>
             <p className="text-xs text-on-surface-variant">Share this one-time invitation link. It expires after 7 days and the member sets their own password.</p>
-            <div className="flex justify-end">
-              <Button onClick={() => setInviteInfo(null)}>Done</Button>
-            </div>
+            <div className="flex justify-end gap-2"><Button variant="outline" onClick={copyInvite}>{copied ? <><Check className="w-4 h-4 mr-2" />Copied</> : <><Copy className="w-4 h-4 mr-2" />Copy Link</>}</Button><Button onClick={() => setInviteInfo(null)}>Done</Button></div>
           </div>
         </Modal>
       )}
