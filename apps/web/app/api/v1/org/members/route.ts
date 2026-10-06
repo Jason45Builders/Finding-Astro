@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireOrg, OrgContext, hasOrgPermission } from "@/lib/org-auth";
 import { ok, serverError, badRequest, forbidden, notFound } from "@/lib/api-response";
-import { mapOrganizationMember, mapUser } from "@/lib/types";
+import { mapOrganizationMember } from "@/lib/types";\nimport { ORG_ROLES, getOrgRolePermissions, isOrgRole } from "@/lib/org-permissions";
 
 const ORG_ROLES = ["org_admin", "rescue_coordinator", "medical_coordinator", "adoption_coordinator", "finance", "volunteer", "vet", "foster"] as const;
 
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
       targetUserId = newUser.id;
     }
 
-    const orgRole = body.orgRole && ORG_ROLES.includes(body.orgRole) ? body.orgRole : "volunteer";
+    const orgRole = isOrgRole(body.orgRole) ? body.orgRole : "volunteer";\n    const permissions = getOrgRolePermissions(orgRole);
 
     const { data, error } = await supabaseAdmin()
       .from("organization_members")
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
         welfare_group_id: org.welfareGroupId,
         user_id: targetUserId,
         org_role: orgRole,
-        permissions: body.permissions ?? {},
+        permissions,
         is_active: true,
       }, { onConflict: "welfare_group_id,user_id" })
       .select(`
