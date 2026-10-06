@@ -40,8 +40,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const ip = getClientIp(req);
   const userAgent = req.headers.get("user-agent") ?? "unknown";
-  const rate = await checkRateLimit(\`case-update:\${authResult.user.id}:\${ip}\`, userAgent);
-  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: \`Too many requests. Retry after \${rate.retryAfter}s\` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  const rate = await checkRateLimit(`case-update:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
 
   try {
     const { id } = await params;
@@ -68,7 +68,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const current = existing.status as string;
     if (status && current !== status && !["admin", "govt", "ngo"].includes(authResult.user.role)) {
       const allowed: Record<string, string[]> = { open: ["in_review", "closed"], in_review: ["action_taken", "resolved", "closed"], action_taken: ["resolved", "closed"], resolved: ["closed"] };
-      if (!(allowed[current] ?? []).includes(status)) return badRequest("INVALID_STATUS_TRANSITION", \`Cannot move from "\${current}" to "\${status}"\`);
+      if (!(allowed[current] ?? []).includes(status)) return badRequest("INVALID_STATUS_TRANSITION", `Cannot move from "${current}" to "${status}"`);
     }
 
     const update: Record<string, unknown> = {};
