@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { requireOrg, OrgContext } from "@/lib/org-auth";
-import { ok, serverError, badRequest } from "@/lib/api-response";
+import { requireOrg, OrgContext, hasOrgPermission } from "@/lib/org-auth";
+import { ok, serverError, badRequest, forbidden } from "@/lib/api-response";
 import { mapAnimalDocument } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
@@ -43,6 +43,18 @@ export async function POST(req: NextRequest) {
     const documentType = String(body.documentType ?? "").trim();
     const url = String(body.url ?? "").trim();
     if (!animalId || !documentType || !url) return badRequest("INVALID_BODY", "animalId, documentType, and url are required");
+
+    const { data: animal, error: animalError } = await supabaseAdmin()
+      .from("animals")
+      .select("id")
+      .eq("id", animalId)
+      .eq("welfare_group_id", org.welfareGroupId)
+      .maybeSingle();
+    if (animalError) return serverError(animalError.message);
+    if (!animal) return badRequest("INVALID_ANIMAL", "Animal not found in this organization");
+    if (!hasOrgPermission(org.permissions, "animals:write")) {
+      return forbidden("Insufficient permissions");
+    }
 
     const { data, error } = await supabaseAdmin()
       .from("animal_documents")

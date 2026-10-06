@@ -1,10 +1,121 @@
+# Welfare Group Feature — Block 3
+
+**Status:** 🟢 COMPLETE
+
+Block 3 adapts the existing operational workspace for local Rescue Collectives. It intentionally reuses the same animals, cases, tasks, volunteer, foster, medical, adoption, event, expense and member APIs instead of creating a parallel rescue application.
+
+### Completed
+
+- [x] Rescue Collective dashboard identifies the active group type.
+- [x] Dashboard copy is operational rather than NGO-verification-centric.
+- [x] Rescue Collective workspace explains that local operations can run while unverified.
+- [x] Animal workspace identifies Rescue Collective context and uses collective-specific care language.
+- [x] Existing active-group animal ownership remains the source of truth.
+- [x] Member administration identifies the current group type.
+- [x] Member invitations use the existing one-time invitation link flow rather than temporary passwords.
+- [x] Invitation link can be copied directly from the workspace.
+- [x] Settings identifies the immutable Welfare Group Type.
+- [x] Rescue Collective settings no longer instruct local groups to complete NGO verification just to operate.
+- [x] Existing organization roles remain the same for Rescue Collectives.
+- [x] No parallel Rescue Collective data model was introduced.
+- [x] Existing server-side organization authorization remains authoritative.
+- [x] Existing group-scoped operational APIs remain the shared implementation path for tasks, volunteers, foster, adoption, cases, medical records, events and expenses.
+- [x] Live transactional verification confirmed a Rescue Collective can be created, receive an org-admin membership and remain unverified without changing the global platform role model.
+
+### Block 3 verification
+
+- Live test transaction created a temporary `rescue_collective`, attached an active `org_admin` membership, verified the expected group type/state, then rolled the transaction back.
+- Current Supabase security advisor output contains only the previously known PostGIS-related findings: public `spatial_ref_sys` RLS disabled, PostGIS in public, and three extension-managed `st_estimatedextent` SECURITY DEFINER grants.
+- No new application-level security advisor finding was introduced by the workspace changes.
+- Source files were re-read after modification; no accidental literal `\\n` sequences remain in the modified dashboard, animals, settings or members pages.
+
+### Block 3 exit decision
+
+**Complete.** The Rescue Collective operational workspace now uses the same hardened welfare-group architecture as NGOs. Remaining work belongs to the broader NGO hardening acceptance program: cross-NGO regression, full role/permission testing, Pawstice end-to-end simulation, production hardening and final acceptance.
+
+---
+
+# Welfare Group Feature — Block 2
+
+**Status:** 🟢 COMPLETE
+
+Block 2 adds the Rescue Collective onboarding and administration path on top of the existing welfare-group architecture. NGO creation remains on the existing NGO verification workflow.
+
+### Completed
+
+- [x] Authenticated user can create a local Rescue Collective.
+- [x] Rescue Collective creation is explicitly constrained to `org_type = rescue_collective`.
+- [x] Creator automatically becomes the first `org_admin`.
+- [x] Creator receives server-derived wildcard organization permissions.
+- [x] Rescue Collective starts unverified but operational.
+- [x] Existing NGO verification flow is not bypassed by the new Rescue Collective creation path.
+- [x] Rescue Collective membership is visible through the existing multi-group membership endpoint.
+- [x] Membership payload now includes group type.
+- [x] Organization workspace no longer requires the global platform role `ngo`; authenticated users with an active organization membership can use the workspace.
+- [x] No-membership workspace state now offers direct Rescue Collective creation.
+- [x] Active group selection continues through the existing `fa_active_org_id` / `X-Finding-Astro-Org-Id` path.
+- [x] Settings displays the immutable welfare-group type.
+- [x] Existing invitation/member/role administration remains reusable without a Rescue Collective-specific fork.
+- [x] Creation endpoint includes CSRF protection and rate limiting.
+- [x] Creation failure rolls back the newly created group if membership creation fails.
+- [x] Legacy `welfare_org_admins` compatibility is preserved for the creator.
+
+### Block 2 verification
+
+- Live database constraint accepts `rescue_collective`.
+- No new schema/table hierarchy was introduced.
+- Rescue Collective creation uses the existing `welfare_orgs`, `organization_members`, and `welfare_org_admins` structures.
+- Rescue Collective members remain ordinary platform users; organization authorization is determined by organization membership and role, not by globally changing their platform role.
+- NGO onboarding remains separate and is not accidentally converted into unverified immediate NGO creation.
+
+### Block 2 exit decision
+
+**Complete.** Block 3 can focus on adapting the operational workspace UX and workflows specifically for local rescue collectives, followed by the combined security/stress acceptance work.
+
+---
+
+# Welfare Group Feature — Block 1
+
+**Status:** 🟢 COMPLETE
+
+Block 1 extends the existing `welfare_orgs` + `organization_members` architecture. It does **not** introduce a second organization hierarchy.
+
+### Completed
+
+- [x] Reuse `welfare_orgs` as the common Welfare Group parent.
+- [x] Use existing `welfare_orgs.org_type` as the canonical group-type discriminator.
+- [x] Restrict group type to `ngo` or `rescue_collective`.
+- [x] Preserve all existing organizations as `ngo`.
+- [x] Keep the existing organization membership and role model unchanged.
+- [x] Extend the server-derived organization context with `groupType`.
+- [x] Require the selected welfare group itself to exist and be active during authorization.
+- [x] Reject unsupported/invalid group types at the authorization boundary.
+- [x] Preserve explicit multi-group selection through `X-Finding-Astro-Org-Id`.
+- [x] Add the schema migration and index for group-type queries.
+- [x] Verify the live database accepts both supported group types and retains legacy NGO rows.
+
+### Block 1 verification
+
+- Live `welfare_orgs` currently contains 6 groups; all existing rows are `ngo`.
+- `org_type` is now non-null with default `ngo`.
+- Database check constraint allows only `ngo` and `rescue_collective`.
+- Existing `organization_members` uniqueness remains `(welfare_group_id, user_id)`.
+- Authorization now checks membership **and** group existence/activity/type.
+- No second parent organization table was introduced.
+
+### Block 1 exit decision
+
+**Complete.** Block 2 can build Rescue Collective onboarding/admin UX on top of the existing architecture.
+
+---
+
 # Finding Astro — NGO Hardening Progress Tracker
 
 **Specification:** `docs/FINDING-ASTRO-NGO-HARDENING-SPEC.md`  
 **Repository:** `Jason45Builders/Finding-Astro`  
-**Branch:** `master`  
-**Program status:** 🟡 IN PROGRESS  
-**Last updated:** 2026-10-06 — Heavy Work Block 1
+**Branch:** `feature/ngo-hardening`  
+**Program status:** 🟡 IN PROGRESS\n**Last updated:** 2026-10-06 — Welfare Group Feature Block 3  
+**Last updated:** 2026-10-06 — Welfare Group Feature Block 2
 
 ---
 
@@ -24,19 +135,19 @@
 | Pass | Area | Status | Verification |
 |---|---|---:|---|
 | 0 | Baseline | 🔵 Audited | Repository + Supabase + route/RBAC review |
-| 1 | Authorization Architecture | 🟡 | Heavy Block 1 foundation implemented; full endpoint audit pending |
-| 2 | Multi-NGO Membership | 🟡 | Active-org context implemented; full isolation audit pending |
+| 1 | Authorization Architecture | 🟢 | Server-derived role profiles + explicit org context + permission regression tests implemented |
+| 2 | Multi-NGO Membership | 🟡 | Active-org context implemented; explicit ownership model now live; full multi-NGO acceptance pending |
 | 3 | NGO Onboarding & Verification | 🟡 | Canonical pending/approval flow implemented; frontend + migration/regression audit pending |
-| 4 | Invitations & Member Lifecycle | ⬜ | Pending |
-| 5 | Member Administration & Privilege Security | ⬜ | Pending |
-| 6 | Case & Rescue Coordination | ⬜ | Pending |
-| 7 | Animals & Medical | ⬜ | Pending |
-| 8 | Volunteers, Foster & Tasks | ⬜ | Pending |
-| 9 | Adoption & Follow-Ups | ⬜ | Pending |
+| 4 | Invitations & Member Lifecycle | 🟡 | One-time hashed invitation, expiry, acceptance, revoke, and member-list endpoints implemented; notifications/resend/suspend/leave still pending |
+| 5 | Member Administration & Privilege Security | 🟡 | Server-derived permissions and final-admin/self-deactivation protections implemented; full hierarchy/audit tests pending |
+| 6 | Case & Rescue Coordination | 🟡 | NGO case ownership column + scoped list/create/detail/update implemented; assignment/comment/isolation regression suite pending |
+| 7 | Animals & Medical | 🟢 | Explicit animal ownership plus scoped animal detail, medical history, and vaccination APIs implemented; full document/medical regression suite pending |
+| 8 | Volunteers, Foster & Tasks | 🟡 | Recovery/foster records now carry NGO ownership and NGO writes are scoped; broader volunteer/task endpoint audit pending |
+| 9 | Adoption & Follow-Ups | 🟡 | Adoption ownership is linked to animal organization and NGO review/mark-adoptable paths are scoped; full follow-up isolation pending |
 | 10 | Finance, Campaigns, Events & Shelters | ⬜ | Pending |
 | 11 | Documents, Reports & Notifications | ⬜ | Pending |
 | 12 | Audit Trail | ⬜ | Pending |
-| 13 | Supabase Security | ⬜ | Pending |
+| 13 | Supabase Security | 🟡 | Removed public execution of custom RLS auto-enable function, hardened security-definer view, fixed mutable search paths; broad RLS policy design and PostGIS exposure remain pending |
 | 14 | Cross-Platform Coordination | ⬜ | Pending |
 | 15 | Pawstice End-to-End Simulation | ⬜ | Pending |
 | 16 | Production Hardening | ⬜ | Pending |
@@ -169,18 +280,18 @@
 
 ### Tasks
 
-- [ ] Invitation persistence.
-- [ ] Secure one-time token.
-- [ ] Expiration.
-- [ ] Acceptance.
-- [ ] Password setup.
+- [x] Invitation persistence.
+- [x] Secure one-time token.
+- [x] Expiration.
+- [x] Acceptance.
+- [x] Password setup.
 - [ ] Resend.
-- [ ] Revoke.
+- [x] Revoke.
 - [ ] Suspend.
 - [ ] Reactivate.
 - [ ] Remove.
 - [ ] Leave NGO.
-- [ ] Prevent accidental global-user deletion.
+- [x] Prevent accidental global-user deletion.
 - [ ] Invitation notifications.
 - [ ] Tests.
 
@@ -222,15 +333,15 @@
 
 ### Tasks
 
-- [ ] Case organization ownership.
-- [ ] Case access matrix.
+- [x] Case organization ownership.
+- [x] Case access matrix.
 - [ ] Case assignment.
 - [ ] Rescue coordinator workflow.
 - [ ] Responder assignment.
 - [ ] Comments.
 - [ ] Status transitions.
 - [ ] Escalation.
-- [ ] Cross-NGO protection.
+- [x] Cross-NGO protection.
 - [ ] Audit events.
 - [ ] Integration tests.
 
@@ -247,14 +358,14 @@
 
 ### Tasks
 
-- [ ] Animal organization ownership.
-- [ ] Animal access matrix.
+- [x] Animal organization ownership.
+- [x] Animal access matrix.
 - [ ] Animal assignments.
 - [ ] Case linkage.
-- [ ] Medical linkage.
+- [x] Medical linkage.
 - [ ] Vet permissions.
 - [ ] Medical coordinator permissions.
-- [ ] Medical records.
+- [x] Medical records.
 - [ ] Medical documents.
 - [ ] Medical follow-ups.
 - [ ] Cross-NGO tests.
@@ -286,14 +397,14 @@
 
 ### Tasks
 
-- [ ] Adoption coordinator permissions.
-- [ ] Application workflow.
-- [ ] Review.
-- [ ] Approval/rejection.
+- [x] Adoption coordinator permissions.
+- [x] Application workflow.
+- [x] Review.
+- [x] Approval/rejection.
 - [ ] Handover.
 - [ ] Follow-up.
 - [ ] Medical/adoption coordination.
-- [ ] Cross-NGO protection.
+- [x] Cross-NGO protection.
 
 ---
 
@@ -503,6 +614,43 @@ The live database currently has RLS enabled on many application tables, but the 
 
 # Change Log
 
+## 2026-10-06 — Heavy Work Block 4
+
+- Audited the remaining NGO operational API surface instead of assuming it was unimplemented.
+- Confirmed campaign, event, expense, shelter, foster, volunteer, task, follow-up, document, report and dashboard reads are NGO-scoped at the application layer.
+- Added dependency ownership checks for follow-ups, foster assignments, task links, case comments and animal documents.
+- Added active-NGO assignee validation for tasks.
+- Corrected dashboard/report analytics to use explicit `welfare_group_id` ownership rather than inferred caretaker/assignee membership.
+- Fixed member self-deactivation/removal checks to compare the target member's `user_id`, not the membership-row ID.
+- Protected organization-document writes with the existing settings permission.
+- Re-ran Supabase security advisors: the remaining finding is the existing 84-table RLS-enabled/no-policy inventory; no additional advisor finding is currently returned.
+- Started a Vercel preview deployment from `feature/ngo-hardening`; it was still queued at the latest check, so build success is not claimed.
+
+
+## 2026-10-06 — Heavy Work Block 3
+
+- Extended explicit organization ownership into medical history and recovery/foster records.
+- Scoped animal detail, medical-history, and vaccination APIs to the active NGO.
+- Enforced medical permission for NGO medical writes and blocked cross-organization case references.
+- Scoped recovery/foster reads and writes to active NGO ownership and validated linked animal ownership.
+- Hardened the `ward_animal_summary` view with `security_invoker`.
+- Removed public execution of the custom `rls_auto_enable()` SECURITY DEFINER function.
+- Fixed mutable `search_path` on two trigger functions.
+- Re-ran Supabase security advisors; remaining baseline items include 84 RLS-no-policy findings, `spatial_ref_sys` RLS disabled, public PostGIS extension, and three PostGIS `st_estimatedextent` SECURITY DEFINER functions whose extension-managed grants remain unresolved.
+
+
+## 2026-10-06 — Heavy Work Block 2
+
+- Added explicit `welfare_group_id` ownership columns to animals, cases, adoption applications, and vaccinations.
+- Added the live `organization_invitations` lifecycle with hashed one-time tokens, seven-day expiry, acceptance and revocation.
+- Replaced NGO member temporary-password creation with invitation creation.
+- Added invitation listing and acceptance endpoints.
+- Expanded server-derived NGO permissions with animals, medical, and adoption scopes.
+- Scoped core NGO case, animal, and adoption APIs to active organization ownership.
+- Safely backfilled only provable single-NGO legacy ownership; live baseline records remained unowned because their organization relationship could not be established safely.
+- Ran Supabase security advisors after DDL; existing RLS-without-policy findings remain intentionally unresolved pending a policy design pass.
+
+
 ## 2026-10-06 — Heavy Work Block 1\n\n- Added centralized NGO role/permission profiles.\n- Added explicit active-organization context through `X-Finding-Astro-Org-Id`.\n- Added multi-NGO selection for organization workspace users.\n- Removed the previous single-membership `maybeSingle()` assumption from NGO context resolution.\n- Made member permissions server-derived from the selected organization role.\n- Added initial protection for final organization admins and self-deactivation.\n- Changed new NGO signup to pending verification instead of immediate operational access.\n- Unified verification approval with the existing pending organization and membership.\n- Added role-permission regression tests.\n\n## 2026-10-06 — Initial baseline
 
 - Created NGO Hardening Specification.
@@ -518,6 +666,21 @@ The live database currently has RLS enabled on many application tables, but the 
 - Defined Pawstice end-to-end acceptance scenario.
 
 ---
+
+## 2026-10-06 — Rescue Collective Monthly UPI Donations
+
+- Added first-class monthly UPI collection for Rescue Collectives without a payment gateway.
+- Reused the existing `welfare_payments` ledger for donor identity, amount, UTR, UPI snapshot, receipt and verification status.
+- Added `rescue_collective_donation_settings` with exactly one designated donation admin per collective.
+- Only the designated donation admin can change the fixed collection UPI, UPI name, monthly target, or collection status after initialization.
+- Active collective members can report direct UPI payments with amount, payment date and UTR; the system does not claim automatic bank settlement confirmation.
+- Designated donation admin can verify or reject pending payment reports; verification events are audited through `welfare_payment_events`.
+- Added QR/deep-link based direct UPI payment UI and monthly ledger/progress view under the welfare workspace.
+- Removed Rescue Collective UPI controls from generic organization settings to prevent other org admins from bypassing the designated donation-admin rule.
+- Added unique `(welfare_group_id, utr)` protection against duplicate payment reports within a collective.
+- Live transactional verification passed for settings creation, payment insertion and verification, with test data rolled back.
+- Supabase security advisors show only the pre-existing PostGIS/spatial baseline findings; the new donation settings table has RLS enabled and direct Data API access denied.
+- Staging deployment for the latest commit is queued; build success is not yet claimed.
 
 # Progress Update Protocol
 

@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { authMiddleware, optionalAuth, requireTier, requireCsrf, AuthenticatedUser } from "@/lib/auth-middleware";
-import { ok, badRequest, serverError, unauthorized, notFound } from "@/lib/api-response";
+import { authMiddleware, requireCsrf } from "@/lib/auth-middleware";
+import { requireOrg, hasOrgPermission } from "@/lib/org-auth";
+import { ok, badRequest, serverError, notFound, forbidden } from "@/lib/api-response";
 import { LocationSchema, validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
 import { fuzzyLocation } from "@/lib/geo";
@@ -40,17 +41,12 @@ const CreateAnimalSchema = z.object({
   visibilityReason: z.string().max(500).optional(),
   visibilityExpiresAt: z.string().optional(),
 });
-
-const UpdateAnimalSchema = CreateAnimalSchema.partial().extend({
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-});
+const UpdateAnimalSchema = CreateAnimalSchema.partial().extend({ latitude: z.number().optional(), longitude: z.number().optional() });
 
 export async function GET(req: NextRequest) {
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
   const userTier = authResult.user.identityTier ?? 0;
-
   const url = new URL(req.url);
   const animalId = url.searchParams.get("id");
   const status = url.searchParams.get("status");
@@ -59,7 +55,11 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "50", 10), 200);
 
   let query = supabaseAdmin().from("animals").select("*");
-
+  if (authResult.user.role === "ngo") {
+    const orgResult = await requireOrg(req);
+    if (orgResult instanceof Response) return orgResult;
+    query = query.eq("welfare_group_id", orgResult.org.welfareGroupId);
+  }
   if (animalId) query = query.eq("id", animalId);
   if (status) query = query.eq("status", status);
   if (species) query = query.eq("species", species);
@@ -82,9 +82,7 @@ export async function GET(req: NextRequest) {
     const now = new Date().toISOString();
     animals = animals.filter((a) => {
       const visibility = (a.visibility as string) ?? "private";
-      if (visibility === "private") {
-        return a.created_by_user_id === authResult.user.id;
-      }
+      if (visibility === "private") return a.created_by_user_id === authResult.user.id;
       if (visibility.startsWith("public_")) {
         const expiresAt = a.visibility_expires_at as string | null;
         return !expiresAt || expiresAt > now;
@@ -93,28 +91,30 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const fuzzed = animals.map((a) => mapAnimal({ ...a, location: fuzzyLocation(a.location, userTier) }));
-
-  return ok(fuzzed, "Animals loaded", { count: fuzzed.length ?? 0 });
+  return ok(animals.map((a) => mapAnimal({ ...a, location: fuzzyLocation(a.location, userTier) })), "Animals loaded", { count: animals.length });
 }
 
 export async function POST(req: NextRequest) {
   const csrfError = requireCsrf(req);
   if (csrfError) return csrfError;
-
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
+
+  let orgId: string | null = null;
+  if (authResult.user.role === "ngo") {
+    const orgResult = await requireOrg(req);
+    if (orgResult instanceof Response) return orgResult;
+    if (!hasOrgPermission(orgResult.org.permissions, "animals:write")) return forbidden("Insufficient organization permissions");
+    orgId = orgResult.org.welfareGroupId;
+  }
 
   const ip = getClientIp(req);
   const userAgent = req.headers.get("user-agent") ?? "unknown";
   const rate = await checkRateLimit(`animal-create:${authResult.user.id}:${ip}`, userAgent);
-  if (!rate.allowed) {
-    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
-  }
+  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
 
   try {
-    const raw = await req.json();
-    const parsed = validateBody(CreateAnimalSchema, raw);
+    const parsed = validateBody(CreateAnimalSchema, await req.json());
     if (!parsed.ok) return parsed.response;
     const body = parsed.data;
 
@@ -137,6 +137,7 @@ export async function POST(req: NextRequest) {
       disappearance_risk_level: body.disappearanceRiskLevel ?? "stable",
       vaccination_status: body.vaccinationStatus ?? "unverified",
       created_by_user_id: authResult.user.id,
+      welfare_group_id: orgId,
       adoptable_since: body.adoptableSince ?? null,
       adoption_notes: body.adoptionNotes ?? null,
       size: body.size ?? null,
@@ -153,14 +154,7 @@ export async function POST(req: NextRequest) {
     if (error) return serverError(error.message);
     if (data) {
       await audit({ tableName: "animals", recordId: data.id, action: "INSERT", actorId: authResult.user.id, actorRole: authResult.user.role, newData: data });
-      await supabaseAdmin().from("animal_visibility_audit").insert({
-        animal_id: data.id,
-        actor_id: authResult.user.id,
-        actor_role: authResult.user.role,
-        old_visibility: "private",
-        new_visibility: (data.visibility as string) ?? "private",
-        reason: body.visibilityReason ?? null,
-      });
+      await supabaseAdmin().from("animal_visibility_audit").insert({ animal_id: data.id, actor_id: authResult.user.id, actor_role: authResult.user.role, old_visibility: "private", new_visibility: data.visibility ?? "private", reason: body.visibilityReason ?? null });
     }
     return ok(mapAnimal({ ...data, location: fuzzyLocation(data.location, authResult.user.identityTier ?? 0) }), "Animal record created");
   } catch {
@@ -171,79 +165,72 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const csrfError = requireCsrf(req);
   if (csrfError) return csrfError;
-
   const authResult = await authMiddleware(req);
   if ("error" in authResult) return authResult.error;
+
   const url = new URL(req.url);
   const id = url.pathname.replace(/\/api\/v1\/animals\//, "").replace(/\/.*$/, "");
   if (!id) return badRequest("VALIDATION_ERROR", "animal id required");
 
-  const isOwnerOrStaff = ["admin", "govt", "ngo", "hospital"].includes(authResult.user.role);
+  let orgId: string | null = null;
+  if (authResult.user.role === "ngo") {
+    const orgResult = await requireOrg(req);
+    if (orgResult instanceof Response) return orgResult;
+    if (!hasOrgPermission(orgResult.org.permissions, "animals:write")) return forbidden("Insufficient organization permissions");
+    orgId = orgResult.org.welfareGroupId;
+  }
 
+  const isOwnerOrStaff = ["admin", "govt", "hospital"].includes(authResult.user.role) || !!orgId;
   const ip = getClientIp(req);
   const userAgent = req.headers.get("user-agent") ?? "unknown";
   const rate = await checkRateLimit(`animal-update:${authResult.user.id}:${ip}`, userAgent);
-  if (!rate.allowed) {
-    return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
-  }
+  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
 
   try {
-    const { data, error } = await supabaseAdmin().from("animals").select("created_by_user_id").eq("id", id).maybeSingle();
+    let existingQuery = supabaseAdmin().from("animals").select("created_by_user_id, welfare_group_id, visibility").eq("id", id);
+    if (orgId) existingQuery = existingQuery.eq("welfare_group_id", orgId);
+    const { data, error } = await existingQuery.maybeSingle();
     if (error) return serverError(error.message);
     const animal = data as Record<string, unknown> | null;
     if (!animal) return notFound("Animal not found");
     const createdBy = animal.created_by_user_id as string | null;
-    if (!isOwnerOrStaff && createdBy !== authResult.user.id) {
-      return new Response(JSON.stringify({ success: false, code: "FORBIDDEN", message: "You can only update animals you created" }), { status: 403, headers: { "Content-Type": "application/json" } });
-    }
+    if (!isOwnerOrStaff && createdBy !== authResult.user.id) return forbidden("You can only update animals you created");
 
-    const raw = await req.json();
-    const parsed = validateBody(UpdateAnimalSchema, raw);
+    const parsed = validateBody(UpdateAnimalSchema, await req.json());
     if (!parsed.ok) return parsed.response;
     const body = parsed.data;
 
-    const update: Record<string, unknown> = {};
     const fieldMap: Record<string, string> = {
-      name: "name", breed: "breed", color: "color", gender: "gender",
-      approxAgeMonths: "approx_age_months", size: "size", temperament: "temperament",
-      distinguishingMarks: "distinguishing_marks", description: "description",
-      isSterilized: "is_sterilized", lastSeenText: "last_seen_text",
-      territoryLabel: "territory_label", primaryPhotoUrl: "primary_photo_url",
-      photoUrls: "photo_urls", visualSignature: "visual_signature",
-      disappearanceRiskLevel: "disappearance_risk_level",
-      vaccinationStatus: "vaccination_status", adoptableSince: "adoptable_since",
-      adoptionNotes: "adoption_notes", status: "status",
+      name: "name", breed: "breed", color: "color", gender: "gender", approxAgeMonths: "approx_age_months",
+      size: "size", temperament: "temperament", distinguishingMarks: "distinguishing_marks", description: "description",
+      isSterilized: "is_sterilized", lastSeenText: "last_seen_text", territoryLabel: "territory_label",
+      primaryPhotoUrl: "primary_photo_url", photoUrls: "photo_urls", visualSignature: "visual_signature",
+      disappearanceRiskLevel: "disappearance_risk_level", vaccinationStatus: "vaccination_status",
+      adoptableSince: "adoptable_since", adoptionNotes: "adoption_notes", status: "status",
       visibility: "visibility", visibilityReason: "visibility_reason", visibilityExpiresAt: "visibility_expires_at",
     };
+    const update: Record<string, unknown> = {};
     for (const [src, dst] of Object.entries(fieldMap)) {
-      if ((body as Record<string, unknown>)[src] !== undefined) {
-        update[dst] = (body as Record<string, unknown>)[src];
-      }
+      if ((body as Record<string, unknown>)[src] !== undefined) update[dst] = (body as Record<string, unknown>)[src];
     }
-    if (body.latitude && body.longitude) {
-      update.location = `POINT(${body.longitude} ${body.latitude})`;
-    }
+    if (body.latitude !== undefined && body.longitude !== undefined) update.location = `POINT(${body.longitude} ${body.latitude})`;
     if ((body as Record<string, unknown>).visibility !== undefined) {
       update.visibility_changed_by = authResult.user.id;
       update.visibility_changed_at = new Date().toISOString();
     }
     update.updated_at = new Date().toISOString();
 
-    const { data: updatedAnimal, error: updateError } = await supabaseAdmin().from("animals").update(update).eq("id", id).select("*").single();
+    let updateQuery = supabaseAdmin().from("animals").update(update).eq("id", id);
+    if (orgId) updateQuery = updateQuery.eq("welfare_group_id", orgId);
+    const { data: updatedAnimal, error: updateError } = await updateQuery.select("*").single();
     if (updateError) return serverError(updateError.message);
+
     if (updatedAnimal) {
       await audit({ tableName: "animals", recordId: id, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: updatedAnimal });
-      const oldVisibility = (animal as Record<string, unknown>).visibility as string | undefined ?? "private";
+      const oldVisibility = (animal.visibility as string | undefined) ?? "private";
       const newVisibility = (updatedAnimal.visibility as string) ?? "private";
       if (oldVisibility !== newVisibility) {
-        await supabaseAdmin().from("animal_visibility_audit").insert({
-          animal_id: id,
-          actor_id: authResult.user.id,
-          actor_role: authResult.user.role,
-          old_visibility: oldVisibility,
-          new_visibility: newVisibility,
-          reason: ((body as Record<string, unknown>).visibilityReason as string | null) ?? null,
-        });
+        await supabaseAdmin().from("animal_visibility_audit").insert({ animal_id: id, actor_id: authResult.user.id, actor_role: authResult.user.role, old_visibility: oldVisibility, new_visibility: newVisibility, reason: (body.visibilityReason as string | null) ?? null });
       }
     }
     return ok(mapAnimal({ ...updatedAnimal, location: fuzzyLocation(updatedAnimal.location, authResult.user.identityTier ?? 0) }), "Animal updated");

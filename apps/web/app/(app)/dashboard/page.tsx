@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   Eye,
@@ -10,6 +11,7 @@ import {
   MapPin,
   ChevronRight,
   Heart,
+  HeartHandshake,
   Camera,
   RefreshCw
 } from "lucide-react";
@@ -25,6 +27,7 @@ import { statusToken } from "@/lib/status";
 
 export default function UserDashboard() {
   const { user } = useAuth();
+  const router = useRouter();
   const [myCases, setMyCases] = useState<Case[]>([]);
   const [nearbyAnimals, setNearbyAnimals] = useState<Animal[]>([]);
   const [loadingCases, setLoadingCases] = useState(true);
@@ -35,10 +38,36 @@ export default function UserDashboard() {
   const [photoFallback, setPhotoFallback] = useState(false);
   const [optimisticPhoto, setOptimisticPhoto] = useState<string | null>(null);
   const [casesError, setCasesError] = useState<string | null>(null);
+  const [myCollectives, setMyCollectives] = useState<Array<{ orgId: string; orgRole: string; isAdmin: boolean; orgName?: string; orgType?: string; isVerified?: boolean; isActive?: boolean }>>([]);
+  const [loadingCollectives, setLoadingCollectives] = useState(true);
   const photoUploadAbortRef = useRef<AbortController | null>(null);
   const geoAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => () => { if (optimisticPhoto) URL.revokeObjectURL(optimisticPhoto); }, [optimisticPhoto]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadCollectives = async () => {
+      if (!user?.id) {
+        setMyCollectives([]);
+        setLoadingCollectives(false);
+        return;
+      }
+      try {
+        const result = await api.getMyOrgMemberships();
+        if (!cancelled) setMyCollectives(result.memberships.filter((membership) => membership.isActive !== false));
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Failed to load rescue collectives", err);
+          setMyCollectives([]);
+        }
+      } finally {
+        if (!cancelled) setLoadingCollectives(false);
+      }
+    };
+    void loadCollectives();
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -288,7 +317,75 @@ export default function UserDashboard() {
         </Link>
       </div>
 
-      {/* 3. Impact Summary */}
+      {/* 3. Rescue Collectives */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+        <Card className="p-5 sm:p-6 border-primary/20 bg-primary/5">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
+              <HeartHandshake className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-title-md text-title-md text-on-surface">Your Rescue Collectives</h2>
+              <p className="text-sm text-on-surface-variant mt-1">
+                Open any collective you belong to and continue managing local rescue work.
+              </p>
+            </div>
+          </div>
+
+          {loadingCollectives ? (
+            <div className="mt-4 text-sm text-on-surface-variant">Loading your collectives...</div>
+          ) : myCollectives.length > 0 ? (
+            <div className="mt-4 space-y-2">
+              {myCollectives.map((membership) => (
+                <button
+                  key={membership.orgId}
+                  type="button"
+                  onClick={() => {
+                    api.setActiveOrgId(membership.orgId);
+                    router.push("/org/dashboard");
+                  }}
+                  className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-4 text-left hover:border-primary hover:shadow-sm transition-all group"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-bold text-on-surface truncate group-hover:text-primary transition-colors">
+                        {membership.orgName ?? "Rescue Collective"}
+                      </p>
+                      <p className="text-xs text-on-surface-variant mt-1">
+                        {membership.orgType === "rescue_collective" ? "Rescue Collective" : "Welfare Group"} · {membership.orgRole.replaceAll("_", " ")}
+                      </p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-outline shrink-0 group-hover:text-primary transition-colors" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4 rounded-xl border border-dashed border-outline-variant p-4">
+              <p className="text-sm text-on-surface-variant">You do not belong to a rescue collective yet.</p>
+            </div>
+          )}
+        </Card>
+
+        <Card className="p-5 sm:p-6 border-primary/20 bg-primary/5 flex flex-col justify-between">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
+              <HeartHandshake className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-title-md text-title-md text-on-surface">Start a local rescue team</h2>
+              <p className="text-sm text-on-surface-variant mt-1">
+                Bring rescuers in your area together in a shared Rescue Collective. You can start one as a citizen — no registered NGO is required.
+              </p>
+            </div>
+          </div>
+          <Link href="/community/rescue-collective/create" className="mt-5 self-start">
+            <Button variant="primary">Start a Rescue Collective</Button>
+          </Link>
+        </Card>
+      </div>
+
+      {/* 4. Impact Summary */}
       <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-4 sm:p-6">
         <h2 className="font-title-md text-title-md text-on-surface mb-4">Your Impact</h2>
         <div className="grid grid-cols-3 gap-3 sm:gap-6">
@@ -307,7 +404,7 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      {/* 4. Main Content: Recent Cases + Strays Nearby */}
+      {/* 5. Main Content: Recent Cases + Strays Nearby */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         {/* Recent Cases */}
         <Card className="p-4 sm:p-6 lg:col-span-7">
@@ -387,7 +484,7 @@ export default function UserDashboard() {
         </Card>
       </div>
 
-      {/* 5. Quote + Footer Banner */}
+      {/* 6. Quote + Footer Banner */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl">
         <img src="/Finding Astro_Footer.png" alt="Community" className="w-full h-48 sm:h-64 lg:h-72 object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />

@@ -492,16 +492,30 @@ export interface Notification {
 
 class ApiClient {
   private baseUrl: string;
-  private token: string | null = null;\n  private activeOrgId: string | null = null;
+  private token: string | null = null;
+  private activeOrgId: string | null = null;
 
   constructor(baseUrl?: string) {
     this.baseUrl = baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/v1";
     if (typeof window !== "undefined") {
-      this.token = window.localStorage.getItem("fa_token");\n      this.activeOrgId = window.localStorage.getItem("fa_active_org_id");
+      this.token = window.localStorage.getItem("fa_token");
+      this.activeOrgId = window.localStorage.getItem("fa_active_org_id");
     }
   }
 
-  setActiveOrgId(orgId: string | null): void {\n    this.activeOrgId = orgId;\n    if (typeof window !== "undefined") {\n      if (orgId) window.localStorage.setItem("fa_active_org_id", orgId);\n      else window.localStorage.removeItem("fa_active_org_id");\n    }\n  }\n\n  getActiveOrgId(): string | null {\n    return this.activeOrgId;\n  }\n\n  setToken(token: string | null): void {
+  setActiveOrgId(orgId: string | null): void {
+    this.activeOrgId = orgId;
+    if (typeof window !== "undefined") {
+      if (orgId) window.localStorage.setItem("fa_active_org_id", orgId);
+      else window.localStorage.removeItem("fa_active_org_id");
+    }
+  }
+
+  getActiveOrgId(): string | null {
+    return this.activeOrgId;
+  }
+
+  setToken(token: string | null): void {
     this.token = token;
     if (typeof window !== "undefined") {
       if (token) {
@@ -584,8 +598,8 @@ class ApiClient {
     return this.request<User>("/auth/me");
   }
 
-  async getMyOrgMemberships(): Promise<{ memberships: Array<{ orgId: string; orgRole: string; isAdmin: boolean }> }> {
-    return this.request<{ memberships: Array<{ orgId: string; orgRole: string; isAdmin: boolean }> }>("/auth/me/org-memberships");
+  async getMyOrgMemberships(): Promise<{ memberships: Array<{ orgId: string; orgRole: string; isAdmin: boolean; orgName?: string; orgType?: string; isVerified?: boolean; isActive?: boolean }> }> {
+    return this.request<{ memberships: Array<{ orgId: string; orgRole: string; isAdmin: boolean; orgName?: string; orgType?: string; isVerified?: boolean; isActive?: boolean }> }>("/auth/me/org-memberships");
   }
 
   async updateProfilePhoto(profilePhotoUrl: string | null): Promise<User> {
@@ -1436,6 +1450,10 @@ class ApiClient {
     await this.request(`/org/expenses/${id}`, { method: "DELETE" });
   }
 
+  async createWelfareGroup(data: { name: string; groupType: "ngo" | "rescue_collective"; address?: string; city?: string; phone?: string; email?: string; website?: string }): Promise<any> {
+    return this.request<any>("/org/groups", { method: "POST", body: JSON.stringify(data) });
+  }
+
   async listOrgMembers(): Promise<any[]> {
     return this.request<any[]>("/org/members").catch(() => []);
   }
@@ -1465,6 +1483,23 @@ class ApiClient {
 
   async updateOrgSettings(data: Record<string, unknown>): Promise<any> {
     return this.request<any>("/org/settings", { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  async listOrgDonations(month?: string): Promise<any> {
+    const qs = month ? `?month=${encodeURIComponent(month)}` : "";
+    return this.request<any>(`/org/donations${qs}`);
+  }
+
+  async reportOrgDonation(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/donations", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async updateOrgDonationSettings(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/donations", { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  async reviewOrgDonation(data: { donationId: string; status: "VERIFIED" | "REJECTED" | "CANCELLED"; rejectionReason?: string }): Promise<any> {
+    return this.request<any>("/org/donations", { method: "PATCH", body: JSON.stringify(data) });
   }
 
   async listOrgVolunteers(filters?: { available?: boolean; skill?: string }): Promise<any[]> {

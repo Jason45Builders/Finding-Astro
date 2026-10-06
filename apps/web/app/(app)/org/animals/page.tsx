@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 export default function OrgAnimalsPage() {
   const { user } = useAuth();
   const [animals, setAnimals] = useState<Animal[]>([]);
+  const [groupType, setGroupType] = useState<"ngo" | "rescue_collective">("ngo");
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -24,8 +25,12 @@ export default function OrgAnimalsPage() {
     let cancelled = false;
     const load = async () => {
       try {
-        const data = await api.listOrgAnimals(statusFilter ? { status: statusFilter } : undefined);
-        if (!cancelled) setAnimals(data);
+        const [data, memberships] = await Promise.all([api.listOrgAnimals(statusFilter ? { status: statusFilter } : undefined), api.getMyOrgMemberships()]);
+        const active = memberships.memberships.find((membership) => membership.orgId === api.getActiveOrgId());
+        if (!cancelled) {
+          setAnimals(data);
+          setGroupType(active?.orgType === "rescue_collective" ? "rescue_collective" : "ngo");
+        }
       } catch (err: any) {
         console.error("Failed to load org animals", err);
       } finally {
@@ -48,7 +53,7 @@ export default function OrgAnimalsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface">Animals</h1>
-          <p className="text-sm text-on-surface-variant">Animals under your organization&apos;s care</p>
+          <p className="text-sm text-on-surface-variant">{groupType === "rescue_collective" ? "Animals currently being cared for or coordinated by your local rescue collective." : "Animals under your organization&apos;s care."}</p>
         </div>
         <Link href="/animals/new"><Button variant="primary"><Plus className="w-4 h-4 mr-2" />Add Animal</Button></Link>
       </div>
@@ -82,7 +87,7 @@ export default function OrgAnimalsPage() {
 
       {filtered.length === 0 ? (
         <Card className="p-8">
-          <EmptyState icon={PawPrint} title="No animals found" description="Animals assigned to your organization will appear here." />
+          <EmptyState icon={PawPrint} title="No animals found" description={groupType === "rescue_collective" ? "Animals your rescue collective owns or coordinates will appear here." : "Animals assigned to your organization will appear here."} />
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     const { data: memberRows, error: memberError } = await admin
       .from("organization_members")
-      .select("welfare_group_id, org_role, is_active, welfare_org:welfare_orgs!organization_members_welfare_group_id_fkey(id, name, is_verified, is_active)")
+      .select("welfare_group_id, org_role, is_active, welfare_org:welfare_orgs!organization_members_welfare_group_id_fkey(id, name, org_type, is_verified, is_active)")
       .eq("user_id", userId)
       .eq("is_active", true);
 
@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
       orgRole: adminOrgIds.has(row.welfare_group_id) ? "org_admin" : row.org_role,
       isAdmin: adminOrgIds.has(row.welfare_group_id) || row.org_role === "org_admin",
       orgName: row.welfare_org?.name ?? "Organization",
+      orgType: row.welfare_org?.org_type ?? "ngo",
       isVerified: row.welfare_org?.is_verified ?? false,
       isActive: row.welfare_org?.is_active ?? true,
     }));

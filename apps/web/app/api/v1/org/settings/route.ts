@@ -54,6 +54,8 @@ export async function PATCH(req: NextRequest) {
     if (body.upiName !== undefined) allowed.upi_name = body.upiName ? String(body.upiName).trim() : null;
     if (body.paymentEnabled !== undefined) allowed.payment_enabled = Boolean(body.paymentEnabled);
 
+    if (org.groupType === "rescue_collective" && (body.upiId !== undefined || body.upiName !== undefined || body.paymentEnabled !== undefined)) return badRequest("DONATION_SETTINGS_MOVED", "Rescue Collective donation settings are managed by the designated donation admin in the Donations workspace");
+
     if (Object.keys(allowed).length === 0) return badRequest("NO_CHANGES", "No updatable fields provided");
 
     const { data, error } = await supabaseAdmin()

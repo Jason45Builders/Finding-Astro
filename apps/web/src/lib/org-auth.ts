@@ -1,8 +1,16 @@
 import { supabaseAdmin } from "./supabase-admin";
 import { getOrgRolePermissions, hasOrgPermission as roleHasOrgPermission, isOrgRole, type OrgRole } from "./org-permissions";
 
+export const WELFARE_GROUP_TYPES = ["ngo", "rescue_collective"] as const;
+export type WelfareGroupType = (typeof WELFARE_GROUP_TYPES)[number];
+
+export function isWelfareGroupType(value: unknown): value is WelfareGroupType {
+  return typeof value === "string" && (WELFARE_GROUP_TYPES as readonly string[]).includes(value);
+}
+
 export interface OrgContext {
   welfareGroupId: string;
+  groupType: WelfareGroupType;
   orgRole: OrgRole;
   permissions: Record<string, boolean>;
 }
@@ -53,9 +61,20 @@ export async function getOrgContext(userId: string, requestedOrgId?: string | nu
 
   if (!selected || !isOrgRole(selected.org_role)) return null;
 
+  const { data: group, error: groupError } = await admin
+    .from("welfare_orgs")
+    .select("id, org_type, is_active")
+    .eq("id", selected.welfare_group_id)
+    .maybeSingle();
+
+  // Membership alone is not sufficient: the group itself must exist, be active,
+  // and carry one of the supported welfare-group types.
+  if (groupError || !group || !group.is_active || !isWelfareGroupType(group.org_type)) return null;
+
   const orgRole = selected.org_role;
   return {
     welfareGroupId: selected.welfare_group_id,
+    groupType: group.org_type,
     orgRole,
     permissions: getOrgRolePermissions(orgRole),
   };

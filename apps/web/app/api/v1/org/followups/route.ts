@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
         .from("animals")
         .select("id")
         .eq("id", body.animalId)
+        .eq("welfare_group_id", org.welfareGroupId)
         .maybeSingle();
       if (!animalRow) return badRequest("INVALID_ANIMAL", "Animal not found");
     }
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
         .from("adoption_applications")
         .select("id")
         .eq("id", body.adoptionApplicationId)
+        .eq("welfare_group_id", org.welfareGroupId)
         .maybeSingle();
       if (!adoptionRow) return badRequest("INVALID_ADOPTION", "Adoption application not found");
     }
