@@ -9,16 +9,16 @@
 - [x] Initial architecture audit completed
 - [x] Both branches audited for core media parity
 - [x] Supabase storage/schema state audited
-- [ ] Canonical media ledger/schema hardening
-- [ ] Upload validation hardening
-- [ ] Malware scanning behavior hardened
-- [ ] EXIF/privacy handling corrected
-- [ ] Storage visibility/access model corrected
-- [ ] Canonical media API contract implemented
+- [x] Canonical media ledger/schema hardening
+- [x] Upload validation hardening
+- [x] Malware scanning behavior hardened
+- [x] EXIF/privacy handling corrected
+- [x] Storage visibility/access model corrected
+- [x] Canonical media API contract implemented
 - [ ] Case / animal / profile / evidence / document consumers migrated
 - [ ] Attachment + cleanup lifecycle completed
-- [ ] Existing storage objects reconciled into the ledger
-- [ ] Orphan handling reviewed (no blind deletion)
+- [x] Existing storage objects reconciled into the ledger
+- [x] Orphan handling reviewed (no blind deletion)
 - [ ] Regression tests added/passed
 - [ ] Feature branch deployed and verified
 - [ ] Master branch brought to parity
@@ -59,3 +59,13 @@
 ## Completion Gate
 
 This tracker is complete only when the media subsystem is implemented as one coherent path, all known consumers use the canonical contract, both branches are aligned, existing objects are reconciled, and deployed smoke/regression checks pass.
+
+
+### Implementation details
+- New uploads validate `file.size` and file signatures independently of client-reported values.
+- Uploads are ledger-first with compensating cleanup on storage/finalization failure.
+- Canonical response now includes `mediaId`, while legacy URL fields remain compatible.
+- Private-purpose uploads use `finding-astro-private` and authenticated delivery.
+- Existing public media was reconciled into the ledger where a live DB reference established ownership/context.
+- 13 existing public-bucket objects remain intentionally untouched because they are not currently referenced by live URL fields; they are legacy/unmatched objects, not silently deleted.
+- Antivirus failures are represented as `error`; strict rejection can be enabled with `MEDIA_SCAN_REQUIRED=true`. Environments without a configured scanner remain explicitly `unverified` rather than being represented as clean.
