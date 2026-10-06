@@ -71,21 +71,11 @@ export async function POST(req: NextRequest) {
       expensesRes,
       donationsRes,
     ] = await Promise.all([
-      hasMembers
-        ? supabaseAdmin().from("cases").select("id", { count: "exact", head: true }).in("assigned_to_user_id", userIds)
-        : supabaseAdmin().from("cases").select("id", { count: "exact", head: true }).eq("assigned_to_user_id", org.welfareGroupId),
-      hasMembers
-        ? supabaseAdmin().from("animals").select("id", { count: "exact", head: true }).in("caretaker_user_id", userIds)
-        : supabaseAdmin().from("animals").select("id", { count: "exact", head: true }).eq("caretaker_user_id", org.welfareGroupId),
-      hasMembers
-        ? supabaseAdmin().from("animals").select("id", { count: "exact", head: true }).in("caretaker_user_id", userIds).eq("is_sterilized", true)
-        : supabaseAdmin().from("animals").select("id", { count: "exact", head: true }).eq("caretaker_user_id", org.welfareGroupId).eq("is_sterilized", true),
-      hasMembers
-        ? supabaseAdmin().from("vaccinations").select("id", { count: "exact", head: true }).in("administered_by_user_id", userIds)
-        : supabaseAdmin().from("vaccinations").select("id", { count: "exact", head: true }).eq("administered_by_user_id", org.welfareGroupId),
-      hasMembers
-        ? supabaseAdmin().from("adoption_applications").select("id", { count: "exact", head: true }).in("reviewed_by_user_id", userIds).eq("status", "adopted")
-        : supabaseAdmin().from("adoption_applications").select("id", { count: "exact", head: true }).eq("reviewed_by_user_id", org.welfareGroupId).eq("status", "adopted"),
+      supabaseAdmin().from("cases").select("id", { count: "exact", head: true }).eq("welfare_group_id", org.welfareGroupId),
+      supabaseAdmin().from("animals").select("id", { count: "exact", head: true }).eq("welfare_group_id", org.welfareGroupId),
+      supabaseAdmin().from("animals").select("id", { count: "exact", head: true }).eq("welfare_group_id", org.welfareGroupId).eq("is_sterilized", true),
+      supabaseAdmin().from("vaccinations").select("id", { count: "exact", head: true }).eq("welfare_group_id", org.welfareGroupId),
+      supabaseAdmin().from("adoption_applications").select("id", { count: "exact", head: true }).eq("welfare_group_id", org.welfareGroupId).eq("status", "adopted"),
       supabaseAdmin().from("expenses").select("amount").eq("welfare_group_id", org.welfareGroupId).gte("created_at", periodStart).lte("created_at", periodEnd),
       supabaseAdmin().from("welfare_payments").select("amount").eq("welfare_group_id", org.welfareGroupId).eq("status", "VERIFIED").gte("payment_date", periodStart).lte("payment_date", periodEnd),
     ]);
