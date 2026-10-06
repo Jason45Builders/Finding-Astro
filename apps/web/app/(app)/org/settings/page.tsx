@@ -22,7 +22,8 @@ export default function OrgSettingsPage() {
     upiId: string | null;
     upiName: string | null;
     paymentEnabled: boolean;
-    isVerified: boolean;\n    orgType: "ngo" | "rescue_collective";
+    isVerified: boolean;
+    orgType: "ngo" | "rescue_collective";
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -82,7 +83,8 @@ export default function OrgSettingsPage() {
         </div>
       </div>
 
-      <Card className="p-6 space-y-5">\n        <div className="rounded-lg border border-outline-variant p-4 bg-surface-container-low"><p className="text-xs uppercase tracking-wide font-bold text-on-surface-variant">Welfare Group Type</p><p className="font-bold text-on-surface mt-1">{settings.orgType === "rescue_collective" ? "Rescue Collective" : "NGO"}</p><p className="text-xs text-on-surface-variant mt-1">This type is fixed when the group is created.</p></div>
+      <Card className="p-6 space-y-5">
+        <div className="rounded-lg border border-outline-variant p-4 bg-surface-container-low"><p className="text-xs uppercase tracking-wide font-bold text-on-surface-variant">Welfare Group Type</p><p className="font-bold text-on-surface mt-1">{settings.orgType === "rescue_collective" ? "Rescue Collective" : "NGO"}</p><p className="text-xs text-on-surface-variant mt-1">This type is fixed when the group is created.</p></div>
         <div className="space-y-4">
           <div>
             <Label>Organization Name</Label>
