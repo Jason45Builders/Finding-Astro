@@ -503,6 +503,19 @@ The live database currently has RLS enabled on many application tables, but the 
 
 # Change Log
 
+## 2026-10-06 — Heavy Work Block 4
+
+- Audited the remaining NGO operational API surface instead of assuming it was unimplemented.
+- Confirmed campaign, event, expense, shelter, foster, volunteer, task, follow-up, document, report and dashboard reads are NGO-scoped at the application layer.
+- Added dependency ownership checks for follow-ups, foster assignments, task links, case comments and animal documents.
+- Added active-NGO assignee validation for tasks.
+- Corrected dashboard/report analytics to use explicit `welfare_group_id` ownership rather than inferred caretaker/assignee membership.
+- Fixed member self-deactivation/removal checks to compare the target member's `user_id`, not the membership-row ID.
+- Protected organization-document writes with the existing settings permission.
+- Re-ran Supabase security advisors: the remaining finding is the existing 84-table RLS-enabled/no-policy inventory; no additional advisor finding is currently returned.
+- Started a Vercel preview deployment from `feature/ngo-hardening`; it was still queued at the latest check, so build success is not claimed.
+
+
 ## 2026-10-06 — Heavy Work Block 3
 
 - Extended explicit organization ownership into medical history and recovery/foster records.
