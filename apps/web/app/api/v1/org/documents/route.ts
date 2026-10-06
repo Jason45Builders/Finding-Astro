@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { requireOrg, OrgContext } from "@/lib/org-auth";
-import { ok, serverError, badRequest } from "@/lib/api-response";
+import { requireOrg, OrgContext, hasOrgPermission } from "@/lib/org-auth";
+import { ok, serverError, badRequest, forbidden } from "@/lib/api-response";
 import { mapOrganizationDocument } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
@@ -30,6 +30,9 @@ export async function POST(req: NextRequest) {
 
   const org = (authResult as { org: OrgContext }).org;
   const userId = (authResult as { user: { id: string } }).user.id;
+  if (!hasOrgPermission(org.permissions, "settings:write")) {
+    return forbidden("Insufficient permissions");
+  }
 
   try {
     const body = await req.json();
@@ -45,6 +48,7 @@ export async function POST(req: NextRequest) {
         url,
         expiry_date: body.expiryDate ?? null,
         verified: false,
+        uploaded_by: userId,
       })
       .select("*")
       .single();
