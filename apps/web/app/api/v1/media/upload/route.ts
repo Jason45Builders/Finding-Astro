@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
         ? "error"
         : scanResult.clean ? "clean" : "infected";
 
-    if (!scanResult.clean) {
+    if (!scanResult.clean && !isScannerError(scanResult.scanner)) {
       await audit({
         tableName: "media_uploads",
         recordId: "rejected",
