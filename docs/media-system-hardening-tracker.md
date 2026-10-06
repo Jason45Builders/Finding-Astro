@@ -15,14 +15,14 @@
 - [x] EXIF/privacy handling corrected
 - [x] Storage visibility/access model corrected
 - [x] Canonical media API contract implemented
-- [x] Case / animal / profile / evidence / document consumers audited; canonical upload response retained for compatibility and sensitive new purposes routed private
+- [x] Existing media consumers preserved through backward-compatible canonical upload response; new sensitive uploads use private delivery
 - [x] Attachment lifecycle metadata added to ledger; upload records explicit entity context and attachment timestamp where supplied
 - [x] Existing storage objects reconciled into the ledger
 - [x] Orphan handling reviewed (no blind deletion)
 - [x] Regression tests added for metadata sanitization and scanner fail-closed behavior
-- [ ] Feature branch latest hardening commits deployed and verified
-- [ ] Master branch brought to parity
-- [ ] Production/preview smoke verification completed
+- [ ] Feature branch latest hardening commits deployed and verified (Vercel API deployment quota exhausted)
+- [x] Master branch brought to parity via merged PR #1
+- [ ] Production/preview smoke verification completed (latest final commit cannot be deployed until Vercel quota resets)
 
 ## Target Contract
 
