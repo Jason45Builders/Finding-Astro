@@ -53,6 +53,22 @@ export async function POST(req: NextRequest) {
     const title = String(body.title ?? "").trim();
     if (!title) return badRequest("INVALID_BODY", "Title is required");
 
+    if (body.assigneeUserId) {
+      const { data: member } = await supabaseAdmin()
+        .from("organization_members").select("user_id")
+        .eq("welfare_group_id", org.welfareGroupId).eq("user_id", body.assigneeUserId).eq("is_active", true).maybeSingle();
+      if (!member) return badRequest("INVALID_ASSIGNEE", "Assignee is not an active member of this organization");
+    }
+    const [caseRes, animalRes] = await Promise.all([
+      body.caseId ? supabaseAdmin().from("cases").select("id").eq("id", body.caseId).eq("welfare_group_id", org.welfareGroupId).maybeSingle() : Promise.resolve({data:null,error:null}),
+      body.animalId ? supabaseAdmin().from("animals").select("id").eq("id", body.animalId).eq("welfare_group_id", org.welfareGroupId).maybeSingle() : Promise.resolve({data:null,error:null}),
+    ]);
+    if (caseRes.error) return serverError(caseRes.error.message);
+    if (animalRes.error) return serverError(animalRes.error.message);
+    if ((body.caseId && !caseRes.data) || (body.animalId && !animalRes.data)) {
+      return badRequest("INVALID_DEPENDENCY", "Linked case and animal must belong to this organization");
+    }
+
     const priority = body.priority && TASK_PRIORITIES.includes(body.priority) ? body.priority : "medium";
     const status = body.status && TASK_STATUSES.includes(body.status) ? body.status : "pending";
 
