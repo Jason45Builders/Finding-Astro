@@ -167,7 +167,7 @@ export default function OrgSettingsPage() {
         <p className="text-xs text-on-surface-variant mt-2">
           {settings.isVerified
             ? "Your organization has been verified by the platform. Donors will see a verified badge."
-            : "Submit verification documents through the existing NGO verification workflow to unlock verified-organization features."}
+            : settings.orgType === "rescue_collective" ? "This rescue collective can operate while unverified; platform verification is not required for its local operational workspace." : "Submit verification documents through the existing NGO verification workflow to unlock verified-organization features."}
         </p>
       </Card>
     </div>
