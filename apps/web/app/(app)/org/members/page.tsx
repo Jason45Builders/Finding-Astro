@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, Users, Trash2 } from "lucide-react";
+import { Plus, Users, Copy, Check, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { OrganizationMember } from "@/lib/types";
@@ -26,20 +26,20 @@ const ORG_ROLES: { value: OrganizationMember["orgRole"]; label: string }[] = [
 
 export default function OrgMembersPage() {
   const { user } = useAuth();
-  const [members, setMembers] = useState<OrganizationMember[]>([]);
+  const [members, setMembers] = useState<OrganizationMember[]>([]);\n  const [groupType, setGroupType] = useState<"ngo" | "rescue_collective">("ngo");
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
   const [orgRole, setOrgRole] = useState<OrganizationMember["orgRole"]>("volunteer");
   const [submitting, setSubmitting] = useState(false);
-  const [inviteInfo, setInviteInfo] = useState<{ email: string; tempPassword: string; message?: string } | null>(null);
+  const [inviteInfo, setInviteInfo] = useState<{ email: string; acceptPath: string; message?: string } | null>(null);\n  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       try {
-        const data = await api.listOrgMembers();
-        if (!cancelled) setMembers(data);
+        const [data, memberships] = await Promise.all([api.listOrgMembers(), api.getMyOrgMemberships()]);\n        const active = memberships.memberships.find((membership) => membership.orgId === api.getActiveOrgId());
+        if (!cancelled) {\n          setMembers(data);\n          setGroupType(active?.orgType === "rescue_collective" ? "rescue_collective" : "ngo");\n        }
       } catch (err) {
         console.error("Failed to load members", err);
       } finally {
@@ -82,16 +82,16 @@ export default function OrgMembersPage() {
     }
   };
 
-  if (loading) return <PageSpinner />;
+  if (loading) return <PageSpinner />;\n\n  const copyInvite = async () => {\n    if (!inviteInfo) return;\n    await navigator.clipboard.writeText(new URL(inviteInfo.acceptPath, window.location.origin).toString());\n    setCopied(true);\n    window.setTimeout(() => setCopied(false), 1500);\n  };\n\n  const groupLabel = groupType === "rescue_collective" ? "Rescue Collective" : "NGO";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface">Team Members</h1>
-          <p className="text-sm text-on-surface-variant">Manage organization roles and permissions</p>
+          <h1 className="font-headline-lg text-headline-lg text-on-surface">Team Members</h1>\n          <Badge variant="neutral">{groupLabel}</Badge>
+          <p className="text-sm text-on-surface-variant">Manage the people who coordinate this {groupLabel.toLowerCase()} and their organization roles.</p>
         </div>
-        <Button variant="primary" onClick={() => setShowForm(true)}><Plus className="w-4 h-4 mr-2" />Add Member</Button>
+        <Button variant="primary" onClick={() => setShowForm(true)}><Plus className="w-4 h-4 mr-2" />Invite Member</Button>
       </div>
 
       {members.length === 0 ? (
@@ -121,7 +121,7 @@ export default function OrgMembersPage() {
         </div>
       )}
 
-      <Modal open={showForm} onClose={() => setShowForm(false)} title="Add Team Member">
+      <Modal open={showForm} onClose={() => setShowForm(false)} title={"Invite to " + groupLabel}>
         <form onSubmit={handleAdd} className="space-y-4">
           <div>
             <Label>Email</Label>
@@ -135,13 +135,13 @@ export default function OrgMembersPage() {
           </div>
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
-            <Button type="submit" disabled={submitting}>{submitting ? "Adding..." : "Add Member"}</Button>
+            <Button type="submit" disabled={submitting}>{submitting ? "Creating invite..." : "Create Invite"}</Button>
           </div>
         </form>
       </Modal>
 
       {inviteInfo && (
-        <Modal open={!!inviteInfo} onClose={() => setInviteInfo(null)} title="Account Created">
+        <Modal open={!!inviteInfo} onClose={() => setInviteInfo(null)} title="Invitation Ready">
           <div className="space-y-4">
             <p className="text-sm text-on-surface-variant">{inviteInfo.message}</p>
             <div className="bg-surface-container-low rounded-lg p-4 space-y-2">
@@ -154,7 +154,7 @@ export default function OrgMembersPage() {
                 <p className="font-mono text-sm text-on-surface">{inviteInfo.tempPassword}</p>
               </div>
             </div>
-            <p className="text-xs text-on-surface-variant">Share these credentials with the member. They can change the password after logging in.</p>
+            <p className="text-xs text-on-surface-variant">Share this one-time invitation link. It expires after 7 days and the member sets their own password.</p>
             <div className="flex justify-end">
               <Button onClick={() => setInviteInfo(null)}>Done</Button>
             </div>
