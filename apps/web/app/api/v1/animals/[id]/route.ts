@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
+import { requireOrg, hasOrgPermission } from "@/lib/org-auth";
 import { ok, badRequest, serverError, notFound, forbidden } from "@/lib/api-response";
 import { LocationSchema, validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
@@ -54,7 +55,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
   if (!id) return badRequest("VALIDATION_ERROR", "animal id required");
 
-  const { data, error } = await supabaseAdmin().from("animals").select("*").eq("id", id).single();
+  let animalQuery = supabaseAdmin().from("animals").select("*").eq("id", id);
+  if (authResult.user.role === "ngo") {
+    const orgResult = await requireOrg(req);
+    if (orgResult instanceof Response) return orgResult;
+    animalQuery = animalQuery.eq("welfare_group_id", orgResult.org.welfareGroupId);
+  }
+  const { data, error } = await animalQuery.single();
   if (error) return notFound("Animal not found");
 
   const animal = data as Record<string, unknown>;
@@ -93,6 +100,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (!parsed.ok) return parsed.response;
     const body = parsed.data;
 
+    let welfareGroupId: string | null = null;
+    if (authResult.user.role === "ngo") {
+      const orgResult = await requireOrg(req);
+      if (orgResult instanceof Response) return orgResult;
+      if (!hasOrgPermission(orgResult.org.permissions, "animals:write")) return forbidden("Insufficient organization permissions");
+      welfareGroupId = orgResult.org.welfareGroupId;
+    }
+
     const payload: Record<string, unknown> = {
       species: body.species,
       location: `POINT(${body.location.longitude} ${body.location.latitude})`,
@@ -112,6 +127,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       disappearance_risk_level: body.disappearanceRiskLevel ?? "stable",
       vaccination_status: body.vaccinationStatus ?? "unverified",
       created_by_user_id: authResult.user.id,
+      welfare_group_id: welfareGroupId,
       adoptable_since: body.adoptableSince ?? null,
       adoption_notes: body.adoptionNotes ?? null,
       size: body.size ?? null,
@@ -158,7 +174,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   try {
-    const { data: existing, error: fetchError } = await supabaseAdmin().from("animals").select("created_by_user_id").eq("id", id).single();
+    let existingQuery = supabaseAdmin().from("animals").select("created_by_user_id, welfare_group_id, visibility").eq("id", id);
+    let welfareGroupId: string | null = null;
+    if (authResult.user.role === "ngo") {
+      const orgResult = await requireOrg(req);
+      if (orgResult instanceof Response) return orgResult;
+      if (!hasOrgPermission(orgResult.org.permissions, "animals:write")) return forbidden("Insufficient organization permissions");
+      welfareGroupId = orgResult.org.welfareGroupId;
+      existingQuery = existingQuery.eq("welfare_group_id", welfareGroupId);
+    }
+    const { data: existing, error: fetchError } = await existingQuery.single();
     if (fetchError || !existing) return notFound("Animal not found");
 
     const isStaff = ["admin", "govt", "ngo", "hospital"].includes(authResult.user.role);
@@ -196,7 +221,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
     update.updated_at = new Date().toISOString();
 
-    const { data: updateData, error: updateError } = await supabaseAdmin().from("animals").update(update).eq("id", id).select("*").single();
+    let updateQuery = supabaseAdmin().from("animals").update(update).eq("id", id);
+    if (welfareGroupId) updateQuery = updateQuery.eq("welfare_group_id", welfareGroupId);
+    const { data: updateData, error: updateError } = await updateQuery.select("*").single();
     if (updateError) return serverError(updateError.message);
     if (updateData) {
       await audit({ tableName: "animals", recordId: id, action: "UPDATE", actorId: authResult.user.id, actorRole: authResult.user.role, newData: updateData });
