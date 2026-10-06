@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireOrg, OrgContext, hasOrgPermission } from "@/lib/org-auth";
 import { ok, serverError, badRequest, forbidden, notFound } from "@/lib/api-response";
-import { mapOrganizationMember } from "@/lib/types";\nimport { ORG_ROLES, getOrgRolePermissions, isOrgRole } from "@/lib/org-permissions";
+import { mapOrganizationMember } from "@/lib/types";\nimport { getOrgRolePermissions, isOrgRole } from "@/lib/org-permissions";
 
 const ORG_ROLES = ["org_admin", "rescue_coordinator", "medical_coordinator", "adoption_coordinator", "finance", "volunteer", "vet", "foster"] as const;
 
