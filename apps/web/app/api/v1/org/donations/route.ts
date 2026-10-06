@@ -215,6 +215,60 @@ export async function PATCH(req: NextRequest) {
     const { data: settings, error: settingsError } = await loadSettings(admin, org.welfareGroupId);
     if (settingsError) return serverError(settingsError.message);
 
+    if (body.donationId) {
+      if (!settings || settings.donation_admin_user_id !== user.id) {
+        return forbidden("Only the designated donation admin can verify or reject donations");
+      }
+      const donationId = String(body.donationId);
+      const nextStatus = String(body.status ?? "");
+      if (!["VERIFIED", "REJECTED", "CANCELLED"].includes(nextStatus)) {
+        return badRequest("INVALID_STATUS", "Donation status must be VERIFIED, REJECTED, or CANCELLED");
+      }
+
+      const { data: current, error: currentError } = await admin
+        .from("welfare_payments")
+        .select("id, status")
+        .eq("id", donationId)
+        .eq("welfare_group_id", org.welfareGroupId)
+        .maybeSingle();
+      if (currentError) return serverError(currentError.message);
+      if (!current) return new Response(JSON.stringify({ success: false, code: "NOT_FOUND", message: "Donation not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
+      if (current.status !== "PENDING") return badRequest("INVALID_STATUS", "Only pending donations can be reviewed");
+
+      const rejectionReason = nextStatus === "REJECTED"
+        ? String(body.rejectionReason ?? "").trim().slice(0, 500) || "Donation could not be verified"
+        : null;
+
+      const { data: updated, error: updateError } = await admin
+        .from("welfare_payments")
+        .update({
+          status: nextStatus,
+          verified_by: user.id,
+          verified_at: new Date().toISOString(),
+          rejection_reason: rejectionReason,
+        })
+        .eq("id", donationId)
+        .eq("welfare_group_id", org.welfareGroupId)
+        .eq("status", "PENDING")
+        .select("id, welfare_group_id, donor_id, amount, currency, utr, payment_date, purpose, note, proof_url, status, verified_by, verified_at, rejection_reason, receipt_number, donor_name, is_anonymous, created_at, updated_at")
+        .maybeSingle();
+
+      if (updateError) return serverError(updateError.message);
+      if (!updated) return badRequest("REVIEW_CONFLICT", "Donation was already reviewed");
+
+      await admin.from("welfare_payment_events").insert({
+        welfare_payment_id: donationId,
+        event_type: nextStatus === "VERIFIED" ? "DONATION_VERIFIED" : "DONATION_REJECTED",
+        actor_id: user.id,
+        actor_role: "donation_admin",
+        notes: rejectionReason,
+        old_status: "PENDING",
+        new_status: nextStatus,
+      });
+
+      return ok(updated, `Donation ${nextStatus.toLowerCase()}`);
+    }
+
     const existing = settings;
     const upiId = body.upiId === undefined ? existing?.upi_id : String(body.upiId).trim();
     const upiName = body.upiName === undefined ? existing?.upi_name : (body.upiName ? String(body.upiName).trim() : null);
