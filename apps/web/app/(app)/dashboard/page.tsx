@@ -10,6 +10,7 @@ import {
   MapPin,
   ChevronRight,
   Heart,
+  HeartHandshake,
   Camera,
   RefreshCw
 } from "lucide-react";
@@ -288,7 +289,27 @@ export default function UserDashboard() {
         </Link>
       </div>
 
-      {/* 3. Impact Summary */}
+      {/* 3. Community Rescue */}
+      <Card className="p-5 sm:p-6 border-primary/20 bg-primary/5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
+              <HeartHandshake className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-title-md text-title-md text-on-surface">Start a local rescue team</h2>
+              <p className="text-sm text-on-surface-variant mt-1 max-w-2xl">
+                Bring rescuers in your area together in a shared Rescue Collective. You can start one as a citizen — no registered NGO is required.
+              </p>
+            </div>
+          </div>
+          <Link href="/community/rescue-collective/create" className="shrink-0">
+            <Button variant="primary">Start a Rescue Collective</Button>
+          </Link>
+        </div>
+      </Card>
+
+      {/* 4. Impact Summary */}
       <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-4 sm:p-6">
         <h2 className="font-title-md text-title-md text-on-surface mb-4">Your Impact</h2>
         <div className="grid grid-cols-3 gap-3 sm:gap-6">
@@ -307,7 +328,7 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      {/* 4. Main Content: Recent Cases + Strays Nearby */}
+      {/* 5. Main Content: Recent Cases + Strays Nearby */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         {/* Recent Cases */}
         <Card className="p-4 sm:p-6 lg:col-span-7">
@@ -387,7 +408,7 @@ export default function UserDashboard() {
         </Card>
       </div>
 
-      {/* 5. Quote + Footer Banner */}
+      {/* 6. Quote + Footer Banner */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl">
         <img src="/Finding Astro_Footer.png" alt="Community" className="w-full h-48 sm:h-64 lg:h-72 object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
