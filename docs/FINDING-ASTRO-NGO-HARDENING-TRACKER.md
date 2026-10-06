@@ -4,7 +4,7 @@
 **Repository:** `Jason45Builders/Finding-Astro`  
 **Branch:** `feature/ngo-hardening`  
 **Program status:** 🟡 IN PROGRESS  
-**Last updated:** 2026-10-06 — Heavy Work Block 2
+**Last updated:** 2026-10-06 — Heavy Work Block 3
 
 ---
 
@@ -30,13 +30,13 @@
 | 4 | Invitations & Member Lifecycle | 🟡 | One-time hashed invitation, expiry, acceptance, revoke, and member-list endpoints implemented; notifications/resend/suspend/leave still pending |
 | 5 | Member Administration & Privilege Security | 🟡 | Server-derived permissions and final-admin/self-deactivation protections implemented; full hierarchy/audit tests pending |
 | 6 | Case & Rescue Coordination | 🟡 | NGO case ownership column + scoped list/create/detail/update implemented; assignment/comment/isolation regression suite pending |
-| 7 | Animals & Medical | 🟡 | NGO animal ownership column + scoped core animal API implemented; medical ownership/routes still pending |
-| 8 | Volunteers, Foster & Tasks | ⬜ | Pending |
+| 7 | Animals & Medical | 🟢 | Explicit animal ownership plus scoped animal detail, medical history, and vaccination APIs implemented; full document/medical regression suite pending |
+| 8 | Volunteers, Foster & Tasks | 🟡 | Recovery/foster records now carry NGO ownership and NGO writes are scoped; broader volunteer/task endpoint audit pending |
 | 9 | Adoption & Follow-Ups | 🟡 | Adoption ownership is linked to animal organization and NGO review/mark-adoptable paths are scoped; full follow-up isolation pending |
 | 10 | Finance, Campaigns, Events & Shelters | ⬜ | Pending |
 | 11 | Documents, Reports & Notifications | ⬜ | Pending |
 | 12 | Audit Trail | ⬜ | Pending |
-| 13 | Supabase Security | ⬜ | Pending |
+| 13 | Supabase Security | 🟡 | Removed public execution of custom RLS auto-enable function, hardened security-definer view, fixed mutable search paths; broad RLS policy design and PostGIS exposure remain pending |
 | 14 | Cross-Platform Coordination | ⬜ | Pending |
 | 15 | Pawstice End-to-End Simulation | ⬜ | Pending |
 | 16 | Production Hardening | ⬜ | Pending |
@@ -251,10 +251,10 @@
 - [x] Animal access matrix.
 - [ ] Animal assignments.
 - [ ] Case linkage.
-- [ ] Medical linkage.
+- [x] Medical linkage.
 - [ ] Vet permissions.
 - [ ] Medical coordinator permissions.
-- [ ] Medical records.
+- [x] Medical records.
 - [ ] Medical documents.
 - [ ] Medical follow-ups.
 - [ ] Cross-NGO tests.
@@ -502,6 +502,18 @@ The live database currently has RLS enabled on many application tables, but the 
 ---
 
 # Change Log
+
+## 2026-10-06 — Heavy Work Block 3
+
+- Extended explicit organization ownership into medical history and recovery/foster records.
+- Scoped animal detail, medical-history, and vaccination APIs to the active NGO.
+- Enforced medical permission for NGO medical writes and blocked cross-organization case references.
+- Scoped recovery/foster reads and writes to active NGO ownership and validated linked animal ownership.
+- Hardened the `ward_animal_summary` view with `security_invoker`.
+- Removed public execution of the custom `rls_auto_enable()` SECURITY DEFINER function.
+- Fixed mutable `search_path` on two trigger functions.
+- Re-ran Supabase security advisors; remaining baseline items include 84 RLS-no-policy findings, `spatial_ref_sys` RLS disabled, public PostGIS extension, and three PostGIS `st_estimatedextent` SECURITY DEFINER functions whose extension-managed grants remain unresolved.
+
 
 ## 2026-10-06 — Heavy Work Block 2
 
