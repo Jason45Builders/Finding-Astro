@@ -193,6 +193,29 @@ export default function OrgDonationsPage() {
               <p className="text-center text-xs text-on-surface-variant mt-3">UPI ID: <strong>{data.settings.upiId}</strong></p>
               {data.settings.upiName && <p className="text-center text-xs text-on-surface-variant">{data.settings.upiName}</p>}
               <Button className="w-full mt-4" variant="outline" onClick={() => upiUri && (window.location.href = upiUri)} disabled={!upiUri || !data.settings.donationsEnabled}>Open UPI App</Button>
+              <a
+                href={`/donate/${data.collectiveId || data.settings.welfareGroupId || ""}`}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 flex items-center justify-center rounded-lg border border-primary px-4 py-2 text-sm font-bold text-primary hover:bg-primary/5 transition-colors"
+              >
+                Open public donation page
+              </a>
+              <button
+                type="button"
+                className="w-full mt-3 text-xs font-bold text-primary hover:underline"
+                onClick={async () => {
+                  try {
+                    const url = `${window.location.origin}/donate/${data.collectiveId || data.settings.welfareGroupId || ""}`;
+                    await navigator.clipboard.writeText(url);
+                    setMessage("Public donation link copied. Paste it into WhatsApp.");
+                  } catch {
+                    setMessage("Copy was blocked by your browser.");
+                  }
+                }}
+              >
+                Copy WhatsApp donation link
+              </button>
               <p className="text-[11px] text-on-surface-variant mt-3">Scan with your UPI app, complete the bank payment, then tap “I Paid This Month” and enter the transaction reference.</p>
               <div className="mt-4 rounded-lg bg-surface-container-low p-3 text-[11px] text-on-surface-variant">
                 <strong className="text-on-surface">Collection admin:</strong> {data.settings.donationAdminName || "Designated admin"}
