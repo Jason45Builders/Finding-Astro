@@ -1485,6 +1485,23 @@ class ApiClient {
     return this.request<any>("/org/settings", { method: "PATCH", body: JSON.stringify(data) });
   }
 
+  async listOrgDonations(month?: string): Promise<any> {
+    const qs = month ? `?month=${encodeURIComponent(month)}` : "";
+    return this.request<any>(`/org/donations${qs}`);
+  }
+
+  async reportOrgDonation(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/donations", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async updateOrgDonationSettings(data: Record<string, unknown>): Promise<any> {
+    return this.request<any>("/org/donations", { method: "PATCH", body: JSON.stringify(data) });
+  }
+
+  async reviewOrgDonation(data: { donationId: string; status: "VERIFIED" | "REJECTED" | "CANCELLED"; rejectionReason?: string }): Promise<any> {
+    return this.request<any>("/org/donations", { method: "PATCH", body: JSON.stringify(data) });
+  }
+
   async listOrgVolunteers(filters?: { available?: boolean; skill?: string }): Promise<any[]> {
     const sp = new URLSearchParams();
     if (filters?.available) sp.append("available", "true");
