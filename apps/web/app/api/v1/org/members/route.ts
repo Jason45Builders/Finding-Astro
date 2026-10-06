@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
     return ok({
       invitation,
       acceptToken: token,
-      acceptPath: `/api/v1/org/invitations/accept?token=${encodeURIComponent(token)}`,
+      acceptPath: `/org/invitations/accept?token=${encodeURIComponent(token)}`,
     }, "Invitation created");
   } catch {
     return serverError();
