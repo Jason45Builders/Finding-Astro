@@ -1,10 +1,45 @@
+# Welfare Group Feature — Block 1
+
+**Status:** 🟢 COMPLETE
+
+Block 1 extends the existing `welfare_orgs` + `organization_members` architecture. It does **not** introduce a second organization hierarchy.
+
+### Completed
+
+- [x] Reuse `welfare_orgs` as the common Welfare Group parent.
+- [x] Use existing `welfare_orgs.org_type` as the canonical group-type discriminator.
+- [x] Restrict group type to `ngo` or `rescue_collective`.
+- [x] Preserve all existing organizations as `ngo`.
+- [x] Keep the existing organization membership and role model unchanged.
+- [x] Extend the server-derived organization context with `groupType`.
+- [x] Require the selected welfare group itself to exist and be active during authorization.
+- [x] Reject unsupported/invalid group types at the authorization boundary.
+- [x] Preserve explicit multi-group selection through `X-Finding-Astro-Org-Id`.
+- [x] Add the schema migration and index for group-type queries.
+- [x] Verify the live database accepts both supported group types and retains legacy NGO rows.
+
+### Block 1 verification
+
+- Live `welfare_orgs` currently contains 6 groups; all existing rows are `ngo`.
+- `org_type` is now non-null with default `ngo`.
+- Database check constraint allows only `ngo` and `rescue_collective`.
+- Existing `organization_members` uniqueness remains `(welfare_group_id, user_id)`.
+- Authorization now checks membership **and** group existence/activity/type.
+- No second parent organization table was introduced.
+
+### Block 1 exit decision
+
+**Complete.** Block 2 can build Rescue Collective onboarding/admin UX on top of the existing architecture.
+
+---
+
 # Finding Astro — NGO Hardening Progress Tracker
 
 **Specification:** `docs/FINDING-ASTRO-NGO-HARDENING-SPEC.md`  
 **Repository:** `Jason45Builders/Finding-Astro`  
 **Branch:** `feature/ngo-hardening`  
 **Program status:** 🟡 IN PROGRESS  
-**Last updated:** 2026-10-06 — Heavy Work Block 3
+**Last updated:** 2026-10-06 — Welfare Group Feature Block 1
 
 ---
 
