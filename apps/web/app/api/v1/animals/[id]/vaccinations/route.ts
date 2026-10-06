@@ -31,8 +31,8 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{id:string}>
   let orgId:string|null=null;
   if(authResult.user.role==="ngo"){const o=await requireOrg(req);if(o instanceof Response)return o;if(!hasOrgPermission(o.org.permissions,"medical:write"))return forbidden("Insufficient organization permissions");orgId=o.org.welfareGroupId;}
   if(!["admin","govt","ngo","hospital"].includes(authResult.user.role))return forbidden("Only staff can create vaccination records");
-  const ip=getClientIp(req),ua=req.headers.get("user-agent")??"unknown"; const rate=await checkRateLimit(\`vaccination:\${authResult.user.id}:\${ip}\`,ua);
-  if(!rate.allowed)return new Response(JSON.stringify({success:false,code:"RATE_LIMITED",message:\`Too many requests. Retry after \${rate.retryAfter}s\`}),{status:429,headers:{"Content-Type":"application/json","Retry-After":String(rate.retryAfter)}});
+  const ip=getClientIp(req),ua=req.headers.get("user-agent")??"unknown"; const rate=await checkRateLimit(`vaccination:${authResult.user.id}:${ip}`,ua);
+  if(!rate.allowed)return new Response(JSON.stringify({success:false,code:"RATE_LIMITED",message:`Too many requests. Retry after ${rate.retryAfter}s`}),{status:429,headers:{"Content-Type":"application/json","Retry-After":String(rate.retryAfter)}});
   try{
     let aq=supabaseAdmin().from("animals").select("id,welfare_group_id").eq("id",id); if(orgId)aq=aq.eq("welfare_group_id",orgId);
     const {data:animal}=await aq.maybeSingle(); if(!animal)return notFound("Animal not found in the active organization");
