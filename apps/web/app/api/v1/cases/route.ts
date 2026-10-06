@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
     if (animalId) query = query.eq("animal_id", animalId);
 
     if (!["admin", "govt", "ngo"].includes(authResult.user.role) && status !== "open") {
-      query = query.or(\`status.eq.open,reporter_user_id.eq.\${authResult.user.id},assigned_to_user_id.eq.\${authResult.user.id}\`);
+      query = query.or(`status.eq.open,reporter_user_id.eq.${authResult.user.id},assigned_to_user_id.eq.${authResult.user.id}`);
     } else if (!includeBanned) {
       const { data: bannedUsers } = await supabaseAdmin().from("users").select("id").eq("is_banned", true).limit(500);
       const bannedIds = (bannedUsers ?? []).map((u: Record<string, unknown>) => u.id as string);
@@ -83,8 +83,8 @@ export async function POST(req: NextRequest) {
 
   const ip = getClientIp(req);
   const userAgent = req.headers.get("user-agent") ?? "unknown";
-  const rate = await checkRateLimit(\`case-create:\${authResult.user.id}:\${ip}\`, userAgent);
-  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: \`Too many requests. Retry after \${rate.retryAfter}s\` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  const rate = await checkRateLimit(`case-create:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
 
   const url = new URL(req.url);
   const pathParts = url.pathname.replace(/\/api\/v1\//, "").split("/");
@@ -103,8 +103,8 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCase(req: NextRequest, user: AuthenticatedUser, caseType: string, welfareGroupId: string | null) {
-  if (TIER_REQUIREMENTS[\`\${caseType}_report\`]) {
-    try { requireTier(user, TIER_REQUIREMENTS[\`\${caseType}_report\`]!); }
+  if (TIER_REQUIREMENTS[`${caseType}_report`]) {
+    try { requireTier(user, TIER_REQUIREMENTS[`${caseType}_report`]!); }
     catch (e) {
       if (e instanceof Error) return new NextResponse(JSON.stringify({ success: false, code: "IDENTITY_TIER_REQUIRED", message: e.message.replace("IDENTITY_TIER_REQUIRED: ", "") }), { status: 403, headers: { "Content-Type": "application/json" } });
     }
@@ -133,10 +133,10 @@ async function createCaseRecord(req: NextRequest, user: AuthenticatedUser, caseT
     case_type: caseType,
     status: caseType === "rescue" ? "open" : "in_review",
     priority: priority ?? "medium",
-    title: title ?? \`\${caseType} case\`,
+    title: title ?? `${caseType} case`,
     description,
     location_text: locationText ?? null,
-    location: \`POINT(\${location.longitude} \${location.latitude})\`,
+    location: `POINT(${location.longitude} ${location.latitude})`,
     evidence_urls: evidenceUrls ?? [],
     animal_id: animalId ?? null,
     reporter_user_id: user.id,
