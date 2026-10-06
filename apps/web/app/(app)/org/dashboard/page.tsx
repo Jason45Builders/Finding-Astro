@@ -72,6 +72,9 @@ export default function OrgDashboardPage() {
 
   if (loading) return <PageSpinner />;
 
+  const isCollective = groupType === "rescue_collective";
+  const groupLabel = isCollective ? "Rescue Collective" : "NGO";
+
   if (error || !stats) {
     return (
       <div className="max-w-2xl mx-auto py-12">
