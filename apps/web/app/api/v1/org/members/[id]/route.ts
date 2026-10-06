@@ -58,7 +58,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       if (typeof body.isActive !== "boolean") {
         return badRequest("INVALID_STATUS", "isActive must be a boolean");
       }
-      if (id === actorId && body.isActive === false) {
+      if (existing.user_id === actorId && body.isActive === false) {
         return forbidden("You cannot deactivate your own organization membership");
       }
 
@@ -111,14 +111,14 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   try {
     const { data: target, error: targetError } = await supabaseAdmin()
       .from("organization_members")
-      .select("org_role, is_active")
+      .select("user_id, org_role, is_active")
       .eq("id", id)
       .eq("welfare_group_id", org.welfareGroupId)
       .maybeSingle();
 
     if (targetError) return serverError(targetError.message);
     if (!target) return notFound("Member not found");
-    if (id === actorId) return forbidden("Leave the organization through the membership workflow instead of deleting your own membership");
+    if (target.user_id === actorId) return forbidden("Leave the organization through the membership workflow instead of deleting your own membership");
 
     if (target.org_role === "org_admin" && target.is_active) {
       const { count } = await supabaseAdmin()
