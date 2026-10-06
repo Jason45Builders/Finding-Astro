@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   try {
     const { data, error } = await supabaseAdmin()
       .from("organization_members")
-      .select(\`*, user:users!organization_members_user_id_fkey (id, full_name, email)\`)
+      .select(`*, user:users!organization_members_user_id_fkey (id, full_name, email)`)
       .eq("welfare_group_id", org.welfareGroupId)
       .order("created_at", { ascending: false });
 
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
     return ok({
       invitation,
       acceptToken: token,
-      acceptPath: \`/api/v1/org/invitations/accept?token=\${encodeURIComponent(token)}\`,
+      acceptPath: `/api/v1/org/invitations/accept?token=${encodeURIComponent(token)}`,
     }, "Invitation created");
   } catch {
     return serverError();
