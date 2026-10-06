@@ -598,8 +598,8 @@ class ApiClient {
     return this.request<User>("/auth/me");
   }
 
-  async getMyOrgMemberships(): Promise<{ memberships: Array<{ orgId: string; orgRole: string; isAdmin: boolean; orgName?: string; isVerified?: boolean; isActive?: boolean }> }> {
-    return this.request<{ memberships: Array<{ orgId: string; orgRole: string; isAdmin: boolean; orgName?: string; isVerified?: boolean; isActive?: boolean }> }>("/auth/me/org-memberships");
+  async getMyOrgMemberships(): Promise<{ memberships: Array<{ orgId: string; orgRole: string; isAdmin: boolean; orgName?: string; orgType?: string; isVerified?: boolean; isActive?: boolean }> }> {
+    return this.request<{ memberships: Array<{ orgId: string; orgRole: string; isAdmin: boolean; orgName?: string; orgType?: string; isVerified?: boolean; isActive?: boolean }> }>("/auth/me/org-memberships");
   }
 
   async updateProfilePhoto(profilePhotoUrl: string | null): Promise<User> {
@@ -1448,6 +1448,10 @@ class ApiClient {
 
   async deleteOrgExpense(id: string): Promise<void> {
     await this.request(`/org/expenses/${id}`, { method: "DELETE" });
+  }
+
+  async createWelfareGroup(data: { name: string; groupType: "ngo" | "rescue_collective"; address?: string; city?: string; phone?: string; email?: string; website?: string }): Promise<any> {
+    return this.request<any>("/org/groups", { method: "POST", body: JSON.stringify(data) });
   }
 
   async listOrgMembers(): Promise<any[]> {

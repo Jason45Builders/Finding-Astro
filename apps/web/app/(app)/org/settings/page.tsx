@@ -22,7 +22,7 @@ export default function OrgSettingsPage() {
     upiId: string | null;
     upiName: string | null;
     paymentEnabled: boolean;
-    isVerified: boolean;
+    isVerified: boolean;\n    orgType: "ngo" | "rescue_collective";
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -78,7 +78,7 @@ export default function OrgSettingsPage() {
         <Settings className="w-8 h-8 text-primary" />
         <div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface">Organization Settings</h1>
-          <p className="text-sm text-on-surface-variant">Manage your organization profile and donation settings</p>
+          <p className="text-sm text-on-surface-variant">Manage your welfare group profile and donation settings</p>
         </div>
       </div>
 

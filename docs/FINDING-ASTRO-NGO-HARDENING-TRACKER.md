@@ -1,3 +1,42 @@
+# Welfare Group Feature — Block 2
+
+**Status:** 🟢 COMPLETE
+
+Block 2 adds the Rescue Collective onboarding and administration path on top of the existing welfare-group architecture. NGO creation remains on the existing NGO verification workflow.
+
+### Completed
+
+- [x] Authenticated user can create a local Rescue Collective.
+- [x] Rescue Collective creation is explicitly constrained to `org_type = rescue_collective`.
+- [x] Creator automatically becomes the first `org_admin`.
+- [x] Creator receives server-derived wildcard organization permissions.
+- [x] Rescue Collective starts unverified but operational.
+- [x] Existing NGO verification flow is not bypassed by the new Rescue Collective creation path.
+- [x] Rescue Collective membership is visible through the existing multi-group membership endpoint.
+- [x] Membership payload now includes group type.
+- [x] Organization workspace no longer requires the global platform role `ngo`; authenticated users with an active organization membership can use the workspace.
+- [x] No-membership workspace state now offers direct Rescue Collective creation.
+- [x] Active group selection continues through the existing `fa_active_org_id` / `X-Finding-Astro-Org-Id` path.
+- [x] Settings displays the immutable welfare-group type.
+- [x] Existing invitation/member/role administration remains reusable without a Rescue Collective-specific fork.
+- [x] Creation endpoint includes CSRF protection and rate limiting.
+- [x] Creation failure rolls back the newly created group if membership creation fails.
+- [x] Legacy `welfare_org_admins` compatibility is preserved for the creator.
+
+### Block 2 verification
+
+- Live database constraint accepts `rescue_collective`.
+- No new schema/table hierarchy was introduced.
+- Rescue Collective creation uses the existing `welfare_orgs`, `organization_members`, and `welfare_org_admins` structures.
+- Rescue Collective members remain ordinary platform users; organization authorization is determined by organization membership and role, not by globally changing their platform role.
+- NGO onboarding remains separate and is not accidentally converted into unverified immediate NGO creation.
+
+### Block 2 exit decision
+
+**Complete.** Block 3 can focus on adapting the operational workspace UX and workflows specifically for local rescue collectives, followed by the combined security/stress acceptance work.
+
+---
+
 # Welfare Group Feature — Block 1
 
 **Status:** 🟢 COMPLETE
@@ -39,7 +78,7 @@ Block 1 extends the existing `welfare_orgs` + `organization_members` architectur
 **Repository:** `Jason45Builders/Finding-Astro`  
 **Branch:** `feature/ngo-hardening`  
 **Program status:** 🟡 IN PROGRESS  
-**Last updated:** 2026-10-06 — Welfare Group Feature Block 1
+**Last updated:** 2026-10-06 — Welfare Group Feature Block 2
 
 ---
 
