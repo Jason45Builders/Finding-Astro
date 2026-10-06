@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
   if (authResult instanceof Response) return authResult;
 
   const org = (authResult as { org: OrgContext }).org;
-  const userId = (authResult as { user: { id: string } }).user.id;
   if (!hasOrgPermission(org.permissions, "settings:write")) {
     return forbidden("Insufficient permissions");
   }
@@ -48,7 +47,6 @@ export async function POST(req: NextRequest) {
         url,
         expiry_date: body.expiryDate ?? null,
         verified: false,
-        uploaded_by: userId,
       })
       .select("*")
       .single();
