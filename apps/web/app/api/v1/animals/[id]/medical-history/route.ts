@@ -60,8 +60,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!privileged.includes(authResult.user.role)) return forbidden("Only staff can create medical records");
 
   const ip = getClientIp(req), userAgent = req.headers.get("user-agent") ?? "unknown";
-  const rate = await checkRateLimit(\`medical-record:\${authResult.user.id}:\${ip}\`, userAgent);
-  if (!rate.allowed) return new Response(JSON.stringify({ success:false, code:"RATE_LIMITED", message:\`Too many requests. Retry after \${rate.retryAfter}s\` }), { status:429, headers:{"Content-Type":"application/json","Retry-After":String(rate.retryAfter)} });
+  const rate = await checkRateLimit(`medical-record:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) return new Response(JSON.stringify({ success:false, code:"RATE_LIMITED", message:`Too many requests. Retry after ${rate.retryAfter}s` }), { status:429, headers:{"Content-Type":"application/json","Retry-After":String(rate.retryAfter)} });
 
   try {
     let animalQuery = supabaseAdmin().from("animals").select("id, welfare_group_id").eq("id", id);
