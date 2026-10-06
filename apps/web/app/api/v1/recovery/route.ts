@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware, requireCsrf } from "@/lib/auth-middleware";
+import { requireOrg, hasOrgPermission } from "@/lib/org-auth";
 import { ok, badRequest, serverError } from "@/lib/api-response";
 import { validateBody } from "@/lib/validation";
 import { audit } from "@/lib/audit";
@@ -26,10 +27,17 @@ export async function GET(req: NextRequest) {
 
   const url = new URL(req.url);
   const caseId = url.searchParams.get("caseId");
+  let welfareGroupId: string | null = null;
+  if (authResult.user.role === "ngo") {
+    const orgResult = await requireOrg(req);
+    if (orgResult instanceof Response) return orgResult;
+    welfareGroupId = orgResult.org.welfareGroupId;
+  }
   const providerType = url.searchParams.get("providerType");
 
   let query = supabaseAdmin().from("recovery_funding").select("*").order("created_at", { ascending: false });
   if (caseId) query = query.eq("case_id", caseId);
+  if (welfareGroupId) query = query.eq("welfare_group_id", welfareGroupId);
   if (providerType) query = query.eq("provider_type", providerType);
 
   const { data, error } = await query;
@@ -56,9 +64,18 @@ export async function POST(req: NextRequest) {
     if (!parsed.ok) return parsed.response;
     const { caseId, animalId, providerName, providerType, dailyCostInr, startDate, endDate, totalRaised, status } = parsed.data;
 
+    let welfareGroupId: string | null = null;
+    if (authResult.user.role === "ngo") {
+      const orgResult = await requireOrg(req);
+      if (orgResult instanceof Response) return orgResult;
+      if (!hasOrgPermission(orgResult.org.permissions, "foster:write")) return new Response(JSON.stringify({ success:false, code:"FORBIDDEN", message:"Insufficient organization permissions" }), {status:403,headers:{"Content-Type":"application/json"}});
+      welfareGroupId = orgResult.org.welfareGroupId;
+    }
     const isStaff = ["admin", "govt", "ngo", "hospital"].includes(authResult.user.role);
     if (!isStaff) {
-      const { data: caseRecord, error: caseError } = await supabaseAdmin().from("cases").select("reporter_user_id, assigned_to_user_id").eq("id", caseId).single();
+      let caseQuery = supabaseAdmin().from("cases").select("reporter_user_id, assigned_to_user_id, welfare_group_id").eq("id", caseId);
+      if (welfareGroupId) caseQuery = caseQuery.eq("welfare_group_id", welfareGroupId);
+      const { data: caseRecord, error: caseError } = await caseQuery.single();
       if (caseError || !caseRecord) return badRequest("CASE_NOT_FOUND", "Case not found");
       const caseRow = caseRecord as Record<string, unknown>;
       const isReporter = caseRow.reporter_user_id === authResult.user.id;
@@ -66,8 +83,15 @@ export async function POST(req: NextRequest) {
       if (!isReporter && !isAssigned) return badRequest("FORBIDDEN", "You can only create recovery funding for cases you reported or are assigned to");
     }
 
+    if (animalId) {
+      let animalQuery = supabaseAdmin().from("animals").select("id, welfare_group_id").eq("id", animalId);
+      if (welfareGroupId) animalQuery = animalQuery.eq("welfare_group_id", welfareGroupId);
+      const { data: animal } = await animalQuery.maybeSingle();
+      if (!animal) return badRequest("CROSS_ORG_REFERENCE", "The animal does not belong to the active organization");
+    }
     const { data, error } = await supabaseAdmin().from("recovery_funding").insert({
       case_id: caseId,
+      welfare_group_id: welfareGroupId,
       animal_id: animalId ?? null,
       provider_name: providerName ?? null,
       provider_type: providerType,
