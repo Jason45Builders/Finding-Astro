@@ -14,10 +14,10 @@ from public.cases c where rf.welfare_group_id is null and rf.case_id = c.id and 
 
 alter view public.ward_animal_summary set (security_invoker = true);
 
-revoke execute on function public.rls_auto_enable() from anon, authenticated;
-revoke execute on function public.st_estimatedextent(text,text) from anon, authenticated;
-revoke execute on function public.st_estimatedextent(text,text,text) from anon, authenticated;
-revoke execute on function public.st_estimatedextent(text,text,text,boolean) from anon, authenticated;
+revoke execute on function public.rls_auto_enable() from public;
+revoke execute on function public.st_estimatedextent(text,text) from public;
+revoke execute on function public.st_estimatedextent(text,text,text) from public;
+revoke execute on function public.st_estimatedextent(text,text,text,boolean) from public;
 
 alter function public.update_updated_at_column() set search_path = public, pg_catalog;
 alter function public.update_welfare_payments_updated_at() set search_path = public, pg_catalog;
