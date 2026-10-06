@@ -11,7 +11,7 @@ import {
   Radio, Users as UsersIcon, ClipboardList, DollarSign, UserCheck,
   MoreHorizontal, Store, MessageSquare, Ambulance,
   PawPrint, Calendar, Activity,
-  Home as HomeIcon, CheckCircle2, Settings,
+  Home as HomeIcon, CheckCircle2, Settings, HeartHandshake,
   Stethoscope, FileCheck2
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -67,6 +67,7 @@ const ORG_NAV_ITEMS = [
   { label: "Tasks",      href: "/org/tasks",     icon: ClipboardList },
   { label: "Events",     href: "/org/events",    icon: Calendar },
   { label: "Expenses",   href: "/org/expenses",  icon: DollarSign },
+  { label: "Donations",  href: "/org/donations", icon: HeartHandshake },
   { label: "Documents",  href: "/org/documents", icon: FileCheck2 },
   { label: "Team",       href: "/org/members",   icon: UsersIcon },
   { label: "Settings",   href: "/org/settings",  icon: Settings },
