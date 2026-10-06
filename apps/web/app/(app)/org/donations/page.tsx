@@ -210,7 +210,7 @@ export default function OrgDonationsPage() {
                 {(data.donations ?? []).map((d: any) => (
                   <div key={d.id} className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                      <div className="flex items-center gap-2"><span className="font-bold text-on-surface">{d.donorName}</span><Badge variant={d.status === "VERIFIED" ? "success" : d.status === "REJECTED" ? "error" : "warning"}>{d.status}</Badge></div>
+                      <div className="flex items-center gap-2"><span className="font-bold text-on-surface">{d.donorName}</span><Badge variant={d.status === "VERIFIED" ? "success" : d.status === "REJECTED" ? "danger" : "warning"}>{d.status}</Badge></div>
                       <p className="text-xs text-on-surface-variant mt-1">{formatCurrency(d.amount)} · {d.paymentDate} · UTR {d.utr}</p>
                       {d.note && <p className="text-xs text-on-surface-variant mt-1">{d.note}</p>}
                     </div>
