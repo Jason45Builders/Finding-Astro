@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
         email: normalizedEmail,
         password_hash: passwordHash,
         full_name: fullName,
-        role: "ngo",
-        identity_tier: 3,
+        role: "citizen",
+        identity_tier: 1,
         last_active_at: new Date().toISOString(),
       })
       .select("id")
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
         email: normalizedEmail,
         website: website ?? null,
         is_verified: false,
-        is_active: true,
+        is_active: false,
       })
       .select("id")
       .single();
@@ -97,10 +97,10 @@ export async function POST(req: NextRequest) {
       user_id: user.id,
       org_role: "org_admin",
       permissions: { "*": true },
-      is_active: true,
+      is_active: false,
     });
 
-    await audit({ tableName: "users", recordId: user.id, action: "INSERT", actorId: user.id, actorRole: "ngo", newData: { email: normalizedEmail, role: "ngo", org_id: org.id } });
+    await audit({ tableName: "users", recordId: user.id, action: "INSERT", actorId: user.id, actorRole: "ngo", newData: { email: normalizedEmail, role: "citizen", org_id: org.id, verification_required: true } });
 
     return ok({ email: normalizedEmail, orgId: org.id }, "Organization account created");
   } catch {
