@@ -667,6 +667,21 @@ The live database currently has RLS enabled on many application tables, but the 
 
 ---
 
+## 2026-10-06 — Rescue Collective Monthly UPI Donations
+
+- Added first-class monthly UPI collection for Rescue Collectives without a payment gateway.
+- Reused the existing `welfare_payments` ledger for donor identity, amount, UTR, UPI snapshot, receipt and verification status.
+- Added `rescue_collective_donation_settings` with exactly one designated donation admin per collective.
+- Only the designated donation admin can change the fixed collection UPI, UPI name, monthly target, or collection status after initialization.
+- Active collective members can report direct UPI payments with amount, payment date and UTR; the system does not claim automatic bank settlement confirmation.
+- Designated donation admin can verify or reject pending payment reports; verification events are audited through `welfare_payment_events`.
+- Added QR/deep-link based direct UPI payment UI and monthly ledger/progress view under the welfare workspace.
+- Removed Rescue Collective UPI controls from generic organization settings to prevent other org admins from bypassing the designated donation-admin rule.
+- Added unique `(welfare_group_id, utr)` protection against duplicate payment reports within a collective.
+- Live transactional verification passed for settings creation, payment insertion and verification, with test data rolled back.
+- Supabase security advisors show only the pre-existing PostGIS/spatial baseline findings; the new donation settings table has RLS enabled and direct Data API access denied.
+- Staging deployment for the latest commit is queued; build success is not yet claimed.
+
 # Progress Update Protocol
 
 After every implementation pass:
