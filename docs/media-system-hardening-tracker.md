@@ -1,0 +1,61 @@
+# Media System Hardening Tracker
+
+> Scope: end-to-end media upload, storage, delivery, attachment, lifecycle, and security hardening for Finding Astro.
+>
+> Strategy: one cohesive implementation block. Preserve existing user media; migrate/reconcile safely; do not delete unmatched objects without explicit evidence.
+
+## Status
+
+- [x] Initial architecture audit completed
+- [x] Both branches audited for core media parity
+- [x] Supabase storage/schema state audited
+- [ ] Canonical media ledger/schema hardening
+- [ ] Upload validation hardening
+- [ ] Malware scanning behavior hardened
+- [ ] EXIF/privacy handling corrected
+- [ ] Storage visibility/access model corrected
+- [ ] Canonical media API contract implemented
+- [ ] Case / animal / profile / evidence / document consumers migrated
+- [ ] Attachment + cleanup lifecycle completed
+- [ ] Existing storage objects reconciled into the ledger
+- [ ] Orphan handling reviewed (no blind deletion)
+- [ ] Regression tests added/passed
+- [ ] Feature branch deployed and verified
+- [ ] Master branch brought to parity
+- [ ] Production/preview smoke verification completed
+
+## Target Contract
+
+`upload -> media_id`
+
+`attach -> media_id + entity`
+
+`read -> authorized URL / authorized delivery`
+
+`delete/detach -> lifecycle cleanup`
+
+## Non-negotiable controls
+
+- Server validates actual uploaded bytes and actual size; never trusts client-reported size/type.
+- MIME allowlisting is backed by content/signature validation.
+- Malware scanning is not silently fail-open for protected media.
+- EXIF/GPS metadata is stripped where applicable, including profile media unless a documented exception is required.
+- Sensitive media is not exposed through a public bucket or unauthenticated proxy.
+- Every successful upload has a durable media ledger record with owner, purpose, storage location, status, and lifecycle metadata.
+- Storage writes and ledger writes have compensating cleanup on failure.
+- Feature attachment failures cannot leave silent, untracked media.
+- Existing media is reconciled before any cleanup; unmatched objects are quarantined/reviewed rather than blindly deleted.
+- Both `feature/ngo-hardening` and `master` end with the same media implementation.
+
+## Implementation Log
+
+### 2026-10-06
+- Audit baseline recorded.
+- Current public bucket: `finding-astro-media`.
+- Existing `public.media_uploads` has zero rows despite live storage objects.
+- Core media implementation is materially the same on both branches.
+- Known defects include client-trusted size, fail-open scanning, profile EXIF bypass, public mixed-sensitivity storage, unauthenticated proxy, and missing media ledger lifecycle.
+
+## Completion Gate
+
+This tracker is complete only when the media subsystem is implemented as one coherent path, all known consumers use the canonical contract, both branches are aligned, existing objects are reconciled, and deployed smoke/regression checks pass.
