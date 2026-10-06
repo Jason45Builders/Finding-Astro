@@ -46,6 +46,7 @@ function formatCurrency(amount: number): string {
 export default function OrgDashboardPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<OrgDashboardStats | null>(null);
+  const [groupType, setGroupType] = useState<"ngo" | "rescue_collective">("ngo");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,8 +54,12 @@ export default function OrgDashboardPage() {
     let cancelled = false;
     const load = async () => {
       try {
-        const data = await api.getOrgDashboard();
-        if (!cancelled) setStats(data);
+        const [data, memberships] = await Promise.all([api.getOrgDashboard(), api.getMyOrgMemberships()]);
+        const active = memberships.memberships.find((membership) => membership.orgId === api.getActiveOrgId());
+        if (!cancelled) {
+          setStats(data);
+          setGroupType(active?.orgType === "rescue_collective" ? "rescue_collective" : "ngo");
+        }
       } catch (err: any) {
         if (!cancelled) setError(err?.message || "Failed to load dashboard");
       } finally {
@@ -72,7 +77,7 @@ export default function OrgDashboardPage() {
       <div className="max-w-2xl mx-auto py-12">
         <Card className="p-8 text-center">
           <p className="text-error">{error || "Unable to load dashboard"}</p>
-          <p className="text-sm text-on-surface-variant mt-2">Make sure your organization is verified and you are a member.</p>
+          <p className="text-sm text-on-surface-variant mt-2">Make sure you are an active member of the selected welfare group.</p>
         </Card>
       </div>
     );
@@ -82,8 +87,8 @@ export default function OrgDashboardPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface">{stats?.orgName ? `${stats.orgName} Dashboard` : "Organization Dashboard"}</h1>
-          <p className="text-sm text-on-surface-variant">Good morning, {user?.fullName || "Team"}</p>
+          <div className="flex items-center gap-2"><h1 className="font-headline-lg text-headline-lg text-on-surface">{stats?.orgName ? `${stats.orgName} Dashboard` : `${groupLabel} Dashboard`}</h1><Badge variant="neutral">{groupLabel}</Badge></div>
+          <p className="text-sm text-on-surface-variant">Good morning, {user?.fullName || "Team"}</p><p className="text-xs text-on-surface-variant mt-1">Coordinate animals, rescues, volunteers, foster care and adoptions from one shared workspace.</p>
         </div>
         <Link href="/org/animals"><Button variant="primary"><PawPrint className="w-4 h-4 mr-2" />New Animal</Button></Link>
       </div>
