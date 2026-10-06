@@ -42,6 +42,10 @@ const FOLDERS: Record<string, string> = {
 };
 
 const PRIVATE_PURPOSES = new Set([
+  "evidence",
+  "bill",
+  "prescription",
+  "medical",
   "ngo_document",
   "document",
   "welfare_proof",
@@ -167,6 +171,10 @@ export async function POST(req: NextRequest) {
 
     if (isScannerError(scanResult.scanner) && process.env.MEDIA_SCAN_REQUIRED === "true") {
       return badRequest("MEDIA_SCAN_UNAVAILABLE", "Security scanning is temporarily unavailable. Please retry shortly.");
+    }
+
+    if (detectedMime === "image/heic" || detectedMime === "image/heif") {
+      return badRequest("UNSUPPORTED_METADATA_FORMAT", "HEIC/HEIF uploads are temporarily disabled because this runtime cannot safely strip embedded metadata");
     }
 
     const cleanedBuffer = await stripExifGps(arrayBuffer);
