@@ -62,8 +62,8 @@ export async function POST(req: NextRequest) {
 
   const ip = getClientIp(req);
   const userAgent = req.headers.get("user-agent") ?? "unknown";
-  const rate = await checkRateLimit(\`adoption:\${authResult.user.id}:\${ip}\`, userAgent);
-  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: \`Too many requests. Retry after \${rate.retryAfter}s\` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
+  const rate = await checkRateLimit(`adoption:${authResult.user.id}:${ip}`, userAgent);
+  if (!rate.allowed) return new Response(JSON.stringify({ success: false, code: "RATE_LIMITED", message: `Too many requests. Retry after ${rate.retryAfter}s` }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rate.retryAfter) } });
 
   try {
     const pathParts = new URL(req.url).pathname.replace(/\/api\/v1\/adoption\/?/, "").split("/").filter(Boolean);
@@ -90,9 +90,9 @@ async function handleApply(req: NextRequest, user: { id: string; role: string })
   if (!animal) return badRequest("ANIMAL_NOT_FOUND", "Animal not found");
   if (!animal.adoptable_since) return badRequest("NOT_ADOPTABLE", "This animal is not currently available for adoption");
 
-  const { data: blacklistEntry, error: blacklistError } = await supabaseAdmin().from("adopter_blacklist").select("id, reason").or(\`user_id.eq.\${user.id},phone.eq.\${phone}\`).maybeSingle();
+  const { data: blacklistEntry, error: blacklistError } = await supabaseAdmin().from("adopter_blacklist").select("id, reason").or(`user_id.eq.${user.id},phone.eq.${phone}`).maybeSingle();
   if (blacklistError) return serverError(blacklistError.message);
-  if (blacklistEntry) return badRequest("BLACKLISTED", \`You are not eligible to adopt. Reason: \${blacklistEntry.reason ?? "Previous adoption violation"}\`);
+  if (blacklistEntry) return badRequest("BLACKLISTED", `You are not eligible to adopt. Reason: ${blacklistEntry.reason ?? "Previous adoption violation"}`);
 
   const { data, error } = await supabaseAdmin().from("adoption_applications").insert({
     animal_id: animalId, welfare_group_id: animal.welfare_group_id ?? null, applicant_user_id: user.id,
