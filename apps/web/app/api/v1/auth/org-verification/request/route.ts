@@ -36,7 +36,13 @@ export async function POST(req: NextRequest) {
     if (!parsed.ok) return parsed.response;
     const { orgName, registrationNumber, orgType, address, documentUrls, requestedTier } = parsed.data;
 
-    const { data: pendingAdmin } = await supabaseAdmin()\n      .from("welfare_org_admins")\n      .select("welfare_group_id")\n      .eq("user_id", authResult.user.id)\n      .maybeSingle();\n\n    const { error } = await supabaseAdmin().from("ngo_verifications").insert({
+    const { data: pendingAdmin } = await supabaseAdmin()
+      .from("welfare_org_admins")
+      .select("welfare_group_id")
+      .eq("user_id", authResult.user.id)
+      .maybeSingle();
+
+    const { error } = await supabaseAdmin().from("ngo_verifications").insert({
       user_id: authResult.user.id,
       org_name: orgName,
       registration_number: registrationNumber ?? null,
