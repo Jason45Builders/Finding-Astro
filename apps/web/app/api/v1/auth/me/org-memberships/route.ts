@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware } from "@/lib/auth-middleware";
 import { ok, serverError } from "@/lib/api-response";
@@ -9,36 +9,31 @@ export async function GET(req: NextRequest) {
 
   try {
     const userId = authResult.user.id;
+    const admin = supabaseAdmin();
 
-    const { data: adminRows } = await supabaseAdmin()
+    const { data: memberRows, error: memberError } = await admin
+      .from("organization_members")
+      .select("welfare_group_id, org_role, is_active, welfare_org:welfare_orgs!organization_members_welfare_group_id_fkey(id, name, is_verified, is_active)")
+      .eq("user_id", userId)
+      .eq("is_active", true);
+
+    if (memberError) return serverError(memberError.message);
+
+    const { data: adminRows } = await admin
       .from("welfare_org_admins")
       .select("welfare_group_id")
       .eq("user_id", userId);
 
-    const { data: memberRows } = await supabaseAdmin()
-      .from("organization_members")
-      .select("welfare_group_id, org_role, is_active")
-      .eq("user_id", userId)
-      .eq("is_active", true);
+    const adminOrgIds = new Set((adminRows ?? []).map((row) => row.welfare_group_id));
 
-    const orgIds = new Set<string>();
-    const memberships: Array<{ orgId: string; orgRole: string; isAdmin: boolean }> = [];
-
-    for (const row of adminRows ?? []) {
-      const gid = row.welfare_group_id;
-      if (!orgIds.has(gid)) {
-        orgIds.add(gid);
-        memberships.push({ orgId: gid, orgRole: "org_admin", isAdmin: true });
-      }
-    }
-
-    for (const row of memberRows ?? []) {
-      const gid = row.welfare_group_id;
-      if (!orgIds.has(gid)) {
-        orgIds.add(gid);
-        memberships.push({ orgId: gid, orgRole: row.org_role, isAdmin: false });
-      }
-    }
+    const memberships = (memberRows ?? []).map((row: any) => ({
+      orgId: row.welfare_group_id,
+      orgRole: adminOrgIds.has(row.welfare_group_id) ? "org_admin" : row.org_role,
+      isAdmin: adminOrgIds.has(row.welfare_group_id) || row.org_role === "org_admin",
+      orgName: row.welfare_org?.name ?? "Organization",
+      isVerified: row.welfare_org?.is_verified ?? false,
+      isActive: row.welfare_org?.is_active ?? true,
+    }));
 
     return ok({ memberships }, "Org memberships loaded");
   } catch {
