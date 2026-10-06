@@ -2,9 +2,9 @@
 
 **Specification:** `docs/FINDING-ASTRO-NGO-HARDENING-SPEC.md`  
 **Repository:** `Jason45Builders/Finding-Astro`  
-**Branch:** `master`  
+**Branch:** `feature/ngo-hardening`  
 **Program status:** 🟡 IN PROGRESS  
-**Last updated:** 2026-10-06 — Heavy Work Block 1
+**Last updated:** 2026-10-06 — Heavy Work Block 2
 
 ---
 
@@ -24,15 +24,15 @@
 | Pass | Area | Status | Verification |
 |---|---|---:|---|
 | 0 | Baseline | 🔵 Audited | Repository + Supabase + route/RBAC review |
-| 1 | Authorization Architecture | 🟡 | Heavy Block 1 foundation implemented; full endpoint audit pending |
-| 2 | Multi-NGO Membership | 🟡 | Active-org context implemented; full isolation audit pending |
+| 1 | Authorization Architecture | 🟢 | Server-derived role profiles + explicit org context + permission regression tests implemented |
+| 2 | Multi-NGO Membership | 🟡 | Active-org context implemented; explicit ownership model now live; full multi-NGO acceptance pending |
 | 3 | NGO Onboarding & Verification | 🟡 | Canonical pending/approval flow implemented; frontend + migration/regression audit pending |
-| 4 | Invitations & Member Lifecycle | ⬜ | Pending |
-| 5 | Member Administration & Privilege Security | ⬜ | Pending |
-| 6 | Case & Rescue Coordination | ⬜ | Pending |
-| 7 | Animals & Medical | ⬜ | Pending |
+| 4 | Invitations & Member Lifecycle | 🟡 | One-time hashed invitation, expiry, acceptance, revoke, and member-list endpoints implemented; notifications/resend/suspend/leave still pending |
+| 5 | Member Administration & Privilege Security | 🟡 | Server-derived permissions and final-admin/self-deactivation protections implemented; full hierarchy/audit tests pending |
+| 6 | Case & Rescue Coordination | 🟡 | NGO case ownership column + scoped list/create/detail/update implemented; assignment/comment/isolation regression suite pending |
+| 7 | Animals & Medical | 🟡 | NGO animal ownership column + scoped core animal API implemented; medical ownership/routes still pending |
 | 8 | Volunteers, Foster & Tasks | ⬜ | Pending |
-| 9 | Adoption & Follow-Ups | ⬜ | Pending |
+| 9 | Adoption & Follow-Ups | 🟡 | Adoption ownership is linked to animal organization and NGO review/mark-adoptable paths are scoped; full follow-up isolation pending |
 | 10 | Finance, Campaigns, Events & Shelters | ⬜ | Pending |
 | 11 | Documents, Reports & Notifications | ⬜ | Pending |
 | 12 | Audit Trail | ⬜ | Pending |
@@ -169,18 +169,18 @@
 
 ### Tasks
 
-- [ ] Invitation persistence.
-- [ ] Secure one-time token.
-- [ ] Expiration.
-- [ ] Acceptance.
-- [ ] Password setup.
+- [x] Invitation persistence.
+- [x] Secure one-time token.
+- [x] Expiration.
+- [x] Acceptance.
+- [x] Password setup.
 - [ ] Resend.
-- [ ] Revoke.
+- [x] Revoke.
 - [ ] Suspend.
 - [ ] Reactivate.
 - [ ] Remove.
 - [ ] Leave NGO.
-- [ ] Prevent accidental global-user deletion.
+- [x] Prevent accidental global-user deletion.
 - [ ] Invitation notifications.
 - [ ] Tests.
 
@@ -222,15 +222,15 @@
 
 ### Tasks
 
-- [ ] Case organization ownership.
-- [ ] Case access matrix.
+- [x] Case organization ownership.
+- [x] Case access matrix.
 - [ ] Case assignment.
 - [ ] Rescue coordinator workflow.
 - [ ] Responder assignment.
 - [ ] Comments.
 - [ ] Status transitions.
 - [ ] Escalation.
-- [ ] Cross-NGO protection.
+- [x] Cross-NGO protection.
 - [ ] Audit events.
 - [ ] Integration tests.
 
@@ -247,8 +247,8 @@
 
 ### Tasks
 
-- [ ] Animal organization ownership.
-- [ ] Animal access matrix.
+- [x] Animal organization ownership.
+- [x] Animal access matrix.
 - [ ] Animal assignments.
 - [ ] Case linkage.
 - [ ] Medical linkage.
@@ -286,14 +286,14 @@
 
 ### Tasks
 
-- [ ] Adoption coordinator permissions.
-- [ ] Application workflow.
-- [ ] Review.
-- [ ] Approval/rejection.
+- [x] Adoption coordinator permissions.
+- [x] Application workflow.
+- [x] Review.
+- [x] Approval/rejection.
 - [ ] Handover.
 - [ ] Follow-up.
 - [ ] Medical/adoption coordination.
-- [ ] Cross-NGO protection.
+- [x] Cross-NGO protection.
 
 ---
 
@@ -502,6 +502,18 @@ The live database currently has RLS enabled on many application tables, but the 
 ---
 
 # Change Log
+
+## 2026-10-06 — Heavy Work Block 2
+
+- Added explicit `welfare_group_id` ownership columns to animals, cases, adoption applications, and vaccinations.
+- Added the live `organization_invitations` lifecycle with hashed one-time tokens, seven-day expiry, acceptance and revocation.
+- Replaced NGO member temporary-password creation with invitation creation.
+- Added invitation listing and acceptance endpoints.
+- Expanded server-derived NGO permissions with animals, medical, and adoption scopes.
+- Scoped core NGO case, animal, and adoption APIs to active organization ownership.
+- Safely backfilled only provable single-NGO legacy ownership; live baseline records remained unowned because their organization relationship could not be established safely.
+- Ran Supabase security advisors after DDL; existing RLS-without-policy findings remain intentionally unresolved pending a policy design pass.
+
 
 ## 2026-10-06 — Heavy Work Block 1\n\n- Added centralized NGO role/permission profiles.\n- Added explicit active-organization context through `X-Finding-Astro-Org-Id`.\n- Added multi-NGO selection for organization workspace users.\n- Removed the previous single-membership `maybeSingle()` assumption from NGO context resolution.\n- Made member permissions server-derived from the selected organization role.\n- Added initial protection for final organization admins and self-deactivation.\n- Changed new NGO signup to pending verification instead of immediate operational access.\n- Unified verification approval with the existing pending organization and membership.\n- Added role-permission regression tests.\n\n## 2026-10-06 — Initial baseline
 
