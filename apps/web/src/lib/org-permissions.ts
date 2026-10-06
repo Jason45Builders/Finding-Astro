@@ -12,6 +12,8 @@ export const ORG_ROLES = [
 export type OrgRole = (typeof ORG_ROLES)[number];
 
 export const ORG_PERMISSIONS = [
+  "animals:write",
+  "adoptions:write",
   "campaigns:write",
   "cases:write",
   "events:write",
@@ -20,6 +22,7 @@ export const ORG_PERMISSIONS = [
   "followups:write",
   "foster:write",
   "members:write",
+  "medical:write",
   "reports:write",
   "settings:write",
   "shelters:write",
@@ -32,18 +35,22 @@ export type OrgPermission = (typeof ORG_PERMISSIONS)[number];
 export const ORG_ROLE_PERMISSIONS: Record<OrgRole, readonly OrgPermission[]> = {
   org_admin: ORG_PERMISSIONS,
   rescue_coordinator: [
+    "animals:write",
     "cases:write",
     "tasks:write",
     "volunteers:write",
     "followups:write",
   ],
   medical_coordinator: [
+    "animals:write",
     "cases:write",
+    "medical:write",
     "tasks:write",
     "followups:write",
   ],
   adoption_coordinator: [
-    "cases:write",
+    "animals:write",
+    "adoptions:write",
     "tasks:write",
     "followups:write",
     "campaigns:write",
@@ -53,14 +60,14 @@ export const ORG_ROLE_PERMISSIONS: Record<OrgRole, readonly OrgPermission[]> = {
     "expenses:approve",
     "reports:write",
   ],
-  volunteer: [
-    "tasks:write",
-  ],
+  volunteer: ["tasks:write"],
   vet: [
-    "cases:write",
+    "animals:write",
+    "medical:write",
     "followups:write",
   ],
   foster: [
+    "animals:write",
     "foster:write",
     "followups:write",
   ],
@@ -81,6 +88,6 @@ export function hasOrgPermission(role: OrgRole, permission: string): boolean {
 }
 
 export function canManageOrgRole(actorRole: OrgRole, targetRole: OrgRole): boolean {
-  if (actorRole === "org_admin") return true;
-  return actorRole === targetRole && actorRole !== "org_admin";
+  if (!isOrgRole(actorRole) || !isOrgRole(targetRole)) return false;
+  return actorRole === "org_admin" && targetRole !== "org_admin";
 }
