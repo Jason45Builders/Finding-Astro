@@ -1,3 +1,40 @@
+# Welfare Group Feature — Block 3
+
+**Status:** 🟢 COMPLETE
+
+Block 3 adapts the existing operational workspace for local Rescue Collectives. It intentionally reuses the same animals, cases, tasks, volunteer, foster, medical, adoption, event, expense and member APIs instead of creating a parallel rescue application.
+
+### Completed
+
+- [x] Rescue Collective dashboard identifies the active group type.
+- [x] Dashboard copy is operational rather than NGO-verification-centric.
+- [x] Rescue Collective workspace explains that local operations can run while unverified.
+- [x] Animal workspace identifies Rescue Collective context and uses collective-specific care language.
+- [x] Existing active-group animal ownership remains the source of truth.
+- [x] Member administration identifies the current group type.
+- [x] Member invitations use the existing one-time invitation link flow rather than temporary passwords.
+- [x] Invitation link can be copied directly from the workspace.
+- [x] Settings identifies the immutable Welfare Group Type.
+- [x] Rescue Collective settings no longer instruct local groups to complete NGO verification just to operate.
+- [x] Existing organization roles remain the same for Rescue Collectives.
+- [x] No parallel Rescue Collective data model was introduced.
+- [x] Existing server-side organization authorization remains authoritative.
+- [x] Existing group-scoped operational APIs remain the shared implementation path for tasks, volunteers, foster, adoption, cases, medical records, events and expenses.
+- [x] Live transactional verification confirmed a Rescue Collective can be created, receive an org-admin membership and remain unverified without changing the global platform role model.
+
+### Block 3 verification
+
+- Live test transaction created a temporary `rescue_collective`, attached an active `org_admin` membership, verified the expected group type/state, then rolled the transaction back.
+- Current Supabase security advisor output contains only the previously known PostGIS-related findings: public `spatial_ref_sys` RLS disabled, PostGIS in public, and three extension-managed `st_estimatedextent` SECURITY DEFINER grants.
+- No new application-level security advisor finding was introduced by the workspace changes.
+- Source files were re-read after modification; no accidental literal `\\n` sequences remain in the modified dashboard, animals, settings or members pages.
+
+### Block 3 exit decision
+
+**Complete.** The Rescue Collective operational workspace now uses the same hardened welfare-group architecture as NGOs. Remaining work belongs to the broader NGO hardening acceptance program: cross-NGO regression, full role/permission testing, Pawstice end-to-end simulation, production hardening and final acceptance.
+
+---
+
 # Welfare Group Feature — Block 2
 
 **Status:** 🟢 COMPLETE
@@ -77,7 +114,7 @@ Block 1 extends the existing `welfare_orgs` + `organization_members` architectur
 **Specification:** `docs/FINDING-ASTRO-NGO-HARDENING-SPEC.md`  
 **Repository:** `Jason45Builders/Finding-Astro`  
 **Branch:** `feature/ngo-hardening`  
-**Program status:** 🟡 IN PROGRESS  
+**Program status:** 🟡 IN PROGRESS\n**Last updated:** 2026-10-06 — Welfare Group Feature Block 3  
 **Last updated:** 2026-10-06 — Welfare Group Feature Block 2
 
 ---
