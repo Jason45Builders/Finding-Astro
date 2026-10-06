@@ -49,6 +49,20 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    const [fosterHomeRes, animalRes, caseRes] = await Promise.all([
+      supabaseAdmin().from("foster_homes").select("id").eq("id", body.fosterHomeId).eq("welfare_group_id", org.welfareGroupId).maybeSingle(),
+      supabaseAdmin().from("animals").select("id").eq("id", body.animalId).eq("welfare_group_id", org.welfareGroupId).maybeSingle(),
+      body.caseId
+        ? supabaseAdmin().from("cases").select("id").eq("id", body.caseId).eq("welfare_group_id", org.welfareGroupId).maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+    ]);
+    if (fosterHomeRes.error) return serverError(fosterHomeRes.error.message);
+    if (animalRes.error) return serverError(animalRes.error.message);
+    if (caseRes.error) return serverError(caseRes.error.message);
+    if (!fosterHomeRes.data || !animalRes.data || (body.caseId && !caseRes.data)) {
+      return badRequest("INVALID_DEPENDENCY", "Foster home, animal, and case must belong to this organization");
+    }
+
     const { data, error } = await supabaseAdmin()
       .from("foster_assignments")
       .insert({
