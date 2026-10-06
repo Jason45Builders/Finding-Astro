@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireOrg, OrgContext, hasOrgPermission } from "@/lib/org-auth";
 import { ok, serverError, notFound, forbidden, badRequest } from "@/lib/api-response";
-import { mapOrganizationMember } from "@/lib/types";
+import { mapOrganizationMember } from "@/lib/types";\nimport { getOrgRolePermissions, isOrgRole, type OrgRole } from "@/lib/org-permissions";
 
 const ORG_ROLES = ["org_admin", "rescue_coordinator", "medical_coordinator", "adoption_coordinator", "finance", "volunteer", "vet", "foster"] as const;
 
@@ -10,7 +10,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const authResult = await requireOrg(req);
   if (authResult instanceof Response) return authResult;
 
-  const org = (authResult as { org: OrgContext }).org;
+  const org = (authResult as { org: OrgContext }).org;\n  const actorId = (authResult as { user: { id: string } }).user.id;
 
   if (!hasOrgPermission(org.permissions, "members:write")) {
     return forbidden("Insufficient permissions");
@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (body.permissions !== undefined) allowed.permissions = body.permissions;
     if (body.isActive !== undefined) allowed.is_active = body.isActive;
 
-    if (Object.keys(allowed).length === 0) return badRequest("NO_CHANGES", "No updatable fields provided");
+    if (id === actorId && body.isActive === false) return forbidden("You cannot deactivate your own organization membership");\n    if (Object.keys(allowed).length === 0) return badRequest("NO_CHANGES", "No updatable fields provided");
 
     const { data, error } = await supabaseAdmin()
       .from("organization_members")
