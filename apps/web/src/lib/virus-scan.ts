@@ -27,7 +27,7 @@ async function scanWithClamAV(buffer: ArrayBuffer, filename: string): Promise<Vi
     const port = parseInt(portRaw, 10);
     if (!Number.isInteger(port) || port <= 0 || port > 65535) {
       console.error("[virus-scan] Invalid CLAMAV_PORT:", portRaw);
-      return { clean: true, scanner: "clamav-config-error" };
+      return { clean: false, threat: "scanner_configuration_error", scanner: "clamav-error" };
     }
 
     const result = await new Promise<{ clean: boolean; threat?: string }>((resolve, reject) => {
@@ -81,7 +81,7 @@ async function scanWithVirusTotal(buffer: ArrayBuffer, filename: string): Promis
       body: formData,
     });
 
-    if (!uploadResponse.ok) return { clean: true, scanner: "virustotal-error" };
+    if (!uploadResponse.ok) return { clean: false, threat: "scanner_unavailable", scanner: "virustotal-error" };
 
     const uploadData = await uploadResponse.json() as { data: { id: string } };
     const analysisId = uploadData.data.id;
