@@ -20,9 +20,9 @@
 - [x] Existing storage objects reconciled into the ledger
 - [x] Orphan handling reviewed (no blind deletion)
 - [x] Regression tests added for metadata sanitization and scanner fail-closed behavior; execution awaits CI/deployment capacity
-- [ ] Latest build verification pending: initial build exposed an ArrayBufferLike type error in metadata sanitizer; fix committed on both branches and fresh production/preview builds are queued
+- [x] Production build verified on master after fixing the ArrayBufferLike metadata-sanitizer type error; feature-branch deployment is queued
 - [x] Master branch brought to parity via merged PR #1
-- [ ] Production/preview smoke verification completed (fresh build queued; smoke tests follow a successful build)
+- [ ] HTTP smoke tests for unauthenticated upload/proxy and authenticated upload remain; direct HTTP access from this execution environment is unavailable
 
 ## Target Contract
 
