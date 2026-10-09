@@ -542,9 +542,10 @@ class ApiClient {
     } catch {
       throw new Error("Invalid API response format");
     }
-    const p = payload as { success?: boolean; message?: string; data?: T };
+    const p = payload as { success?: boolean; message?: string; data?: T; fields?: Array<{ field?: string; message?: string }> };
     if (!response.ok || p.success === false) {
-      throw new Error(p.message || `API error (${response.status})`);
+      const fieldMessage = p.fields?.find((field) => typeof field.message === "string" && field.message.length > 0)?.message;
+      throw new Error(fieldMessage || p.message || `API error (${response.status})`);
     }
     return p.data as T;
   }
