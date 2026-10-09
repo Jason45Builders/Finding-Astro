@@ -20,9 +20,9 @@
 - [x] Existing storage objects reconciled into the ledger
 - [x] Orphan handling reviewed (no blind deletion)
 - [x] Regression tests added for metadata sanitization and scanner fail-closed behavior; execution awaits CI/deployment capacity
-- [ ] Feature branch latest hardening commits deployed and verified (Vercel API deployment quota exhausted)
+- [ ] Latest build verification pending: initial build exposed an ArrayBufferLike type error in metadata sanitizer; fix committed on both branches and fresh production/preview builds are queued
 - [x] Master branch brought to parity via merged PR #1
-- [ ] Production/preview smoke verification completed (latest final commit cannot be deployed until Vercel quota resets)
+- [ ] Production/preview smoke verification completed (fresh build queued; smoke tests follow a successful build)
 
 ## Target Contract
 
