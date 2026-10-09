@@ -83,9 +83,11 @@ function SignupForm() {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Min. 6 characters"
+                placeholder="At least 8 characters"
                 required
-                minLength={6}
+                minLength={8}
+                pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,}"
+                title="Use at least 8 characters, including uppercase, lowercase, and a number"
                 className="pl-10 pr-10"
               />
               <button
@@ -107,6 +109,7 @@ function SignupForm() {
             {loading ? 'Creating account...' : 'Create Account'}
           </Button>
         </form>
+        <p className="text-xs text-on-surface-variant">Use at least 8 characters, including an uppercase letter, a lowercase letter, and a number.</p>
         <p className="text-center text-sm text-on-surface-variant mt-6">
           Already have an account? <a href={loginHref} className="text-primary font-bold hover:underline">Sign in</a>
         </p>
