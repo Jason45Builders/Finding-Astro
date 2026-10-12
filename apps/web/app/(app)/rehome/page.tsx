@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Heart, ClipboardList, ShieldCheck } from "lucide-react";
+import { Heart, ClipboardList, ShieldCheck, ImagePlus, X } from "lucide-react";
+import { Photo } from "@/components/ui/Photo";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { Card } from "@/components/ui/Card";
@@ -21,10 +22,34 @@ export default function RehomePage() {
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState("");
   const [success,setSuccess] = useState("");
+  const [uploadingPhoto,setUploadingPhoto] = useState(false);
+  const [photoError,setPhotoError] = useState("");
   const [form,setForm] = useState({animalType:"own_pet",species:"dog",animalName:"",breed:"",ageMonths:"",gender:"",description:"",rehomeReason:"",contactName:user?.fullName??"",contactPhone:user?.phone??"",locationText:"",latitude:"13.0827",longitude:"80.2707",photoUrl:"",ownershipConfirmed:false,helperAcknowledged:false});
   const load = async () => setRows(await api.request<RehomeRequest[]>("/rehome"));
   useEffect(()=>{if(!user)return;load().catch(e=>setError(e instanceof Error?e.message:"Could not load requests")).finally(()=>setLoading(false));},[user]);
   function set<K extends keyof typeof form>(key:K,value:typeof form[K]){setForm(p=>({...p,[key]:value}));}
+  async function uploadAnimalPhoto(file: File | undefined) {
+    if (!file) return;
+    setPhotoError("");
+    if (!file.type.startsWith("image/")) { setPhotoError("Choose an image file (JPG, PNG or WebP)."); return; }
+    if (file.size > 10 * 1024 * 1024) { setPhotoError("Photo must be 10 MB or smaller."); return; }
+    setUploadingPhoto(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("originalName", file.name);
+      body.append("mimeType", file.type);
+      body.append("purpose", "animal_photo");
+      const response = await fetch("/api/v1/media/upload", { method: "POST", body, credentials: "same-origin" });
+      const result = await response.json();
+      if (!response.ok || !result?.success || !(result?.data?.publicUrl || result?.data?.cdnUrl)) {
+        throw new Error(result?.message || "Photo upload failed. Please try again.");
+      }
+      set("photoUrl", result.data.publicUrl || result.data.cdnUrl);
+    } catch (e) {
+      setPhotoError(e instanceof Error ? e.message : "Photo upload failed. Please try again.");
+    } finally { setUploadingPhoto(false); }
+  }
   async function submit(e:React.FormEvent){e.preventDefault();setBusy(true);setError("");setSuccess("");try{await api.request("/rehome",{method:"POST",body:JSON.stringify({...form,ageMonths:form.ageMonths?Number(form.ageMonths):undefined,latitude:Number(form.latitude),longitude:Number(form.longitude),ownershipConfirmed:form.animalType==="own_pet"&&form.ownershipConfirmed,helperAcknowledged:form.animalType==="community_animal"&&form.helperAcknowledged})});setSuccess("Submitted. The Finding Astro team will review the details before anything appears in the Adoption Centre.");setForm(p=>({...p,animalName:"",breed:"",ageMonths:"",description:"",rehomeReason:"",photoUrl:"",ownershipConfirmed:false,helperAcknowledged:false}));await load();}catch(e){setError(e instanceof Error?e.message:"Submission failed");}finally{setBusy(false);}}
   if(!user)return <div className="max-w-3xl mx-auto space-y-4"><h1 className="text-2xl font-bold">Rehome an Animal</h1><Card className="p-5">Please <Link className="text-primary underline" href="/login">sign in</Link> to submit and track a rehoming request.</Card></div>;
   if(loading)return <PageSpinner/>;
@@ -34,14 +59,15 @@ export default function RehomePage() {
     {error&&<p role="alert" className="text-sm text-error">{error}</p>}{success&&<p role="status" className="text-sm text-primary">{success}</p>}
     <Card className="p-5"><form onSubmit={submit} className="space-y-4">
       <div><Label>Which situation applies?</Label><Select value={form.animalType} onChange={e=>set("animalType",e.target.value)}><option value="own_pet">My pet / animal I am authorised to rehome</option><option value="community_animal">A stray or community animal I am helping</option></Select></div>
-      <div className="grid sm:grid-cols-2 gap-4"><div><Label>Species</Label><Select value={form.species} onChange={e=>set("species",e.target.value)}><option value="dog">Dog</option><option value="cat">Cat</option><option value="bird">Bird</option><option value="other">Other</option></Select></div><div><Label>Name (optional)</Label><Input value={form.animalName} onChange={e=>set("animalName",e.target.value)} maxLength={100}/></div><div><Label>Breed (optional)</Label><Input value={form.breed} onChange={e=>set("breed",e.target.value)} maxLength={100}/></div><div><Label>Age in months (optional)</Label><Input type="number" min="0" value={form.ageMonths} onChange={e=>set("ageMonths",e.target.value)}/></div><div><Label>Gender (optional)</Label><Select value={form.gender} onChange={e=>set("gender",e.target.value)}><option value="">Unknown</option><option value="male">Male</option><option value="female">Female</option><option value="unknown">Unknown</option></Select></div><div><Label>Photo URL (optional)</Label><Input type="url" value={form.photoUrl} onChange={e=>set("photoUrl",e.target.value)} placeholder="https://…"/></div></div>
+      <div className="grid sm:grid-cols-2 gap-4"><div><Label>Species</Label><Select value={form.species} onChange={e=>set("species",e.target.value)}><option value="dog">Dog</option><option value="cat">Cat</option><option value="bird">Bird</option><option value="other">Other</option></Select></div><div><Label>Name (optional)</Label><Input value={form.animalName} onChange={e=>set("animalName",e.target.value)} maxLength={100}/></div><div><Label>Breed (optional)</Label><Input value={form.breed} onChange={e=>set("breed",e.target.value)} maxLength={100}/></div><div><Label>Age in months (optional)</Label><Input type="number" min="0" value={form.ageMonths} onChange={e=>set("ageMonths",e.target.value)}/></div><div><Label>Gender (optional)</Label><Select value={form.gender} onChange={e=>set("gender",e.target.value)}><option value="">Unknown</option><option value="male">Male</option><option value="female">Female</option><option value="unknown">Unknown</option></Select></div></div>
+      <div className="space-y-2 sm:col-span-2"><Label>Animal photo (optional)</Label><p className="text-xs text-on-surface-variant">Upload a clear photo so the review team and potential adopters can identify the animal. JPG, PNG or WebP; up to 10 MB.</p>{form.photoUrl ? <div className="flex items-start gap-3 rounded-lg border border-outline-variant p-3"><Photo src={form.photoUrl} alt="Uploaded animal" className="h-28 w-28 rounded-md object-cover" /><div className="min-w-0 flex-1"><p className="text-sm font-medium text-primary">Photo uploaded</p><p className="text-xs text-on-surface-variant">This photo will be included with the request and, if approved, the adoption listing.</p><Button type="button" variant="ghost" size="sm" className="mt-2" onClick={()=>{set("photoUrl","");setPhotoError("");}}><X className="h-4 w-4"/> Remove photo</Button></div></div> : <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-outline-variant bg-surface-container-low px-4 py-5 text-sm font-semibold hover:bg-surface-container-high"><ImagePlus className="h-5 w-5"/>{uploadingPhoto ? "Uploading photo…" : "Choose animal photo"}<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={uploadingPhoto} onChange={e=>{const file=e.currentTarget.files?.[0];void uploadAnimalPhoto(file);e.currentTarget.value="";}} /></label>}{photoError&&<p role="alert" className="text-sm text-error">{photoError}</p>}</div>
       <div><Label>Animal description and care needs</Label><Textarea required minLength={10} maxLength={2000} rows={3} value={form.description} onChange={e=>set("description",e.target.value)} placeholder="Temperament, health, vaccination, special needs…"/></div>
       <div><Label>Why does the animal need rehoming / assessment?</Label><Textarea required minLength={10} maxLength={2000} rows={3} value={form.rehomeReason} onChange={e=>set("rehomeReason",e.target.value)}/></div>
       <div><Label>Area / locality (not shown with your contact details)</Label><Input required value={form.locationText} onChange={e=>set("locationText",e.target.value)} placeholder="Neighbourhood, city"/></div>
       <div className="grid sm:grid-cols-2 gap-4"><div><Label>Latitude</Label><Input required type="number" step="any" value={form.latitude} onChange={e=>set("latitude",e.target.value)}/></div><div><Label>Longitude</Label><Input required type="number" step="any" value={form.longitude} onChange={e=>set("longitude",e.target.value)}/></div></div>
       <div className="grid sm:grid-cols-2 gap-4"><div><Label>Your name</Label><Input required value={form.contactName} onChange={e=>set("contactName",e.target.value)} maxLength={100}/></div><div><Label>Private contact phone</Label><Input required type="tel" value={form.contactPhone} onChange={e=>set("contactPhone",e.target.value)} maxLength={20}/></div></div>
       {form.animalType==="own_pet"?<label className="flex items-start gap-2 text-sm"><input type="checkbox" required checked={form.ownershipConfirmed} onChange={e=>set("ownershipConfirmed",e.target.checked)} className="mt-1"/>I confirm I am the owner or legally authorised caretaker and have authority to seek rehoming.</label>:<label className="flex items-start gap-2 text-sm"><input type="checkbox" required checked={form.helperAcknowledged} onChange={e=>set("helperAcknowledged",e.target.checked)} className="mt-1"/>I am reporting a community animal for review, do not claim ownership, and understand Finding Astro must assess whether adoption is appropriate.</label>}
-      <Button type="submit" disabled={busy}>{busy?"Submitting…":"Submit for review"}</Button>
+      <Button type="submit" disabled={busy||uploadingPhoto}>{busy?"Submitting…":uploadingPhoto?"Uploading photo…":"Submit for review"}</Button>
     </form></Card>
     <section className="space-y-3"><h2 className="text-xl font-bold flex items-center gap-2"><ClipboardList className="w-5 h-5"/> My requests</h2>{!rows.length?<EmptyState title="No rehoming requests yet." description="Your submissions and review updates will appear here."/>:rows.map(r=><Card key={r.id} className="p-4 space-y-2"><div className="flex flex-wrap justify-between gap-2"><h3 className="font-bold">{r.animal_name||"Unnamed"} · {r.species}</h3><span className="text-xs rounded-full bg-surface-container-high px-3 py-1">{statusLabels[r.status]||r.status}</span></div><p className="text-xs text-on-surface-variant">Submitted {new Date(r.created_at).toLocaleDateString()} · {r.animal_type==="own_pet"?"Owner rehoming":"Community animal report"}</p>{r.review_notes&&<p className="text-sm">Review note: {r.review_notes}</p>}{r.linked_animal_id&&<Link className="text-sm text-primary underline" href={"/animals/"+r.linked_animal_id}>View published animal profile</Link>}</Card>)}</section>
   </div>;
