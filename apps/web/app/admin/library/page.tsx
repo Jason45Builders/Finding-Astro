@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
-import { ArrowLeft, ArrowDown, ArrowUp, BookOpen, Check, FileText, ImagePlus, LoaderCircle, Pencil, Plus, Save, Send, UploadCloud, X } from "lucide-react";
+import { ArrowLeft, ArrowDown, ArrowUp, Check, FileText, ImagePlus, LoaderCircle, Pencil, Plus, Save, Send, UploadCloud, X } from "lucide-react";
 
 type Book = {
   id: string; title: string; slug: string; subtitle?: string | null; description: string; author_name: string;
