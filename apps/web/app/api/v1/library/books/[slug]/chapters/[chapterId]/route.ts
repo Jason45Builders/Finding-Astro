@@ -22,6 +22,7 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ slug: 
       .eq("id", chapterId)
       .eq("book_id", book.id)
       .eq("status", "published")
+      .eq("content_format", "rich_text")
       .maybeSingle();
     if (chapterError) return serverError("Unable to load chapter", chapterError);
     if (!chapter) return notFound("Chapter not found");
