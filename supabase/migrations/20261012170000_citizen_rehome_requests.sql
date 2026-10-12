@@ -43,3 +43,4 @@ create policy "Applicants can submit own rehome requests" on public.rehome_reque
 -- All privileged review and animal publication writes are performed by the server API
 -- with role checks; client-side access to this table is intentionally not granted for updates.
 revoke update on public.rehome_requests from authenticated;
+grant all on public.rehome_requests to service_role;
