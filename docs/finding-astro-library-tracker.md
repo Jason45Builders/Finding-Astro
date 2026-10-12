@@ -17,8 +17,8 @@
 | Repository/framework audit | PARTIAL | Next.js 15 monorepo, custom JWT auth, media upload flow and package scripts inspected; admin UI location/deployed Storage config still to confirm |
 | Supabase schema and policies | PARTIAL | Additive Library migration committed; RLS enabled fail-closed; API-level auth still required due service-role bypass |
 | Storage strategy and upload workflow | PARTIAL | Existing media endpoint inspected; 10 MiB allowlist supports images/PDF only; Library-specific secure upload flow remains to build |
-| Admin publishing studio | TODO | Pass 2 |
-| Reader catalogue and reader | TODO | Pass 3 |
+| Admin publishing studio | PARTIAL | Admin book/chapter APIs added; upload integration and admin UI remain |
+| Reader catalogue and reader | PARTIAL | Published-only catalogue/detail/chapter APIs added; actual reader pages/viewer remain |
 | Reading progress/accessibility | TODO | Pass 4 |
 | Regression/release validation | TODO | Pass 5 |
 | Preview deployment | TODO | Only if connector/config permits; never assume |
@@ -175,3 +175,36 @@ Copy and complete this section at the end of each substantial pass:
 ## Completion accounting
 
 Do not report a percentage based on file count or number of commits. Report by completed acceptance criteria and working end-to-end paths. Planning documentation is complete and the first schema migration is committed. The end-to-end feature is not yet implemented; no reader or admin UI exists from this work so far.
+
+
+### Pass 2/3 progress checkpoint — API foundation (2026-10-12)
+**Status: PARTIAL**
+
+Files changed:
+- supabase/migrations/20261012170000_finding_astro_library.sql — books, chapters, progress tables; constraints/indexes; RLS enabled.
+- apps/web/app/api/v1/library/books/route.ts — published catalogue API.
+- apps/web/app/api/v1/library/books/[slug]/route.ts — published book detail and chapter metadata.
+- apps/web/app/api/v1/library/books/[slug]/chapters/[chapterId]/route.ts — published chapter content endpoint.
+- apps/web/app/api/v1/admin/library/books/route.ts — admin list and draft creation.
+- apps/web/app/api/v1/admin/library/books/[bookId]/route.ts — admin edit, publish/unpublish, archive.
+- apps/web/app/api/v1/admin/library/books/[bookId]/chapters/route.ts — admin chapter list/create.
+- apps/web/app/api/v1/admin/library/books/[bookId]/chapters/[chapterId]/route.ts — admin chapter edit/hide.
+- docs/finding-astro-library-blueprint.md — confirmed repository findings and decisions.
+- docs/finding-astro-library-tracker.md — progress and risks.
+
+Security:
+- Every admin route uses authMiddleware, which verifies the bearer JWT and reads the current role from public.users, then requires role admin.
+- Mutations use the existing CSRF helper.
+- Public routes constrain both book and chapter status to published.
+- Tables have RLS enabled. The service-role client bypasses RLS, so endpoint checks remain mandatory.
+- File uploads are not wired yet. Do not publish file-backed books until the upload/storage ownership path is implemented and tested.
+
+Validation:
+- GitHub confirmed commits for the migration and API source files.
+- Source was reviewed through the GitHub connector. No local test runner, TypeScript compiler, SQL execution, build, or deployment was run.
+- The migration has not been applied to Supabase.
+- The API handlers are not yet end-to-end validated. Treat the current APIs as implementation in progress, not release-ready.
+
+Next substantial work:
+- Complete repository/admin UI discovery and migration compatibility review.
+- Implement secure Library file upload/delivery, then build the admin publishing UI and reader pages as cohesive batches.
