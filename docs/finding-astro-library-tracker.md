@@ -426,3 +426,13 @@ Latest observed GitHub Actions run: `38243010355` (current source head at time o
 - Resolve the existing org-permissions test with the policy owner (do not grant extra role permissions speculatively).
 - Restore Vercel team-scope access, obtain a current preview deployment, and test the admin upload → publish → reader → resume workflow on desktop and mobile.
 - Validate the two SQL migrations on a non-production Supabase database, then record rollout/rollback steps.
+
+
+### Dependency audit detail (2026-10-12)
+A non-blocking `npm audit --json` step was added to CI and emitted the affected package/advisory summary.
+
+- `next@15.5.21`: **critical** advisory set, including unauthenticated RCE and image optimization/cache-poisoning issues; npm reports a fix available within the existing dependency range.
+- High-severity transitive findings include `postcss`, `sharp`, `js-yaml`, `nanoid`, `brace-expansion`, `micromatch`, `fast-glob`, and `source-map-js`; several have semver-compatible fixes available.
+- `tailwindcss@3.4.19` and its related transitive dependencies have advisories whose reported automatic fix is Tailwind CSS 4.x (a major upgrade). Do not force that migration without visual/regression testing because this application currently uses Tailwind 3.
+- Vitest-related advisories are development-tooling findings; update within the existing 4.x range where possible.
+- No dependency versions were changed in this pass. A reviewed lockfile-only patch update is still required, followed by typecheck, Library tests, production build, and UI regression checks.
