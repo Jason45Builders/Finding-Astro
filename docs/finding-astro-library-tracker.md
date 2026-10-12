@@ -315,7 +315,7 @@ Delivered on the existing `feature/finding-astro-library` branch. No additional 
 **Unresolved release blockers**
 - No successful typecheck, lint, test suite, production build, SQL migration execution, or browser test has been observed.
 - GitHub's Vercel status continues to report a build-rate-limit/upgrade URL; it does not prove that source compilation failed, but it prevents confirming a valid preview.
-- Need to verify that the GitHub Actions workflow actually starts on the current feature head and inspect its step results. If it does not run, investigate repository Actions permissions/settings.
+- The first GitHub Actions attempt failed in `actions/setup-node` before dependency installation because the workflow pointed at nonexistent `apps/web/package-lock.json`. The workflow has been corrected to use the root npm-workspace lockfile, run scripts from the repository root, and use Node 22. A fresh run still needs to be observed.
 - Need a safe database validation environment before applying the migrations; do not apply to production as a shortcut.
 - Need to verify the complete upload→publish→read workflow in a browser and add automated tests for publication-state enforcement, chapter ownership, progress ownership, malformed responses, and reorder behaviour.
 - The Supabase security advisor reports a pre-existing critical finding: `public.spatial_ref_sys` has RLS disabled. This is outside the Library changes and was not modified. It requires separate owner review; enabling RLS without appropriate policies may break intended PostGIS access.
@@ -324,3 +324,10 @@ Delivered on the existing `feature/finding-astro-library` branch. No additional 
 - Confirm CI results and fix compile/type/lint errors first.
 - Add test coverage around publish validation, storage path checks, private PDF delivery and chapter progress.
 - Validate both migrations in a non-production database, then browser-test the whole workflow and document exact rollout steps.
+
+
+### CI workflow correction (2026-10-12)
+- Inspected the first GitHub Actions run (job `114782994302`). It failed before `npm ci` because `cache-dependency-path` referenced `apps/web/package-lock.json`, which does not exist in this npm-workspace monorepo.
+- Confirmed the repository root has `package.json` with `apps/web` as a workspace and a root `package-lock.json`.
+- Updated `.github/workflows/ci.yml` to use Node 22, cache against the root lockfile, run `npm ci` at repository root, then execute root `lint`, `typecheck`, `test`, and `build` scripts.
+- The earlier CI failure is a workflow configuration issue, not an application compilation result. Await a new run before drawing conclusions.
