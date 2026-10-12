@@ -396,3 +396,33 @@ Delivered on the existing `feature/finding-astro-library` branch. No additional 
 - Admin publishing error states distinguish authentication from missing admin permission; unsupported file-backed chapters are labelled and their edit action is disabled.
 - Catalogue filter wrappers and reader controls now have explicit keyboard focus styling and active chapter semantics.
 - Current code has not been validated by a successful latest-head build. The observed GitHub Actions run failed before typecheck/tests/build at the missing ESLint configuration; configuration was added after that run. The latest Vercel preview is ERROR and build-event inspection is blocked by the current Vercel team's 403 authorization response.
+
+
+### Pass 9 — verified feature build and release blockers (2026-10-12)
+**Status: FEATURE BUILD PASSES; RELEASE GATES REMAIN**
+
+Latest observed GitHub Actions run: `38243010355` (current source head at time of run).
+
+- `npm ci`: PASS.
+- `npm run lint:library`: PASS.
+- `npm run typecheck`: PASS.
+- `npm run build`: PASS — production build completed and Next.js emitted the route/build summary.
+- `npm run test`: FAIL — 9 test files, 35 tests total; 8 files passed, 34 tests passed, 1 existing test failed in `tests/org-permissions.test.ts:22`, suite `NGO role permission profiles > gives each operational role its intended capabilities`.
+- All 6 new `library-validation.test.ts` tests passed.
+- The failing org-permissions test is outside Library scope and its role matrix was not changed. Do not change operational permissions just to make CI green without confirming intended access policy.
+- The build uses a CI-only placeholder `JWT_SECRET` so Next.js can import auth-dependent modules in CI. It is not a production secret and is not configured as a Vercel production environment variable.
+- Full-app ESLint previously surfaced legacy violations across unrelated files. CI now blocks on the focused Library lint, while a few safe pre-existing JSX/hook issues were corrected so the production build can complete. Legacy explicit-any usage remains warnings.
+
+**Still blocking production rollout**
+1. Full test suite is not green because of the unrelated role-permissions expectation.
+2. Dependency install reports 19 audit findings (13 high, 1 critical, 5 moderate); exact advisories need review before dependency upgrades.
+3. Vercel's latest preview status is ERROR. The current connector can list deployments but receives 403 when requesting build events or creating a preview under the selected team scope; therefore the exact Vercel build error is not verified.
+4. No browser/mobile end-to-end test has run.
+5. Library migrations remain unapplied. Live Supabase checks were read-only; test the migrations against a non-production database first.
+6. The existing Supabase security advisor reports `public.spatial_ref_sys` RLS disabled. This pre-existing critical finding was not changed and needs separate owner review.
+
+**Next substantial pass**
+- Triage the exact npm audit advisories and decide safe upgrades.
+- Resolve the existing org-permissions test with the policy owner (do not grant extra role permissions speculatively).
+- Restore Vercel team-scope access, obtain a current preview deployment, and test the admin upload → publish → reader → resume workflow on desktop and mobile.
+- Validate the two SQL migrations on a non-production Supabase database, then record rollout/rollback steps.
