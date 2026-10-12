@@ -102,8 +102,14 @@ export default function LibraryPage() {
     return () => controller.abort();
   }, []);
 
-  const categories = useMemo(() => ["All topics", ...(facets.categories.length ? facets.categories : Array.from(new Set(books.map((book) => book.category)))].sort((a, b) => a === "All topics" ? -1 : b === "All topics" ? 1 : a.localeCompare(b)), [books, facets.categories]);
-  const languages = useMemo(() => ["All languages", ...(facets.languages.length ? facets.languages : Array.from(new Set(books.map((book) => book.language)))].sort((a, b) => a === "All languages" ? -1 : b === "All languages" ? 1 : a.localeCompare(b)), [books, facets.languages]);
+  const categories = useMemo(() => {
+    const options = facets.categories.length ? facets.categories : Array.from(new Set(books.map((book) => book.category)));
+    return ["All topics", ...options].sort((a, b) => a === "All topics" ? -1 : b === "All topics" ? 1 : a.localeCompare(b));
+  }, [books, facets.categories]);
+  const languages = useMemo(() => {
+    const options = facets.languages.length ? facets.languages : Array.from(new Set(books.map((book) => book.language)));
+    return ["All languages", ...options].sort((a, b) => a === "All languages" ? -1 : b === "All languages" ? 1 : a.localeCompare(b));
+  }, [books, facets.languages]);
 
   async function loadMore() {
     setLoadingMore(true);
