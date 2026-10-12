@@ -93,7 +93,7 @@ export default function AdminLibraryPage() {
   useEffect(() => { if (selectedId) void loadChapters(selectedId); else setChapters([]); }, [selectedId, loadChapters]);
 
   const selectedBook = books.find((book) => book.id === selectedId) ?? null;
-  const setField = (field: keyof typeof emptyForm, value: string) => setForm((current) => ({ ...current, [field]: value }));
+  const setField = (field: keyof typeof emptyForm, value: string) => setForm((current) => ({ ...current, [field]: value } as typeof emptyForm));
 
   async function createBook(event: FormEvent) {
     event.preventDefault(); setSaving(true); setError(""); setNotice("");
