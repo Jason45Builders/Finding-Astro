@@ -1557,6 +1557,9 @@ class ApiClient {
   async createOrgFosterAssignment(data: Record<string, unknown>): Promise<any> {
     return this.request<any>("/org/foster/assignments", { method: "POST", body: JSON.stringify(data) });
   }
+  async updateOrgFosterAssignment(assignmentId: string, status: "active" | "completed" | "returned"): Promise<any> {
+    return this.request<any>("/org/foster/assignments", { method: "PATCH", body: JSON.stringify({ assignmentId, status }) });
+  }
 
   async listOrgShelters(): Promise<any[]> {
     return this.request<any[]>("/org/shelters").catch(() => []);
