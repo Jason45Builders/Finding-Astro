@@ -465,3 +465,9 @@ A non-blocking `npm audit --json` step was added to CI and emitted the affected 
 - Added `apps/web/app/library/layout.tsx` metadata for search snippets and social sharing, with India locale and animal-welfare search keywords.
 - CI for source head `b55b4ce` completed successfully: dependency installation, focused Library lint, TypeScript typecheck, full test suite, and production build all passed after aligning the vet role's case-write capability with the existing permission test.
 - Subsequent landing-page and SEO commits are newer than that successful run; their own CI is still required before release. An earlier intermediate commit without the new icon import failed lint/build, and was corrected immediately afterward.
+
+
+### CI confirmation after public landing-page integration (2026-10-12)
+- GitHub Actions run `38244337407` for commit `3120c26` completed successfully: npm install, dependency audit reporting, focused Library lint, typecheck, full tests, and production build all passed.
+- The later SEO metadata commit `92f3b71` has its own CI run in progress; focused lint has passed and typecheck is underway at the last observation.
+- This confirms the build/test state for `3120c26`, not yet for the latest `92f3b71` head.
