@@ -11,6 +11,11 @@ type Block = { type?: string; text?: string; level?: number };
 type ChapterContent = { id: string; title: string; summary: string; sort_order: number; content_format: string; content_body?: { blocks?: Block[]; text?: string } | null };
 type ApiResponse = { success: boolean; data?: { book: Book; chapters: Chapter[]; chapter?: ChapterContent }; message?: string };
 
+async function parseApiResponse<T>(response: Response): Promise<T> {
+  try { return await response.json() as T; }
+  catch { throw new Error("The server returned an unexpected response. Please try again."); }
+}
+
 function formatDate(value?: string | null) {
   if (!value) return "Finding Astro publication";
   const date = new Date(value);
@@ -54,7 +59,7 @@ export default function LibraryBookPage() {
       setError("");
       try {
         const response = await fetch(`/api/v1/library/books/${encodeURIComponent(slug)}`, { signal: controller.signal, cache: "no-store" });
-        const payload = await response.json() as ApiResponse;
+        const payload = await parseApiResponse<ApiResponse>(response);
         if (!response.ok || !payload.success || !payload.data?.book) throw new Error(payload.message || "This publication could not be found.");
         setBook(payload.data.book);
         setChapters(payload.data.chapters ?? []);
@@ -111,7 +116,7 @@ export default function LibraryBookPage() {
             cache: "no-store",
           });
           if (response.ok) {
-            const payload = await response.json() as { success?: boolean; data?: { progress?: Array<{ chapter_id: string | null }> } };
+            const payload = await parseApiResponse<{ success?: boolean; data?: { progress?: Array<{ chapter_id: string | null }> } }>(response);
             const savedChapterId = payload.data?.progress?.[0]?.chapter_id;
             const savedIndex = savedChapterId ? chapters.findIndex((chapter) => chapter.id === savedChapterId) : -1;
             if (!cancelled && savedIndex >= 0) {
