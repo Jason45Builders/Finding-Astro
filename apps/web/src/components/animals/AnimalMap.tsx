@@ -54,7 +54,7 @@ export default function AnimalMap({ animals }: { animals: any[] }) {
 
   return (
     <div className="relative h-full min-h-[400px] w-full overflow-hidden rounded-xl">
-      <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} style={{ height: '100%', width: '100%'}>
+      <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} style={{ height: '100%', width: '100%' }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
