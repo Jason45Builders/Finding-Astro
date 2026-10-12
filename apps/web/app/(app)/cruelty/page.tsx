@@ -5,6 +5,7 @@ import { ShieldAlert, Camera, MapPin, CheckCircle, AlertTriangle } from "lucide-
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -107,7 +108,7 @@ export default function CrueltyPage() {
         <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
         <div className="text-sm">
           <p className="font-bold mb-1">If an animal is in immediate danger</p>
-          <p>Do not intervene alone. Use the <a href="/cases/new" className="underline font-bold">Emergency Report</a> form for immediate rescue dispatch.</p>
+          <p>Do not intervene alone. Use the <Link href="/cases/new" className="underline font-bold">Emergency Report</Link> form for immediate rescue dispatch.</p>
         </div>
       </div>
 
