@@ -274,3 +274,9 @@ Validation:
 - GitHub confirmed migration, endpoint, and admin UI commits.
 - SQL has not been executed; function permissions and ordering behaviour need database validation.
 - No automated tests or build were run.
+
+
+### Preview CI observation (2026-10-12)
+- GitHub combined status for code commit 00350a040316bc9a634a5f0818638d38da8a7555 reports Vercel status **failure** with the target URL indicating a Vercel build-rate-limit/upgrade page.
+- This is an environment/build-quota blocker, not evidence that the application code passed or failed compilation. No successful preview deployment was confirmed.
+- Next action: retry after the Vercel build limit resets or run lint/typecheck/tests/build in a local/CI environment with available capacity. Do not merge based on the current status.
