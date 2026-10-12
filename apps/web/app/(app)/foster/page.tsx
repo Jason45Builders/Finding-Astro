@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { Heart, Plus, Search, Filter, CheckCircle } from "lucide-react";
 import { api, RecoveryRecord, Case, Animal } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -135,6 +136,7 @@ export default function FosterPage() {
           <Heart className="w-6 h-6 text-secondary" /> Foster & Recovery
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">Register and track foster care, shelter, and clinic recovery placements</p>
+        <Link href="/foster/opportunities" className="inline-flex mt-3 text-sm font-semibold text-primary hover:underline">Browse foster opportunities →</Link>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">

@@ -60,14 +60,18 @@ function AdoptPageInner() {
         const data = await api.listAdoptableAnimals();
         setAnimals(data);
       } catch {
-        try {
-          const all = await api.listAnimals({ limit: 100 });
-          setAnimals(all.filter(a => a.status === "found" || a.status === "community") as AdoptableAnimal[]);
-        } catch { /* ignore */ }
+        setAnimals([]);
       } finally { setLoading(false); }
     };
     load();
   }, []);
+
+  useEffect(() => {
+    const requestedAnimalId = searchParams?.get("animalId");
+    if (!requestedAnimalId || loading || selectedAnimal) return;
+    const requested = animals.find((animal) => animal.id === requestedAnimalId);
+    if (requested) { setSelectedAnimal(requested); setShowForm(true); }
+  }, [searchParams, loading, animals, selectedAnimal]);
 
   useEffect(() => {
     if (activeTab === "my-applications" && user) {
@@ -207,14 +211,14 @@ function AdoptPageInner() {
                   </div>
                   {app.status === "approved" && !app.agreementAcceptedAt && (
                     <div className="mt-4 bg-primary-container/20 border border-primary-container rounded-md p-4">
-                      <p className="text-sm font-semibold text-on-surface">Your application is approved! Confirm to proceed.</p>
+                      <p className="text-sm font-semibold text-on-surface">Your application is approved. Accept the agreement to schedule your trial placement.</p>
                       <Button
                         size="sm"
                         variant="primary"
                         className="mt-2"
                         onClick={() => api.confirmAdoption(app.id).then(() => api.listMyAdoptionApplications().then(setApplications))}
                       >
-                        Confirm Adoption
+                        Accept Agreement
                       </Button>
                     </div>
                   )}

@@ -156,6 +156,7 @@ export default function OrgFosterPage() {
           <p className="text-sm text-on-surface-variant">Manage foster homes and animal assignments</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/org/foster/applications"><Button variant="outline">Review Applications</Button></Link>
           {tab === "homes" ? (
             <Button variant="primary" onClick={openCreateHome}><Plus className="w-4 h-4 mr-2" />New Foster Home</Button>
           ) : (

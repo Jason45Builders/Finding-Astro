@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
   }
 
   const species = url.searchParams.get("species");
-  let query = supabaseAdmin().from("animals").select("*").not("adoptable_since", "is", null);
+  let query = supabaseAdmin().from("animals").select("*").not("adoptable_since", "is", null).eq("visibility", "public_adoption").neq("status", "adopted").neq("status", "reunited");
   if (species) query = query.eq("species", species);
   const { data, error } = await query;
   if (error) return serverError(error.message);
@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
     if (pathParts[0] === "applications" && pathParts[2] === "start-trial") return handleStartTrial(pathParts[1], req, authResult.user);
     if (pathParts[0] === "applications" && pathParts[2] === "complete-trial") return handleCompleteTrial(pathParts[1], req, authResult.user);
     if (pathParts[0] === "mark-adoptable") return handleMarkAdoptable(req, authResult.user);
+    if (pathParts[0] === "withdraw-listing") return handleWithdrawListing(req, authResult.user);
     return new Response(null, { status: 405 });
   } catch {
     return serverError();
@@ -85,10 +86,13 @@ async function handleApply(req: NextRequest, user: { id: string; role: string })
   if (!parsed.ok) return parsed.response;
   const { animalId, fullName, phone, address, livingSituation, hasOtherPets, otherPetsDesc, priorExperience, hoursAlonePerDay, reasonForAdopting } = parsed.data;
 
-  const { data: animal, error: animalError } = await supabaseAdmin().from("animals").select("id, welfare_group_id, adoptable_since").eq("id", animalId).maybeSingle();
+  const { data: animal, error: animalError } = await supabaseAdmin().from("animals").select("id, welfare_group_id, adoptable_since, visibility, status").eq("id", animalId).maybeSingle();
   if (animalError) return serverError(animalError.message);
   if (!animal) return badRequest("ANIMAL_NOT_FOUND", "Animal not found");
-  if (!animal.adoptable_since) return badRequest("NOT_ADOPTABLE", "This animal is not currently available for adoption");
+  if (!animal.adoptable_since || animal.visibility !== "public_adoption" || ["adopted", "reunited"].includes(animal.status)) return badRequest("NOT_ADOPTABLE", "This animal is not currently available for adoption");
+  const { data: duplicate, error: duplicateError } = await supabaseAdmin().from("adoption_applications").select("id").eq("animal_id", animalId).eq("applicant_user_id", user.id).in("status", ["pending_review", "approved", "trial"]).maybeSingle();
+  if (duplicateError) return serverError(duplicateError.message);
+  if (duplicate) return badRequest("DUPLICATE_APPLICATION", "You already have an active application for this animal");
 
   const { data: blacklistEntry, error: blacklistError } = await supabaseAdmin().from("adopter_blacklist").select("id, reason").or(`user_id.eq.${user.id},phone.eq.${phone}`).maybeSingle();
   if (blacklistError) return serverError(blacklistError.message);
@@ -133,18 +137,14 @@ async function handleConfirm(appId: string | undefined, req: NextRequest, user: 
   const loaded = await loadStaffApplication(req, appId, user);
   if ("error" in loaded) return loaded.error;
   const application = loaded.data as Record<string, unknown>;
-  const isPlatformStaff = ["admin", "govt"].includes(user.role);
-  const isReviewer = application.reviewed_by_user_id === user.id;
-  const isOrgReviewer = !!loaded.orgId;
-  if (!isPlatformStaff && !isReviewer && !isOrgReviewer) return badRequest("FORBIDDEN", "You are not authorized to confirm this adoption");
-  if (application.status === "adopted") return badRequest("INVALID_STATUS", "Adoption is already confirmed");
-  if (application.status === "rejected" || application.status === "returned") return badRequest("INVALID_STATUS", "This adoption cannot be confirmed");
-
-  const updateQuery = supabaseAdmin().from("adoption_applications").update({ status: "adopted", updated_at: new Date().toISOString() }).eq("id", appId!);
-  const { data, error } = await updateQuery.select("*").single();
+  if (application.applicant_user_id !== user.id) return badRequest("FORBIDDEN", "Only the applicant can accept the adoption agreement");
+  if (application.status !== "approved") return badRequest("INVALID_STATUS", "Only an approved application can accept the agreement");
+  if (application.agreement_accepted_at) return ok(mapAdoptionApplication(application), "Adoption agreement already accepted");
+  const { data, error } = await supabaseAdmin().from("adoption_applications").update({ agreement_accepted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", appId!).eq("applicant_user_id", user.id).eq("status", "approved").select("*").maybeSingle();
   if (error) return serverError(error.message);
-  if (data) await audit({ tableName: "adoption_applications", recordId: appId!, action: "UPDATE", actorId: user.id, actorRole: user.role, newData: data });
-  return ok(mapAdoptionApplication(data), "Adoption confirmed");
+  if (!data) return badRequest("INVALID_STATUS", "Application changed; refresh and try again");
+  await audit({ tableName: "adoption_applications", recordId: appId!, action: "UPDATE", actorId: user.id, actorRole: user.role, newData: data });
+  return ok(mapAdoptionApplication(data), "Adoption agreement accepted");
 }
 
 async function handleMarkAdoptable(req: NextRequest, user: { id: string; role: string }) {
@@ -154,7 +154,7 @@ async function handleMarkAdoptable(req: NextRequest, user: { id: string; role: s
   if (orgId instanceof Response) return orgId;
   if (user.role !== "ngo" && !["admin", "govt"].includes(user.role)) return badRequest("FORBIDDEN", "Only NGO or platform staff can mark animals as adoptable");
 
-  let query = supabaseAdmin().from("animals").update({ adoptable_since: new Date().toISOString() }).eq("id", parsed.data.animalId);
+  let query = supabaseAdmin().from("animals").update({ adoptable_since: new Date().toISOString(), visibility: "public_adoption" }).eq("id", parsed.data.animalId).neq("status", "adopted").neq("status", "reunited");
   if (orgId) query = query.eq("welfare_group_id", orgId);
   const { data, error } = await query.select("*").maybeSingle();
   if (error) return serverError(error.message);
@@ -197,6 +197,8 @@ async function handleStartTrial(appId: string | undefined, req: NextRequest, use
   if ("error" in loaded) return loaded.error;
   const parsed = validateBody(ReviewSchema, await req.json().catch(() => ({})));
   if (!parsed.ok) return parsed.response;
+  if (loaded.data.status !== "approved") return badRequest("INVALID_STATUS", "Only approved applications can start a trial");
+  if (!loaded.data.agreement_accepted_at) return badRequest("AGREEMENT_REQUIRED", "The applicant must accept the adoption agreement first");
   if (!parsed.data.trialDays || parsed.data.trialDays <= 0) return badRequest("VALIDATION_ERROR", "trialDays must be a positive integer");
   const startDate = new Date(), endDate = new Date();
   endDate.setDate(startDate.getDate() + parsed.data.trialDays);
@@ -212,10 +214,16 @@ async function handleStartTrial(appId: string | undefined, req: NextRequest, use
 async function handleCompleteTrial(appId: string | undefined, req: NextRequest, user: { id: string; role: string }) {
   const loaded = await loadStaffApplication(req, appId, user);
   if ("error" in loaded) return loaded.error;
+  if (loaded.data.status !== "trial") return badRequest("INVALID_STATUS", "Only an active trial can be completed");
   let query = supabaseAdmin().from("adoption_applications").update({ status: "adopted", updated_at: new Date().toISOString() }).eq("id", appId!);
   if (loaded.orgId) query = query.eq("welfare_group_id", loaded.orgId);
   const { data, error } = await query.select("*").single();
   if (error) return serverError(error.message);
   if (data) await audit({ tableName: "adoption_applications", recordId: appId!, action: "UPDATE", actorId: user.id, actorRole: user.role, newData: data });
   return ok(mapAdoptionApplication(data), "Trial completed, adoption confirmed");
+}
+
+
+async function handleWithdrawListing(req: NextRequest, user: { id: string; role: string }) {
+ const parsed=validateBody(MarkAdoptableSchema,await req.json());if(!parsed.ok)return parsed.response;const orgId=await getNgoScope(req,user,"animals:write");if(orgId instanceof Response)return orgId;if(user.role!=="ngo"&&!["admin","govt"].includes(user.role))return badRequest("FORBIDDEN","Only NGO or platform staff can withdraw an adoption listing");let query=supabaseAdmin().from("animals").update({adoptable_since:null,updated_at:new Date().toISOString()}).eq("id",parsed.data.animalId);if(orgId)query=query.eq("welfare_group_id",orgId);const {data,error}=await query.select("*").maybeSingle();if(error)return serverError(error.message);if(!data)return badRequest("NOT_FOUND","Animal not found in the active organization");await audit({tableName:"animals",recordId:parsed.data.animalId,action:"UPDATE",actorId:user.id,actorRole:user.role,newData:data});return ok(mapAnimal({...data,location:decodeLocation(data.location)}),"Adoption listing withdrawn");
 }

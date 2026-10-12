@@ -884,11 +884,13 @@ class ApiClient {
     });
   }
 
-  async completeAdoptionTrial(applicationId: string): Promise<AdoptionApplication> {
-    return this.request<AdoptionApplication>(`/adoption/applications/${applicationId}/complete-trial`, {
-      method: "POST",
-    });
-  }
+  async completeAdoptionTrial(applicationId: string): Promise<AdoptionApplication> { return this.request<AdoptionApplication>(`/adoption/applications/${applicationId}/complete-trial`, { method: "POST" }); }
+  async markAnimalAdoptable(animalId: string): Promise<Animal> { return this.request<Animal>("/adoption/mark-adoptable", { method: "POST", body: JSON.stringify({ animalId }) }); }
+  async withdrawAdoptionListing(animalId: string): Promise<Animal> { return this.request<Animal>("/adoption/withdraw-listing", { method: "POST", body: JSON.stringify({ animalId }) }); }
+  async listFosterOpportunities(): Promise<Animal[]> { return this.request<Animal[]>("/foster-opportunities"); }
+  async applyForFoster(data: { animalId: string; message: string; availability: string; experience: string }): Promise<any> { return this.request<any>("/foster-opportunities/apply", { method: "POST", body: JSON.stringify(data) }); }
+  async listOrgFosterApplications(): Promise<any[]> { return this.request<any[]>("/org/foster/applications").catch(() => []); }
+  async reviewOrgFosterApplication(data: { applicationId: string; status: "approved" | "rejected"; reviewNotes?: string; fosterHomeId?: string }): Promise<any> { return this.request<any>("/org/foster/applications", { method: "POST", body: JSON.stringify(data) }); }
 
   // ── ABC ───────────────────────────────────────────────────────────────────
   async requestAbc(data: {
