@@ -18,11 +18,11 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ slug: 
 
     const { data: chapter, error: chapterError } = await supabaseAdmin()
       .from("library_chapters")
-      .select("id, title, summary, sort_order, content_format, content_body")
+       .select("id, title, summary, sort_order, content_format, content_body")
       .eq("id", chapterId)
       .eq("book_id", book.id)
       .eq("status", "published")
-      .eq("content_format", "rich_text")
+      .in("content_format", ["rich_text", "pdf"])
       .maybeSingle();
     if (chapterError) return serverError("Unable to load chapter", chapterError);
     if (!chapter) return notFound("Chapter not found");
