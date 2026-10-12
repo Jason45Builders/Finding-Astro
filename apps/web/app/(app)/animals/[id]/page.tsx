@@ -51,6 +51,8 @@ export default function AnimalProfilePage() {
   const [medicalForm, setMedicalForm] = useState({ entryType: "treatment" as const, title: "", notes: "", providerName: "", treatmentDate: "", costAmount: "", attachments: "" });
   const [vaccinationForm, setVaccinationForm] = useState({ vaccineName: "", administeredAt: "", expiresAt: "", batchNumber: "", notes: "", verified: false, status: "unverified" as const });
   const [reuniteLoading, setReuniteLoading] = useState(false);
+  const [listingBusy, setListingBusy] = useState(false);
+  const [listingMessage, setListingMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -84,6 +86,24 @@ export default function AnimalProfilePage() {
       } catch { /* ignore */ }
       finally { setAbcSubmitting(false); }
     }, () => setAbcSubmitting(false));
+  };
+
+  const canManageAnimalListings = ["admin", "govt", "ngo"].includes(user?.role || "");
+  const handleAdoptionListing = async () => {
+    if (!animal) return;
+    setListingBusy(true); setListingMessage(null);
+    try {
+      const updated = animal.adoptableSince ? await api.withdrawAdoptionListing(animal.id) : await api.markAnimalAdoptable(animal.id);
+      setAnimal(updated); setListingMessage(updated.adoptableSince ? "Published for adoption." : "Adoption listing withdrawn.");
+    } catch (error) { setListingMessage(error instanceof Error ? error.message : "Could not update adoption listing."); }
+    finally { setListingBusy(false); }
+  };
+  const handleFosterListing = async () => {
+    if (!animal) return;
+    setListingBusy(true); setListingMessage(null);
+    try { const updated = await api.publishFosterOpportunity(animal.id); setAnimal(updated); setListingMessage("Published as a foster opportunity."); }
+    catch (error) { setListingMessage(error instanceof Error ? error.message : "Could not publish foster opportunity."); }
+    finally { setListingBusy(false); }
   };
 
   const canCreateMedical = ["admin", "govt", "ngo", "hospital"].includes(user?.role || "");
@@ -224,6 +244,16 @@ export default function AnimalProfilePage() {
                   </Button>
                 </Link>
               )}
+              {canManageAnimalListings && animal.status !== "adopted" && animal.status !== "reunited" && (
+                <>
+                  <Button variant="outline" size="sm" onClick={handleAdoptionListing} disabled={listingBusy}>
+                    {animal.adoptableSince ? "Withdraw Adoption Listing" : "Publish for Adoption"}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleFosterListing} disabled={listingBusy}>
+                    Publish for Fostering
+                  </Button>
+                </>
+              )}
               {!animal.isSterilized && animal.status === "community" && (
                 <Button variant="primary" size="sm" onClick={handleAbcRequest} disabled={abcSubmitting || abcSuccess}>
                   <Leaf className="w-4 h-4" />
@@ -231,6 +261,7 @@ export default function AnimalProfilePage() {
                 </Button>
               )}
             </div>
+            {listingMessage && <p className="mt-2 text-xs text-on-surface-variant" role="status">{listingMessage}</p>}
           </div>
           {animal.description && (
             <p className="text-sm text-on-surface-variant mt-4 leading-relaxed bg-surface-container-low p-4 rounded-xl">{animal.description}</p>
