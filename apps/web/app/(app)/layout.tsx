@@ -176,7 +176,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       return (
         <>
           <p className="px-4 pt-2 pb-1 text-[10px] font-black uppercase tracking-widest text-outline">Workspace</p>
-          {renderNavigation()}
+          {navItems.map(item => <NavLink key={item.href} item={item} onClick={() => setMobileMenuOpen(false)} />)}
         </>
       );
     }
@@ -333,7 +333,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </button>
             </div>
             <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-              {navItems.map(item => <NavLink key={item.href} item={item} onClick={() => setMobileMenuOpen(false)} />)}
+              {renderNavigation()}
             </nav>
             <div className="p-3 border-t border-outline-variant">
               <button onClick={handleLogout}
