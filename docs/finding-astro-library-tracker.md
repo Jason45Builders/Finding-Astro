@@ -3,7 +3,7 @@
 - **Feature branch:** feature/finding-astro-library
 - **Base branch:** Working
 - **Blueprint:** docs/finding-astro-library-blueprint.md
-- **Status:** In progress — branch and planning documents created; implementation audit not yet complete
+- **Status:** In progress — repository audit underway; schema migration added
 - **Last updated:** 2026-10-12
 - **Rule:** Update this tracker during every substantial implementation pass. Do not mark work complete without observed evidence.
 
@@ -14,9 +14,9 @@
 | Create isolated feature branch from Working | DONE | Branch created in GitHub |
 | Detailed blueprint | DONE | Product, data model, security, UX, testing, and pass plan documented |
 | Persistent tracker | DONE | This file |
-| Repository/framework audit | TODO | Must inspect actual code and scripts before implementation |
-| Supabase schema and policies | TODO | Depends on audit |
-| Storage strategy and upload workflow | TODO | Depends on audit |
+| Repository/framework audit | PARTIAL | Next.js 15 monorepo, custom JWT auth, media upload flow and package scripts inspected; admin UI location/deployed Storage config still to confirm |
+| Supabase schema and policies | PARTIAL | Additive Library migration committed; RLS enabled fail-closed; API-level auth still required due service-role bypass |
+| Storage strategy and upload workflow | PARTIAL | Existing media endpoint inspected; 10 MiB allowlist supports images/PDF only; Library-specific secure upload flow remains to build |
 | Admin publishing studio | TODO | Pass 2 |
 | Reader catalogue and reader | TODO | Pass 3 |
 | Reading progress/accessibility | TODO | Pass 4 |
@@ -174,4 +174,4 @@ Copy and complete this section at the end of each substantial pass:
 
 ## Completion accounting
 
-Do not report a percentage based on file count or number of commits. Report by completed acceptance criteria and working end-to-end paths. Planning documentation is complete; feature implementation is currently not started.
+Do not report a percentage based on file count or number of commits. Report by completed acceptance criteria and working end-to-end paths. Planning documentation is complete and the first schema migration is committed. The end-to-end feature is not yet implemented; no reader or admin UI exists from this work so far.
