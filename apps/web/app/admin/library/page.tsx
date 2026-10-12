@@ -12,7 +12,7 @@ type Book = {
   published_at?: string | null; updated_at?: string | null;
 };
 type Chapter = { id: string; title: string; summary: string; sort_order: number; content_format: string; content_body?: { blocks?: Array<{ text?: string }> ; text?: string } | null; status: "draft" | "published" };
-type Payload = { success: boolean; data?: any; message?: string; code?: string };
+type Payload = { success: boolean; data?: { book?: { id?: string }; books?: Book[]; chapters?: Chapter[]; key?: string; publicUrl?: string; mimeType?: string }; message?: string; code?: string };
 
 const emptyForm = {
   title: "", slug: "", subtitle: "", description: "", authorName: "Finding Astro Team",
