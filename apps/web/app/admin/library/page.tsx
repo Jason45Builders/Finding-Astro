@@ -106,7 +106,23 @@ export default function AdminLibraryPage() {
     try {
       const result = await requestApi("/admin/library/books", { method: "POST", body: JSON.stringify({ ...form, slug: form.slug || slugify(form.title) }) });
       const id = result.data?.book?.id as string | undefined;
-      setNotice("Draft publication created. Add its content before publishing.");
+      if (!id) throw new Error("Draft was created, but its identifier was not returned. Refresh and select it from Publications.");
+      if (completeFile) {
+        if (form.publicationType === "chapter_based") {
+          setNotice("Draft created. A PDF edition cannot be attached as a chapter yet. Choose Complete file (PDF) or Hybrid for a book-level PDF, or add readable chapter text.");
+        } else {
+          if (completeFile.type !== "application/pdf") throw new Error("The publication file must be a PDF.");
+          const uploaded = await uploadMedia(completeFile, "document");
+          await requestApi(`/admin/library/books/${id}`, {
+            method: "PATCH",
+            body: JSON.stringify({ primaryFileStoragePath: uploaded.key, primaryFileFormat: "pdf" }),
+          });
+          setCompleteFile(null);
+          setNotice("Draft created and PDF uploaded. Confirm publication rights and publish when ready.");
+        }
+      } else {
+        setNotice("Draft publication created. Add its content before publishing.");
+      }
       await loadBooks(id);
     } catch (err) { setError(err instanceof Error ? err.message : "Unable to create publication."); }
     finally { setSaving(false); }
@@ -269,7 +285,7 @@ export default function AdminLibraryPage() {
           </aside>
 
           <section className="min-w-0 space-y-6">
-            {!selectedBook ? <form onSubmit={createBook} className="rounded-2xl border border-outline/15 bg-surface p-5 sm:p-7"><div className="mb-6 flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary"><Plus size={20} /></span><div><h3 className="text-lg font-extrabold">Create a publication</h3><p className="text-sm text-on-surface-variant">Start as a private draft. You can add content before publishing.</p></div></div><MetadataFields form={form} setField={setField} /><button disabled={saving} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary disabled:opacity-50">{saving ? <LoaderCircle size={16} className="animate-spin" /> : <Plus size={16} />} Create draft</button></form>
+            {!selectedBook ? <form onSubmit={createBook} className="rounded-2xl border border-outline/15 bg-surface p-5 sm:p-7"><div className="mb-6 flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary"><Plus size={20} /></span><div><h3 className="text-lg font-extrabold">Create a publication</h3><p className="text-sm text-on-surface-variant">Start as a private draft. You can add content before publishing.</p></div></div><MetadataFields form={form} setField={setField} /><div className="mt-5 rounded-xl border border-dashed border-outline/30 p-4"><label className="block text-sm font-bold"><span className="flex items-center gap-2"><FileText size={17} /> Upload PDF with draft creation</span><span className="mt-1 block text-xs font-normal leading-5 text-on-surface-variant">PDF only · maximum 10 MB. For a book-level PDF, choose Complete file (PDF) or Hybrid. Chapter-based books currently require readable text chapters.</span><input type="file" accept="application/pdf,.pdf" onChange={onFile(setCompleteFile)} className="mt-3 block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-surface-variant file:px-3 file:py-2 file:text-xs file:font-bold" /></label>{completeFile && <p className="mt-2 text-xs text-on-surface-variant">Selected: {completeFile.name} ({(completeFile.size / (1024 * 1024)).toFixed(1)} MB)</p>}</div><button disabled={saving || uploading} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-on-primary disabled:opacity-50">{saving || uploading ? <LoaderCircle size={16} className="animate-spin" /> : <Plus size={16} />} Create draft{completeFile ? " and upload PDF" : ""}</button></form>
             : <>
               <form onSubmit={saveMetadata} className="rounded-2xl border border-outline/15 bg-surface p-5 sm:p-7"><div className="mb-6 flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Publication details</p><h3 className="mt-1 text-lg font-extrabold">{selectedBook.title}</h3><p className="mt-1 text-xs text-on-surface-variant">Status: {selectedBook.status}</p></div><button disabled={saving} className="inline-flex items-center gap-2 rounded-xl border border-outline/20 px-4 py-2.5 text-sm font-bold disabled:opacity-50"><Save size={15} /> Save details</button></div><MetadataFields form={form} setField={setField} /></form>
 
