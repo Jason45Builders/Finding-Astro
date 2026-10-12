@@ -17,7 +17,7 @@ const UpdateBookSchema = z.object({
   language: z.string().trim().min(2).max(20).optional(),
   coverStoragePath: z.string().max(1024).nullable().optional(),
   primaryFileStoragePath: z.string().max(1024).nullable().optional(),
-  primaryFileFormat: z.enum(["pdf", "epub"]).nullable().optional(),
+  primaryFileFormat: z.literal("pdf").nullable().optional(),
   rightsConfirmed: z.boolean().optional(),
   status: z.enum(["draft", "published", "archived"]).optional(),
   isFeatured: z.boolean().optional(),
@@ -62,9 +62,19 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ bookI
       return badRequest("VALIDATION_ERROR", parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; "));
     }
     const input = parsed.data;
+    const isSafeStoragePath = (value: string, prefix: string) => {
+      const parts = value.split("/");
+      return value.startsWith(prefix) && !value.includes("\\\\") && parts.every((part) => part.length > 0 && part !== "." && part !== ".." && !/[\\u0000-\\u001f]/.test(part));
+    };
+    if (typeof input.coverStoragePath === "string" && !isSafeStoragePath(input.coverStoragePath, "animals/")) {
+      return badRequest("INVALID_COVER_PATH", "Cover must reference an uploaded public image asset");
+    }
+    if (typeof input.primaryFileStoragePath === "string" && !isSafeStoragePath(input.primaryFileStoragePath, "documents/")) {
+      return badRequest("INVALID_BOOK_PATH", "Complete-book files must reference an uploaded private document asset");
+    }
     const { data: current, error: readError } = await supabaseAdmin()
       .from("library_books")
-      .select("id, publication_type, primary_file_storage_path, status, rights_confirmed_at")
+      .select("id, publication_type, primary_file_storage_path, primary_file_format, status, rights_confirmed_at")
       .eq("id", bookId)
       .maybeSingle();
     if (readError) return serverError("Unable to validate publication", readError);
@@ -92,22 +102,27 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ bookI
       changes.rights_confirmed_by = null;
     }
 
-    if (input.status === "published") {
+    const finalStatus = input.status ?? current.status;
+    if (finalStatus === "published") {
       const finalType = input.publicationType ?? current.publication_type;
       const finalFile = input.primaryFileStoragePath !== undefined ? input.primaryFileStoragePath : current.primary_file_storage_path;
-      const rightsConfirmed = input.rightsConfirmed === true || Boolean(current.rights_confirmed_at);
+      const finalFormat = input.primaryFileFormat !== undefined ? input.primaryFileFormat : current.primary_file_format;
+      const rightsConfirmed = input.rightsConfirmed === true || (input.rightsConfirmed !== false && Boolean(current.rights_confirmed_at));
       if (!rightsConfirmed) return badRequest("RIGHTS_CONFIRMATION_REQUIRED", "Confirm publication rights before publishing");
-      if (finalType === "complete_file" && !finalFile) {
-        return badRequest("CONTENT_REQUIRED", "Upload a complete book file before publishing");
+
+      const requiresCompletePdf = finalType === "complete_file" || finalType === "hybrid";
+      if (requiresCompletePdf && (!finalFile || finalFormat !== "pdf")) {
+        return badRequest("CONTENT_REQUIRED", "Upload a supported PDF edition before publishing this publication type");
       }
-      if (finalType !== "complete_file") {
+      if (finalType === "chapter_based" || finalType === "hybrid") {
         const { count, error: chapterError } = await supabaseAdmin()
           .from("library_chapters")
           .select("id", { count: "exact", head: true })
           .eq("book_id", bookId)
-          .eq("status", "published");
+          .eq("status", "published")
+          .eq("content_format", "rich_text");
         if (chapterError) return serverError("Unable to validate chapters", chapterError);
-        if (!count) return badRequest("CONTENT_REQUIRED", "Add at least one published chapter before publishing");
+        if (!count) return badRequest("CONTENT_REQUIRED", "Add at least one published, readable text chapter before publishing");
       }
       changes.published_at = new Date().toISOString();
     }
