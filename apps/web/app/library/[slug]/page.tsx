@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, BookOpen, BookText, Check, ChevronDown, ChevronUp, Languages, List, LoaderCircle } from "lucide-react";
 
 type Chapter = { id: string; title: string; summary: string; sort_order: number; content_format: "rich_text" | "pdf" | "epub" };
@@ -50,6 +50,7 @@ export default function LibraryBookPage() {
   const [chapterError, setChapterError] = useState("");
   const [showContents, setShowContents] = useState(true);
   const [fontScale, setFontScale] = useState(1);
+  const chapterRequestRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -71,18 +72,26 @@ export default function LibraryBookPage() {
       }
     }
     void load();
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      chapterRequestRef.current?.abort();
+      chapterRequestRef.current = null;
+    };
   }, [slug]);
 
   const openChapter = useCallback(async (chapter: Chapter, index: number) => {
     if (!slug) return;
+    chapterRequestRef.current?.abort();
+    const chapterController = new AbortController();
+    chapterRequestRef.current = chapterController;
     setActiveIndex(index);
     setChapterLoading(true);
     setChapterError("");
     try {
-      const response = await fetch(`/api/v1/library/books/${encodeURIComponent(slug)}/chapters/${encodeURIComponent(chapter.id)}`, { cache: "no-store" });
-      const payload = await response.json() as ApiResponse;
+      const response = await fetch(`/api/v1/library/books/${encodeURIComponent(slug)}/chapters/${encodeURIComponent(chapter.id)}`, { cache: "no-store", signal: chapterController.signal });
+      const payload = await parseApiResponse<ApiResponse>(response);
       if (!response.ok || !payload.success || !payload.data?.chapter) throw new Error(payload.message || "This chapter could not be loaded.");
+      if (chapterController.signal.aborted) return;
       setActiveChapter(payload.data.chapter);
       const token = window.localStorage.getItem("fa_token");
       if (token && payload.data.book?.id) {
@@ -97,10 +106,14 @@ export default function LibraryBookPage() {
         }).catch(() => undefined);
       }
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
       setChapterError(err instanceof Error ? err.message : "This chapter could not be loaded.");
       setActiveChapter(undefined);
     } finally {
-      setChapterLoading(false);
+      if (chapterRequestRef.current === chapterController) {
+        chapterRequestRef.current = null;
+        setChapterLoading(false);
+      }
     }
   }, [slug]);
 
