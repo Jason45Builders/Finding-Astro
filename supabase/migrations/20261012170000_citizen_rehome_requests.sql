@@ -1,6 +1,6 @@
 create table if not exists public.rehome_requests (
   id uuid primary key default uuid_generate_v4(),
-  applicant_user_id uuid not null references auth.users(id) on delete cascade,
+  applicant_user_id uuid not null references public.users(id) on delete cascade,
   animal_type text not null check (animal_type in ('own_pet','community_animal')),
   species text not null check (species in ('dog','cat','bird','other')),
   animal_name text,
@@ -18,7 +18,7 @@ create table if not exists public.rehome_requests (
   ownership_confirmed boolean not null default false,
   helper_acknowledged boolean not null default false,
   status text not null default 'pending_review' check (status in ('pending_review','needs_info','publishing','approved','rejected','withdrawn')),
-  reviewer_user_id uuid references auth.users(id) on delete set null,
+  reviewer_user_id uuid references public.users(id) on delete set null,
   review_notes text,
   linked_animal_id uuid references public.animals(id) on delete set null,
   reviewed_at timestamptz,
