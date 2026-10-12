@@ -407,3 +407,13 @@ Production rollout remains blocked on:
 - A non-blocking npm audit step still reports 19 dependency findings, including critical Next.js advisories. No dependency versions have been changed.
 - The feature is not released. Vercel preview creation/log access is blocked by a 403 team-scope response; no current-head preview has been browser-tested. Migrations have not been applied to a live database.
 - The vet role permission adjustment in this branch grants `cases:write`; validate that this matches the intended organization permission policy before merging.
+
+
+## 21. Reader discovery and validation update (2026-10-12)
+
+- The public landing page now links to the free Library from desktop navigation, the hero area, and the footer.
+- The catalogue includes an editorial featured-publication spotlight driven by the existing featured flag, plus paginated search/filter browsing.
+- `apps/web/app/library/layout.tsx` adds Library-specific search and social-sharing metadata.
+- GitHub Actions run `38244337407` passed dependency installation, focused Library lint, TypeScript typecheck, the full test suite, and production build for commit `3120c26`.
+- The latest SEO metadata commit `92f3b71` is running the same workflow; its focused lint passed, and typecheck was in progress at the last observation.
+- Production rollout remains blocked by untriaged dependency audit findings, unavailable Vercel deployment diagnostics, absent Library tables in the live Supabase project, and the need for a real browser/mobile end-to-end test. Do not apply the Library migrations to production until these gates are addressed.
