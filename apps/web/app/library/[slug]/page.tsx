@@ -79,6 +79,18 @@ export default function LibraryBookPage() {
       const payload = await response.json() as ApiResponse;
       if (!response.ok || !payload.success || !payload.data?.chapter) throw new Error(payload.message || "This chapter could not be loaded.");
       setActiveChapter(payload.data.chapter);
+      const token = window.localStorage.getItem("fa_token");
+      if (token && payload.data.book?.id) {
+        void fetch("/api/v1/library/progress", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            "X-Requested-With": "Finding-Astro-App",
+          },
+          body: JSON.stringify({ bookId: payload.data.book.id, chapterId: chapter.id, position: { kind: "chapter", offset: 0 } }),
+        }).catch(() => undefined);
+      }
     } catch (err) {
       setChapterError(err instanceof Error ? err.message : "This chapter could not be loaded.");
       setActiveChapter(undefined);
@@ -88,8 +100,34 @@ export default function LibraryBookPage() {
   }, [slug]);
 
   useEffect(() => {
-    if (chapters.length && !activeChapter && book?.publication_type !== "complete_file") void openChapter(chapters[0], 0);
-  }, [chapters, activeChapter, book?.publication_type, openChapter]);
+    if (!chapters.length || activeChapter || book?.publication_type === "complete_file") return;
+    let cancelled = false;
+    async function resumeReading() {
+      const token = window.localStorage.getItem("fa_token");
+      if (token && book?.id) {
+        try {
+          const response = await fetch(`/api/v1/library/progress?bookId=${encodeURIComponent(book.id)}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
+          });
+          if (response.ok) {
+            const payload = await response.json() as { success?: boolean; data?: { progress?: Array<{ chapter_id: string | null }> } };
+            const savedChapterId = payload.data?.progress?.[0]?.chapter_id;
+            const savedIndex = savedChapterId ? chapters.findIndex((chapter) => chapter.id === savedChapterId) : -1;
+            if (!cancelled && savedIndex >= 0) {
+              await openChapter(chapters[savedIndex], savedIndex);
+              return;
+            }
+          }
+        } catch {
+          // Progress is an enhancement; reading must still work if it cannot be loaded.
+        }
+      }
+      if (!cancelled) await openChapter(chapters[0], 0);
+    }
+    void resumeReading();
+    return () => { cancelled = true; };
+  }, [chapters, activeChapter, book?.id, book?.publication_type, openChapter]);
 
   if (loading) return <main className="grid min-h-screen place-items-center bg-background"><div className="flex items-center gap-3 text-sm text-on-surface-variant"><LoaderCircle className="animate-spin" size={20} /> Opening publication…</div></main>;
   if (error || !book) return <main className="min-h-screen bg-background px-5 py-16"><div className="mx-auto max-w-xl rounded-2xl border border-outline/20 bg-surface p-8 text-center"><BookOpen className="mx-auto text-on-surface-variant" size={34} /><h1 className="mt-4 text-2xl font-extrabold">Publication unavailable</h1><p role="alert" className="mt-2 text-sm text-on-surface-variant">{error || "This publication may have been unpublished."}</p><Link href="/library" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-on-primary"><ArrowLeft size={16} /> Back to library</Link></div></main>;
