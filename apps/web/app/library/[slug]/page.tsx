@@ -20,7 +20,7 @@ function formatDate(value?: string | null) {
 function ChapterBody({ content }: { content?: ChapterContent }) {
   const blocks = content?.content_body?.blocks;
   if (Array.isArray(blocks) && blocks.length) {
-    return <div className="space-y-5 text-[17px] leading-8 text-on-surface">{blocks.map((block, index) => {
+    return <div className="space-y-5 leading-8 text-on-surface">{blocks.map((block, index) => {
       const text = typeof block.text === "string" ? block.text : "";
       if (!text) return null;
       if (block.type === "heading") return <h3 key={index} className={`font-extrabold leading-tight tracking-tight ${block.level === 3 ? "text-xl" : "text-2xl"}`}>{text}</h3>;
@@ -28,7 +28,7 @@ function ChapterBody({ content }: { content?: ChapterContent }) {
       return <p key={index}>{text}</p>;
     })}</div>;
   }
-  if (typeof content?.content_body?.text === "string") return <div className="whitespace-pre-wrap text-[17px] leading-8 text-on-surface">{content.content_body.text}</div>;
+  if (typeof content?.content_body?.text === "string") return <div className="whitespace-pre-wrap leading-8 text-on-surface">{content.content_body.text}</div>;
   return <p className="text-sm text-on-surface-variant">This chapter does not contain readable structured text yet.</p>;
 }
 
