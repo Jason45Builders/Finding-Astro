@@ -26,4 +26,6 @@ jobs:
         run: npm run test
       - name: Production build
         if: always() && steps.dependencies.outcome == 'success' && steps.lint.outcome == 'success' && steps.typecheck.outcome == 'success'
+        env:
+          JWT_SECRET: finding-astro-ci-only-secret-do-not-use-in-production
         run: npm run build
