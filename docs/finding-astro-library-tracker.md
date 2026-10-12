@@ -377,3 +377,13 @@ Delivered on the existing `feature/finding-astro-library` branch. No additional 
 - The observed CI run at `160f336` installed dependencies, then failed at lint because ESLint configuration was missing. That config has been added; the subsequent code/test commits have no successful current-head CI result attached yet.
 - Vercel can list the preview deployment but the current connection receives a 403 when asked to create a deployment or fetch build events under the team scope. Do not try another connected Vercel account without confirming which account should be used.
 - Live Supabase schema inspection remains read-only; no Library migration has been applied.
+
+
+### Pass 7 — reader API boundaries and admin error clarity (2026-10-12)
+- Public book-detail and chapter endpoints now return only published `rich_text` chapters; unsupported file-backed chapters cannot appear as blank/unreadable items in the reader.
+- Reading-progress writes validate that a chapter is published, belongs to the selected book, and uses the supported rich-text format.
+- Admin chapter rows label the stored content format and disable editing for unsupported file formats, with a helpful explanation.
+- Catalogue filter selects now expose keyboard focus rings, and active reader chapters use `aria-current`; new-tab PDF links have accessible names.
+- Admin library error states now distinguish an expired/missing sign-in from an authenticated user lacking administrator permission.
+- Catalogue offsets are bounded to prevent pathological pagination values.
+- No production data or database schema has been changed. These changes still require a successful current-head lint/typecheck/test/build run and browser validation.
