@@ -68,21 +68,13 @@ export default function RehomePage() {
       body.append("originalName", uploadFile.name);
       body.append("mimeType", uploadFile.type);
       body.append("purpose", "animal_photo");
-      const response = await fetch("/api/v1/media/upload", { method: "POST", body, credentials: "same-origin" });
-      const responseText = await response.text();
-      let result: any;
-      try { result = JSON.parse(responseText); }
-      catch {
-        const detail = responseText.trim().slice(0, 180);
-        if (response.status === 413 || /request entity too large/i.test(detail)) {
-          throw new Error("The photo upload exceeded the server's request limit. Please choose a smaller image and try again.");
-        }
-        throw new Error(detail || "The server returned an unreadable upload response. Please try again.");
-      }
-      if (!response.ok || !result?.success || !(result?.data?.publicUrl || result?.data?.cdnUrl)) {
-        throw new Error(result?.message || result?.error || "Photo upload failed. Please try again.");
-      }
-      set("photoUrl", result.data.publicUrl || result.data.cdnUrl);
+      const result = await api.request<{ publicUrl?: string; cdnUrl?: string }>("/media/upload", {
+        method: "POST",
+        body,
+      });
+      const photoUrl = result.publicUrl || result.cdnUrl;
+      if (!photoUrl) throw new Error("The upload succeeded but no photo URL was returned. Please try again.");
+      set("photoUrl", photoUrl);
     } catch (e) {
       setPhotoError(e instanceof Error ? e.message : "Photo upload failed. Please try again.");
     } finally { setUploadingPhoto(false); }
