@@ -20,25 +20,25 @@
 - [ ] Confirm CI/build results for the implementation commit.
 
 ### B. Citizen navigation
-- [ ] Replace flat citizen list with labeled sections.
-- [ ] Remove the ten collective-operation links from the citizen sidebar.
+- [x] Replace flat citizen list with labeled sections.
+- [x] Remove the ten collective-operation links from the citizen sidebar.
 - [ ] Add one **My Collectives** entry linking to `/collectives`.
-- [ ] Keep less-frequent destinations discoverable under More.
-- [ ] Keep mobile bottom navigation compact and functional.
+- [x] Keep less-frequent destinations discoverable under More.
+- [x] Keep mobile bottom navigation compact and workspace-aware.
 
 ### C. My Collectives landing page
-- [ ] Implement `/collectives` using `api.getMyOrgMemberships()`.
-- [ ] Show only active memberships and role/type/verification context.
-- [ ] Support zero, one, and multiple memberships.
-- [ ] Set active org and open `/org/dashboard` on selection.
-- [ ] Link to existing create-collective flow.
-- [ ] Add loading, retryable error, and empty states.
+- [x] Implement `/collectives` using `api.getMyOrgMemberships()`.
+- [x] Show only active memberships and role/type/verification context.
+- [x] Support zero, one, and multiple memberships.
+- [x] Set active org and open `/org/dashboard` on selection.
+- [x] Link to existing create-collective flow.
+- [x] Add loading, retryable error, and empty states.
 
 ### D. Collective workspace navigation
-- [ ] Show collective tools only on `/org/*` routes.
-- [ ] Add clear links to My Collectives and Citizen Dashboard.
-- [ ] Use workspace-specific mobile shortcuts.
-- [ ] Verify active link highlighting for nested paths.
+- [x] Show collective tools only on `/org/*` routes (and preserve existing NGO workspace behavior).
+- [x] Add clear links to My Collectives and Citizen Dashboard.
+- [x] Use workspace-specific mobile shortcuts.
+- [x] Reused existing nested-route active matching; runtime verification pending.
 - [ ] Preserve existing `/org/layout.tsx` membership guard.
 
 ### E. Quality and regression
@@ -67,4 +67,4 @@
 
 | Date | Change | Evidence / result |
 |---|---|---|
-| 2026-10-12 | Blueprint and tracker created on feature branch | Documentation committed; implementation pending verification |
+| 2026-10-12 | Blueprint and tracker created on feature branch | Documentation committed |\n| 2026-10-12 | Implemented grouped citizen navigation, contextual collective navigation, mobile shortcuts, and `/collectives` switcher | Committed to feature branch; build and end-to-end checks still pending |
