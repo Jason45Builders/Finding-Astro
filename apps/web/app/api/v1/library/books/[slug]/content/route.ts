@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { isSafeLibraryStoragePath } from "@/lib/library-validation";
 import { notFound, serverError } from "@/lib/api-response";
 
 export const dynamic = "force-dynamic";
 
 const PRIVATE_BUCKET = "finding-astro-private";
-
-function isSafeLibraryDocumentPath(path: string) {
-  const parts = path.split("/");
-  return path.startsWith("documents/") && !path.includes(String.fromCharCode(92)) && parts.every((part) => part.length > 0 && part !== "." && part !== ".." && !Array.from(part).some((char) => char.charCodeAt(0) < 32));
-}
 
 export async function GET(_req: NextRequest, context: { params: Promise<{ slug: string }> }) {
   try {
@@ -25,7 +21,7 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ slug: 
     if (!book || book.primary_file_format !== "pdf" || !book.primary_file_storage_path) {
       return notFound("A readable PDF edition is not available");
     }
-    if (!isSafeLibraryDocumentPath(book.primary_file_storage_path)) {
+    if (!isSafeLibraryStoragePath(book.primary_file_storage_path, "documents/")) {
       console.error("[library/content] Refusing unexpected storage path for publication", book.id);
       return notFound("Publication file not found");
     }
