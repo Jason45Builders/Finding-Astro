@@ -7,7 +7,7 @@
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS public.library_books (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   title TEXT NOT NULL CHECK (char_length(btrim(title)) BETWEEN 1 AND 240),
   slug TEXT NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
   subtitle TEXT,
@@ -42,7 +42,7 @@ CREATE INDEX IF NOT EXISTS idx_library_books_featured
   ON public.library_books(is_featured) WHERE is_featured = TRUE;
 
 CREATE TABLE IF NOT EXISTS public.library_chapters (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   book_id UUID NOT NULL REFERENCES public.library_books(id) ON DELETE CASCADE,
   title TEXT NOT NULL CHECK (char_length(btrim(title)) BETWEEN 1 AND 240),
   summary TEXT NOT NULL DEFAULT '',
@@ -66,7 +66,7 @@ CREATE INDEX IF NOT EXISTS idx_library_chapters_book_status_order
   ON public.library_chapters(book_id, status, sort_order);
 
 CREATE TABLE IF NOT EXISTS public.library_reading_progress (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   book_id UUID NOT NULL REFERENCES public.library_books(id) ON DELETE CASCADE,
   chapter_id UUID REFERENCES public.library_chapters(id) ON DELETE SET NULL,
