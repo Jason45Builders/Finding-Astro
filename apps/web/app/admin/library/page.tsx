@@ -143,6 +143,44 @@ export default function AdminLibraryPage() {
   }
 
   async function uploadMedia(file: File, purpose: "document" | "animal_photo") {
+    // PDF files go directly to private Supabase Storage so they never pass through
+    // the Vercel function request-body limit. Other media keeps the existing flow.
+    if (purpose === "document" && file.type === "application/pdf") {
+      const initialized = await requestApi("/media/pdf-upload", {
+        method: "POST",
+        body: JSON.stringify({ originalName: file.name, mimeType: file.type, size: file.size }),
+      });
+      const upload = initialized.data as { mediaId: string; key: string; signedUrl: string; token: string };
+      if (!upload?.mediaId || !upload.key || !upload.signedUrl) {
+        throw new Error("The server did not authorize the PDF upload. Please retry.");
+      }
+
+      const storageBase = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const signedUrl = /^https?:\/\//i.test(upload.signedUrl)
+        ? upload.signedUrl
+        : storageBase
+          ? `${storageBase.replace(/\/$/, "")}/storage/v1${upload.signedUrl.startsWith("/") ? upload.signedUrl : `/${upload.signedUrl}`}`
+          : "";
+      if (!signedUrl) throw new Error("Storage upload is not configured. Contact an administrator.");
+
+      const storageResponse = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": "application/pdf", "x-upsert": "false" },
+        body: file,
+      });
+      if (!storageResponse.ok) {
+        const detail = await storageResponse.text().catch(() => "");
+        throw new Error(detail.slice(0, 180) || `Direct PDF upload failed (HTTP ${storageResponse.status}). Please retry.`);
+      }
+
+      const finalized = await requestApi("/media/pdf-upload/finalize", {
+        method: "POST",
+        body: JSON.stringify({ mediaId: upload.mediaId, key: upload.key }),
+      });
+      if (!finalized.data?.key) throw new Error("The uploaded PDF could not be verified. Please retry.");
+      return finalized.data as { key: string; publicUrl?: string; mimeType: string };
+    }
+
     const data = new FormData();
     data.set("file", file);
     data.set("originalName", file.name);
