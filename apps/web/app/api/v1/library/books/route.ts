@@ -11,7 +11,8 @@ export async function GET(req: NextRequest) {
     const category = (searchParams.get("category") ?? "").trim().slice(0, 100);
     const language = (searchParams.get("language") ?? "").trim().slice(0, 20);
     const limit = Math.min(Math.max(Number(searchParams.get("limit") ?? 24) || 24, 1), 60);
-    const offset = Math.max(Number(searchParams.get("offset") ?? 0) || 0, 0);
+    const rawOffset = Number(searchParams.get("offset") ?? 0);
+    const offset = Number.isFinite(rawOffset) ? Math.min(Math.max(Math.trunc(rawOffset), 0), 1_000_000) : 0;
 
     let request = supabaseAdmin()
       .from("library_books")
