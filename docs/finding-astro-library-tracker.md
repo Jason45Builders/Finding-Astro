@@ -471,3 +471,8 @@ A non-blocking `npm audit --json` step was added to CI and emitted the affected 
 - GitHub Actions run `38244337407` for commit `3120c26` completed successfully: npm install, dependency audit reporting, focused Library lint, typecheck, full tests, and production build all passed.
 - The later SEO metadata commit `92f3b71` has its own CI run in progress; focused lint has passed and typecheck is underway at the last observation.
 - This confirms the build/test state for `3120c26`, not yet for the latest `92f3b71` head.
+
+
+### Dependency remediation attempt (2026-10-12)
+- The repository CI already has a guarded one-time `npm audit fix` path triggered by a commit message containing `[audit-fix]`. It applies semver-compatible lockfile updates, runs lint/typecheck/tests/build, and only commits the updated lockfile if all validation steps pass.
+- Triggering that existing guarded path now is preferable to manually editing integrity hashes or forcing a major Tailwind upgrade. Any lockfile update will be committed only after validation passes; major-version changes are not authorized by this path.
