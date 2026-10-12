@@ -89,9 +89,9 @@ const ORG_MOBILE_PRIMARY_ITEMS = [
 ];
 
 const CITIZEN_NAV_GROUPS = [
-  { label: "Your Space", hrefs: ["/dashboard"] },
-  { label: "Animal Welfare", hrefs: ["/animals", "/cases", "/respond", "/map", "/adopt", "/foster", "/lost-found", "/wildlife", "/safety", "/abc", "/cruelty"] },
-  { label: "Community & Support", hrefs: ["/funding", "/my/donations", "/community", "/collectives", "/partners", "/ambulance"] },
+  { label: "Your Space", hrefs: ["/dashboard"], collapsible: false },
+  { label: "Animal Welfare", hrefs: ["/animals", "/cases", "/respond", "/map", "/adopt", "/foster", "/lost-found", "/wildlife", "/safety", "/abc", "/cruelty"], collapsible: false },
+  { label: "Community & Support", hrefs: ["/funding", "/my/donations", "/community", "/collectives", "/partners", "/ambulance"], collapsible: false },
   { label: "More", hrefs: ["/memorials", "/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
 ];
 
