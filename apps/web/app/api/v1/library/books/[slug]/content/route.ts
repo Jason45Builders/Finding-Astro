@@ -8,7 +8,7 @@ const PRIVATE_BUCKET = "finding-astro-private";
 
 function isSafeLibraryDocumentPath(path: string) {
   const parts = path.split("/");
-  return path.startsWith("documents/") && parts.every((part) => part.length > 0 && part !== "." && part !== "..");
+  return path.startsWith("documents/") && !path.includes(String.fromCharCode(92)) && parts.every((part) => part.length > 0 && part !== "." && part !== ".." && !Array.from(part).some((char) => char.charCodeAt(0) < 32));
 }
 
 export async function GET(_req: NextRequest, context: { params: Promise<{ slug: string }> }) {
