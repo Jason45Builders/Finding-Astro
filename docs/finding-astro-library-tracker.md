@@ -457,3 +457,11 @@ A non-blocking `npm audit --json` step was added to CI and emitted the affected 
   - Production build: PASS
 - The full suite passed after the feature branch's vet permission policy was updated to include `cases:write` per the existing role test. This is an access-control change and should be confirmed as intentional before merging.
 - The feature remains **not production-released**: dependency security findings, Vercel team-scope access, preview/browser validation, and non-production migration validation remain outstanding.
+
+
+### Pass 11 — public discovery and SEO foundation (2026-10-12)
+- Added a prominent “Featured reading” editorial card for a published book marked `is_featured`, with cover artwork, descriptive copy, edition labels and a direct reading CTA. It is excluded from the ordinary grid to avoid duplicate display.
+- Added a Library link to the public landing-page desktop navigation, a hero-level “Explore the free animal-welfare library” link, and a footer link. This makes the free reading experience discoverable without requiring an account.
+- Added `apps/web/app/library/layout.tsx` metadata for search snippets and social sharing, with India locale and animal-welfare search keywords.
+- CI for source head `b55b4ce` completed successfully: dependency installation, focused Library lint, TypeScript typecheck, full test suite, and production build all passed after aligning the vet role's case-write capability with the existing permission test.
+- Subsequent landing-page and SEO commits are newer than that successful run; their own CI is still required before release. An earlier intermediate commit without the new icon import failed lint/build, and was corrected immediately afterward.
