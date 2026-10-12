@@ -353,3 +353,11 @@ Delivered on the existing `feature/finding-astro-library` branch. No additional 
 - Added `apps/web/.eslintrc.json` extending `next/core-web-vitals` and `next/typescript`, with generated/build directories ignored.
 - A fresh workflow run is required to determine whether the existing codebase has actual lint findings. The previous run did not reach typecheck, tests, or build.
 - Dependency installation also reported 19 audit findings (5 moderate, 13 high, 1 critical). This is an existing dependency-tree risk signal, not yet triaged by package/advisory; do not run an automatic breaking upgrade without reviewing the exact affected packages.
+
+
+### Pass 5 final UI/accessibility polish (2026-10-12)
+- Added visible keyboard-focus rings to the catalogue filters/cards and reader chapter controls.
+- Added an `aria-live="polite"` status for chapter loading.
+- The complete-file layout, hybrid PDF action, mobile cover artwork and proportional text sizing use the existing Finding Astro design tokens; no parallel theme was introduced.
+- The only observed GitHub Actions run after fixing the workspace install completed at commit `160f336` and failed at `npm run lint` because the repository had no ESLint configuration and `next lint` launched an interactive prompt.
+- Added `apps/web/.eslintrc.json` afterward. No new check run for the newer code head has been observed, so current code remains unvalidated by CI.
