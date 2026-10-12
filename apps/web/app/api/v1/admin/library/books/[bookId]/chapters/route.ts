@@ -6,13 +6,21 @@ import { ok, created, badRequest, forbidden, notFound, serverError } from "@/lib
 
 export const dynamic = "force-dynamic";
 
+const RichTextBlockSchema = z.object({
+  type: z.enum(["paragraph", "heading", "quote"]).optional(),
+  text: z.string().trim().min(1).max(10000),
+  level: z.union([z.literal(2), z.literal(3)]).optional(),
+}).strict();
+const RichTextBodySchema = z.object({
+  blocks: z.array(RichTextBlockSchema).min(1).max(100),
+}).strict();
+
 const ChapterSchema = z.object({
   title: z.string().trim().min(1).max(240),
   summary: z.string().max(2000).optional().default(""),
   sortOrder: z.number().int().min(0).optional(),
-  contentFormat: z.enum(["rich_text", "pdf", "epub"]),
-  contentBody: z.record(z.unknown()).nullable().optional(),
-  storagePath: z.string().trim().min(1).max(1024).nullable().optional(),
+  contentFormat: z.literal("rich_text"),
+  contentBody: RichTextBodySchema,
   status: z.enum(["draft", "published"]).optional().default("draft"),
 });
 
@@ -59,13 +67,6 @@ export async function POST(req: NextRequest, context: { params: Promise<{ bookId
       return badRequest("VALIDATION_ERROR", parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; "));
     }
     const input = parsed.data;
-    if (input.contentFormat === "rich_text" && !input.contentBody) {
-      return badRequest("CONTENT_REQUIRED", "Structured chapter content is required");
-    }
-    if (input.contentFormat !== "rich_text" && !input.storagePath) {
-      return badRequest("CONTENT_REQUIRED", "Upload a chapter file before saving this format");
-    }
-
     const { data: maxRow, error: orderError } = input.sortOrder === undefined
       ? await supabaseAdmin().from("library_chapters").select("sort_order").eq("book_id", bookId).order("sort_order", { ascending: false }).limit(1).maybeSingle()
       : { data: null, error: null };
@@ -80,8 +81,8 @@ export async function POST(req: NextRequest, context: { params: Promise<{ bookId
         summary: input.summary,
         sort_order: sortOrder,
         content_format: input.contentFormat,
-        content_body: input.contentFormat === "rich_text" ? input.contentBody : null,
-        storage_path: input.contentFormat === "rich_text" ? null : input.storagePath,
+        content_body: input.contentBody,
+        storage_path: null,
         status: input.status,
         created_by: auth.user.id,
         updated_by: auth.user.id,
