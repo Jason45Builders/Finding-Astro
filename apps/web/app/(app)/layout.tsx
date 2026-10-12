@@ -35,6 +35,7 @@ const BASE_NAV_ITEMS = [
   { label: "Funding",       href: "/funding",      icon: Heart },
   { label: "My Donations",  href: "/my/donations", icon: Heart },
   { label: "Community",     href: "/community",    icon: Users },
+  { label: "My Collectives", href: "/collectives",  icon: HeartHandshake },
   { label: "Memorial Wall", href: "/memorials",    icon: Heart },
   { label: "Report Cruelty",href: "/cruelty",      icon: ShieldAlert },
   { label: "Partners",      href: "/partners",     icon: Building },
@@ -80,21 +81,38 @@ const MOBILE_PRIMARY_ITEMS = [
   { label: "Profile",href: "/profile",   icon: UserIcon },
 ];
 
+const ORG_MOBILE_PRIMARY_ITEMS = [
+  { label: "Overview", href: "/org/dashboard", icon: LayoutDashboard },
+  { label: "Animals",  href: "/org/animals",    icon: Cat },
+  { label: "Tasks",    href: "/org/tasks",      icon: ClipboardList },
+  { label: "Team",     href: "/org/members",    icon: Users },
+];
+
+const CITIZEN_NAV_GROUPS = [
+  { label: "Your Space", hrefs: ["/dashboard"], collapsible: false },
+  { label: "Animal Welfare", hrefs: ["/animals", "/cases", "/respond", "/map", "/adopt", "/foster", "/lost-found", "/wildlife", "/safety", "/abc", "/cruelty"], collapsible: false },
+  { label: "Community & Support", hrefs: ["/funding", "/my/donations", "/community", "/collectives", "/partners", "/ambulance"], collapsible: false },
+  { label: "More", hrefs: ["/memorials", "/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
+];
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout, isLoading, bootstrap } = useAuth();
   const isStaff = user?.role === "admin" || user?.role === "govt";
   const isNgo = user?.role === "ngo";
-  const [hasOrgMembership, setHasOrgMembership] = useState(false);
-  const showOrgNav = isNgo || hasOrgMembership;
+  const isOrgWorkspace = pathname === "/org" || pathname.startsWith("/org/");
+  const showOrgNav = !isStaff && (isNgo || isOrgWorkspace);
   const navItems = isStaff
     ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS]
-    : isNgo
-      ? ORG_NAV_ITEMS
-      : showOrgNav
-        ? [...BASE_NAV_ITEMS, ...ORG_NAV_ITEMS]
-        : BASE_NAV_ITEMS;
+    : showOrgNav
+      ? [
+          { label: "My Collectives", href: "/collectives", icon: HeartHandshake },
+          { label: "Citizen Dashboard", href: "/dashboard", icon: HomeIcon },
+          ...ORG_NAV_ITEMS,
+        ]
+      : BASE_NAV_ITEMS;
+  const mobilePrimaryItems = showOrgNav ? ORG_MOBILE_PRIMARY_ITEMS : MOBILE_PRIMARY_ITEMS;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -103,19 +121,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (!user) void bootstrap();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (!user || isNgo) return;
-    let cancelled = false;
-    const checkOrgMembership = async () => {
-      try {
-        const res = await api.getMyOrgMemberships();
-        if (!cancelled) setHasOrgMembership((res.memberships?.length ?? 0) > 0);
-      } catch { /* ignore */ }
-    };
-    void checkOrgMembership();
-    return () => { cancelled = true; };
-  }, [user, isNgo]);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -166,17 +171,58 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   };
 
+  const renderNavigation = () => {
+    if (showOrgNav) {
+      return (
+        <>
+          <p className="px-4 pt-2 pb-1 text-[10px] font-black uppercase tracking-widest text-outline">Workspace</p>
+          {navItems.map(item => <NavLink key={item.href} item={item} onClick={() => setMobileMenuOpen(false)} />)}
+        </>
+      );
+    }
+    if (isStaff) return navItems.map(item => <NavLink key={item.href} item={item} onClick={() => setMobileMenuOpen(false)} />);
+
+    return (
+      <>
+        {CITIZEN_NAV_GROUPS.map((section) => {
+          const items = BASE_NAV_ITEMS.filter((item) => section.hrefs.includes(item.href));
+          if (section.collapsible) {
+            return (
+              <details key={section.label} className="group px-1 py-1" open={items.some((item) => isActive(item.href)) || undefined}>
+                <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-3 py-2 text-[10px] font-black uppercase tracking-widest text-outline hover:bg-surface-container [&::-webkit-details-marker]:hidden">
+                  {section.label}
+                  <span className="text-xs transition-transform group-open:rotate-180">⌄</span>
+                </summary>
+                <div className="mt-1 space-y-0.5">
+                  {items.map(item => <NavLink key={item.href} item={item} onClick={() => setMobileMenuOpen(false)} />)}
+                </div>
+              </details>
+            );
+          }
+          return (
+            <div key={section.label} className="mb-2">
+              <p className="px-4 pt-3 pb-1 text-[10px] font-black uppercase tracking-widest text-outline">{section.label}</p>
+              <div className="space-y-0.5">
+                {items.map(item => <NavLink key={item.href} item={item} onClick={() => setMobileMenuOpen(false)} />)}
+              </div>
+            </div>
+          );
+        })}
+      </>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row relative">
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex md:flex-col md:w-64 bg-surface-container-low border-r border-outline-variant h-screen sticky top-0">
         <div className="p-5 border-b border-outline-variant shrink-0">
-          <Link href={isNgo ? "/org/dashboard" : "/dashboard"}>
+          <Link href={showOrgNav ? "/org/dashboard" : "/dashboard"}>
             <Logo showTagline />
           </Link>
         </div>
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-          {navItems.map(item => <NavLink key={item.href} item={item} />)}
+          {renderNavigation()}
         </nav>
         <div className="p-3 border-t border-outline-variant shrink-0">
           <div className="flex items-center gap-3 mb-3 px-2 py-2 bg-surface-container rounded-md">
@@ -248,7 +294,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center px-2 py-2.5 bg-surface border-t border-outline-variant shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
-        {MOBILE_PRIMARY_ITEMS.map(item => {
+        {mobilePrimaryItems.map(item => {
           const active = isActive(item.href);
           const Icon = item.icon;
           return (
@@ -287,7 +333,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </button>
             </div>
             <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-              {navItems.map(item => <NavLink key={item.href} item={item} onClick={() => setMobileMenuOpen(false)} />)}
+              {renderNavigation()}
             </nav>
             <div className="p-3 border-t border-outline-variant">
               <button onClick={handleLogout}
