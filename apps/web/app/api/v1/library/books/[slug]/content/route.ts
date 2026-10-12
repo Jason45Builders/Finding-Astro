@@ -50,8 +50,7 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ slug: 
         "Content-Length": String(bytes.length),
         "Cache-Control": "public, max-age=300, stale-while-revalidate=60",
         "X-Content-Type-Options": "nosniff",
-        "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox",
-        "Accept-Ranges": "bytes",
+        "Content-Security-Policy": "frame-ancestors 'self'",
       },
     });
   } catch (error) {
