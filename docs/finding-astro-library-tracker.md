@@ -387,3 +387,12 @@ Delivered on the existing `feature/finding-astro-library` branch. No additional 
 - Admin library error states now distinguish an expired/missing sign-in from an authenticated user lacking administrator permission.
 - Catalogue offsets are bounded to prevent pathological pagination values.
 - No production data or database schema has been changed. These changes still require a successful current-head lint/typecheck/test/build run and browser validation.
+
+
+### Pass 8 — bounded content and shared storage validation (2026-10-12)
+- Reused the tested storage-key validator in the published PDF delivery route, keeping upload attachment and read-time validation consistent.
+- Chapter authoring now validates empty content, maximum 100 paragraphs, and a 10,000-character per-paragraph limit before submitting; the form explains those limits and caps input length.
+- Reader-facing APIs and progress writes filter to published rich-text chapters only, so unsupported file-backed chapter records cannot be surfaced as blank chapters or used as progress anchors.
+- Admin publishing error states distinguish authentication from missing admin permission; unsupported file-backed chapters are labelled and their edit action is disabled.
+- Catalogue filter wrappers and reader controls now have explicit keyboard focus styling and active chapter semantics.
+- Current code has not been validated by a successful latest-head build. The observed GitHub Actions run failed before typecheck/tests/build at the missing ESLint configuration; configuration was added after that run. The latest Vercel preview is ERROR and build-event inspection is blocked by the current Vercel team's 403 authorization response.
