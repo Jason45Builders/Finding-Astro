@@ -6,13 +6,21 @@ import { ok, badRequest, forbidden, notFound, serverError } from "@/lib/api-resp
 
 export const dynamic = "force-dynamic";
 
+const RichTextBlockSchema = z.object({
+  type: z.enum(["paragraph", "heading", "quote"]).optional(),
+  text: z.string().trim().min(1).max(10000),
+  level: z.union([z.literal(2), z.literal(3)]).optional(),
+}).strict();
+const RichTextBodySchema = z.object({
+  blocks: z.array(RichTextBlockSchema).min(1).max(100),
+}).strict();
+
 const UpdateChapterSchema = z.object({
   title: z.string().trim().min(1).max(240).optional(),
   summary: z.string().max(2000).optional(),
   sortOrder: z.number().int().min(0).optional(),
-  contentFormat: z.enum(["rich_text", "pdf", "epub"]).optional(),
-  contentBody: z.record(z.unknown()).nullable().optional(),
-  storagePath: z.string().trim().min(1).max(1024).nullable().optional(),
+  contentFormat: z.literal("rich_text").optional(),
+  contentBody: RichTextBodySchema.optional(),
   status: z.enum(["draft", "published"]).optional(),
 });
 
@@ -40,19 +48,18 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ bookI
     if (readError) return serverError("Unable to load chapter", readError);
     if (!current) return notFound("Chapter not found");
 
-    const format = input.contentFormat ?? current.content_format;
+    if (current.content_format !== "rich_text") {
+      return badRequest("UNSUPPORTED_CHAPTER_FORMAT", "Only structured-text chapters can currently be edited in this publishing studio");
+    }
     const body = input.contentBody !== undefined ? input.contentBody : current.content_body;
-    const path = input.storagePath !== undefined ? input.storagePath : current.storage_path;
-    if (format === "rich_text" && !body) return badRequest("CONTENT_REQUIRED", "Structured chapter content is required");
-    if (format !== "rich_text" && !path) return badRequest("CONTENT_REQUIRED", "A chapter file is required for this format");
+    if (!body) return badRequest("CONTENT_REQUIRED", "Structured chapter content is required");
 
     const changes: Record<string, unknown> = { updated_by: auth.user.id, updated_at: new Date().toISOString() };
     if (input.title !== undefined) changes.title = input.title;
     if (input.summary !== undefined) changes.summary = input.summary;
     if (input.sortOrder !== undefined) changes.sort_order = input.sortOrder;
-    if (input.contentFormat !== undefined) changes.content_format = format;
-    if (input.contentBody !== undefined || input.contentFormat !== undefined) changes.content_body = format === "rich_text" ? body : null;
-    if (input.storagePath !== undefined || input.contentFormat !== undefined) changes.storage_path = format === "rich_text" ? null : path;
+    if (input.contentFormat !== undefined) changes.content_format = "rich_text";
+    if (input.contentBody !== undefined) changes.content_body = body;
     if (input.status !== undefined) changes.status = input.status;
 
     const { data, error } = await supabaseAdmin()
