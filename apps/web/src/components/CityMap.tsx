@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet';
 import 'leaflet-defaulticon-compatibility';
+import ResilientTileLayer from '@/components/maps/ResilientTileLayer';
 import { DEFAULT_MAP_CENTER, getMapCoordinates, type MapCoordinates } from '@/lib/map-utils';
 
 type MapPoint = MapCoordinates & { id: string; label: string; detail?: string };
@@ -83,11 +84,7 @@ export default function CityMap({
   return (
     <div className="relative h-[520px] min-h-[420px] w-full overflow-hidden rounded-xl">
       <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} style={{ height: '100%', minHeight: '420px', width: '100%' }}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
-        />
+        <ResilientTileLayer />
         <FitMapToPoints points={bounds} />
         {showAnimals && animalPoints.map((point) => (
           <Marker key={`animal-${point.id}`} position={[point.latitude, point.longitude]}>
