@@ -9,7 +9,7 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ slug: 
     const { slug } = await context.params;
     const { data: book, error } = await supabaseAdmin()
       .from("library_books")
-      .select("id, title, slug, subtitle, description, author_name, publication_type, category, language, cover_storage_path, primary_file_format, is_featured, published_at")
+      .select("id, title, slug, subtitle, description, author_name, publication_type, category, language, cover_storage_path, primary_file_storage_path, primary_file_format, is_featured, published_at")
       .eq("slug", slug)
       .eq("status", "published")
       .maybeSingle();
@@ -23,7 +23,7 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ slug: 
       .eq("status", "published")
       .order("sort_order", { ascending: true });
     if (chapterError) return serverError("Unable to load publication chapters", chapterError);
-    return ok({ book, chapters: chapters ?? [] });
+    const { primary_file_storage_path: _privatePath, ...publicBook } = book;\n    return ok({ book: { ...publicBook, has_complete_file: Boolean(_privatePath) }, chapters: chapters ?? [] });
   } catch (error) {
     return serverError("Unable to load publication", error);
   }
