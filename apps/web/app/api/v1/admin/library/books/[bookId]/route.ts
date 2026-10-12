@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware, requireCsrf } from "@/lib/auth-middleware";
+import { isSafeLibraryStoragePath, validatePublicationAssets, validateReadableChapterCount, type LibraryPublicationType } from "@/lib/library-validation";
 import { ok, badRequest, forbidden, notFound, serverError } from "@/lib/api-response";
 
 export const dynamic = "force-dynamic";
@@ -62,14 +63,10 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ bookI
       return badRequest("VALIDATION_ERROR", parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; "));
     }
     const input = parsed.data;
-    const isSafeStoragePath = (value: string, prefix: string) => {
-      const parts = value.split("/");
-      return value.startsWith(prefix) && !value.includes(String.fromCharCode(92)) && parts.every((part) => part.length > 0 && part !== "." && part !== ".." && !Array.from(part).some((char) => char.charCodeAt(0) < 32));
-    };
-    if (typeof input.coverStoragePath === "string" && !isSafeStoragePath(input.coverStoragePath, "animals/")) {
+    if (typeof input.coverStoragePath === "string" && !isSafeLibraryStoragePath(input.coverStoragePath, "animals/")) {
       return badRequest("INVALID_COVER_PATH", "Cover must reference an uploaded public image asset");
     }
-    if (typeof input.primaryFileStoragePath === "string" && !isSafeStoragePath(input.primaryFileStoragePath, "documents/")) {
+    if (typeof input.primaryFileStoragePath === "string" && !isSafeLibraryStoragePath(input.primaryFileStoragePath, "documents/")) {
       return badRequest("INVALID_BOOK_PATH", "Complete-book files must reference an uploaded private document asset");
     }
     const { data: current, error: readError } = await supabaseAdmin()
@@ -104,16 +101,17 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ bookI
 
     const finalStatus = input.status ?? current.status;
     if (finalStatus === "published") {
-      const finalType = input.publicationType ?? current.publication_type;
+      const finalType = (input.publicationType ?? current.publication_type) as LibraryPublicationType;
       const finalFile = input.primaryFileStoragePath !== undefined ? input.primaryFileStoragePath : current.primary_file_storage_path;
       const finalFormat = input.primaryFileFormat !== undefined ? input.primaryFileFormat : current.primary_file_format;
       const rightsConfirmed = input.rightsConfirmed === true || (input.rightsConfirmed !== false && Boolean(current.rights_confirmed_at));
-      if (!rightsConfirmed) return badRequest("RIGHTS_CONFIRMATION_REQUIRED", "Confirm publication rights before publishing");
+      const assetFailure = validatePublicationAssets({
+        publicationType: finalType,
+        rightsConfirmed,
+        hasCompletePdf: Boolean(finalFile && finalFormat === "pdf"),
+      });
+      if (assetFailure) return badRequest(assetFailure.code, assetFailure.message);
 
-      const requiresCompletePdf = finalType === "complete_file" || finalType === "hybrid";
-      if (requiresCompletePdf && (!finalFile || finalFormat !== "pdf")) {
-        return badRequest("CONTENT_REQUIRED", "Upload a supported PDF edition before publishing this publication type");
-      }
       if (finalType === "chapter_based" || finalType === "hybrid") {
         const { count, error: chapterError } = await supabaseAdmin()
           .from("library_chapters")
@@ -122,7 +120,8 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ bookI
           .eq("status", "published")
           .eq("content_format", "rich_text");
         if (chapterError) return serverError("Unable to validate chapters", chapterError);
-        if (!count) return badRequest("CONTENT_REQUIRED", "Add at least one published, readable text chapter before publishing");
+        const chapterFailure = validateReadableChapterCount(finalType, count ?? 0);
+        if (chapterFailure) return badRequest(chapterFailure.code, chapterFailure.message);
       }
       changes.published_at = new Date().toISOString();
     }
