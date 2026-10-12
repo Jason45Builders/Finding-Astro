@@ -315,7 +315,7 @@ Delivered on the existing `feature/finding-astro-library` branch. No additional 
 **Unresolved release blockers**
 - No successful typecheck, lint, test suite, production build, SQL migration execution, or browser test has been observed.
 - GitHub's Vercel status continues to report a build-rate-limit/upgrade URL; it does not prove that source compilation failed, but it prevents confirming a valid preview.
-- The first GitHub Actions attempt failed in `actions/setup-node` before dependency installation because the workflow pointed at nonexistent `apps/web/package-lock.json`. The workflow has been corrected to use the root npm-workspace lockfile, run scripts from the repository root, and use Node 22. A fresh run still needs to be observed.
+- The first GitHub Actions attempt failed in `actions/setup-node` before dependency installation because the workflow pointed at nonexistent `apps/web/package-lock.json`. The workflow has been corrected to use the root npm-workspace lockfile, run scripts from the repository root, and use Node 22. The first run has been inspected and a fresh run has not yet appeared on the later commits; do not claim checks passed.
 - Need a safe database validation environment before applying the migrations; do not apply to production as a shortcut.
 - Need to verify the complete upload→publish→read workflow in a browser and add automated tests for publication-state enforcement, chapter ownership, progress ownership, malformed responses, and reorder behaviour.
 - The Supabase security advisor reports a pre-existing critical finding: `public.spatial_ref_sys` has RLS disabled. This is outside the Library changes and was not modified. It requires separate owner review; enabling RLS without appropriate policies may break intended PostGIS access.
@@ -331,3 +331,17 @@ Delivered on the existing `feature/finding-astro-library` branch. No additional 
 - Confirmed the repository root has `package.json` with `apps/web` as a workspace and a root `package-lock.json`.
 - Updated `.github/workflows/ci.yml` to use Node 22, cache against the root lockfile, run `npm ci` at repository root, then execute root `lint`, `typecheck`, `test`, and `build` scripts.
 - The earlier CI failure is a workflow configuration issue, not an application compilation result. Await a new run before drawing conclusions.
+
+
+### Pass 5 follow-up — reader interaction hardening (2026-10-12)
+**Status: PARTIAL**
+
+- Chapter navigation now aborts the previous in-flight request when the reader selects another chapter. This prevents a slow response from an earlier selection overwriting the current chapter, and avoids clearing the loading state for a newer request.
+- Malformed responses in the catalogue load-more flow now use the same friendly API parsing path as the initial catalogue load.
+- Hybrid editions are labelled explicitly as `PDF + CHAPTERS` in discovery and book details.
+- Verified source files after the changes. No current-head compile/build/test result is available yet.
+
+**CI state**
+- The first Actions run failed at `actions/setup-node` before `npm ci` because the cache path pointed to a nonexistent workspace lockfile.
+- Root npm workspace/lockfile is confirmed; the workflow has been corrected to use root `npm ci`, root scripts, Node 22, and the root lockfile.
+- GitHub Actions has not produced a check run for the latest follow-up commits at the last observation. Continue investigating the trigger/run status before calling the source validated.
