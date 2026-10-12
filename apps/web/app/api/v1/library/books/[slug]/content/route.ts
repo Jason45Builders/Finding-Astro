@@ -48,7 +48,7 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ slug: 
         "Content-Type": "application/pdf",
         "Content-Disposition": `inline; filename="${safeTitle}.pdf"`,
         "Content-Length": String(bytes.length),
-        "Cache-Control": "public, max-age=300, stale-while-revalidate=60",
+        "Cache-Control": "private, no-store, max-age=0",
         "X-Content-Type-Options": "nosniff",
         "Content-Security-Policy": "frame-ancestors 'self'",
       },
