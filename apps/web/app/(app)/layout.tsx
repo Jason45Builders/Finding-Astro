@@ -48,19 +48,29 @@ const BASE_NAV_ITEMS = [
 ];
 
 const ADMIN_NAV_ITEMS = [
-  { label: "Dispatch",           href: "/dispatch",               icon: Radio },
-  { label: "Adoption Review",    href: "/adoption-admin",         icon: Heart },
-  { label: "Rehome Review",      href: "/rehome/review",          icon: PawPrint },
-  { label: "Verifications",      href: "/admin/verifications",     icon: UserCheck },
-  { label: "Reimbursements",     href: "/admin/reimbursements",    icon: DollarSign },
-  { label: "Case Oversight",     href: "/admin/cases",             icon: ClipboardList },
-  { label: "Partner Requests",   href: "/admin/partner-requests",  icon: Store },
-  { label: "Users",              href: "/admin/users",             icon: UsersIcon },
-  { label: "Library",            href: "/admin/library",           icon: BookOpen },
-  { label: "Feedback",      href: "/admin/beta/feedback",     icon: MessageSquare },
-  { label: "Ambulance",      href: "/admin/ambulance",         icon: Ambulance },
-  { label: "Memorial Wall",   href: "/admin/memorials",         icon: Heart },
-  { label: "Impact & CSR",   href: "/impact",                  icon: TrendingUp },
+  { label: "Dashboard",              href: "/dashboard",               icon: LayoutDashboard },
+  { label: "Case Oversight",         href: "/admin/cases",              icon: ClipboardList },
+  { label: "City Map",               href: "/map",                      icon: Map },
+  { label: "Cruelty Reports",        href: "/cruelty",                  icon: ShieldAlert },
+  { label: "SOS & Emergency Cases",  href: "/respond",                  icon: AlertTriangle },
+  { label: "Animals",                href: "/animals",                  icon: Cat },
+  { label: "Ambulance Dispatch",     href: "/dispatch",                 icon: Radio },
+  { label: "Adoption Review",        href: "/adoption-admin",           icon: Heart },
+  { label: "Rehome Review",          href: "/rehome/review",             icon: PawPrint },
+  { label: "Verifications",          href: "/admin/verifications",      icon: UserCheck },
+  { label: "Reimbursements",         href: "/admin/reimbursements",     icon: DollarSign },
+  { label: "Partner Requests",       href: "/admin/partner-requests",   icon: Store },
+  { label: "Ambulance Management",   href: "/admin/ambulance",          icon: Ambulance },
+  { label: "Memorial Wall",          href: "/admin/memorials",          icon: Heart },
+  { label: "Funding & Donations",    href: "/funding",                  icon: HeartHandshake },
+  { label: "Impact & CSR",           href: "/impact",                   icon: TrendingUp },
+  { label: "Feedback",               href: "/admin/beta/feedback",      icon: MessageSquare },
+  { label: "Users & Roles",          href: "/admin/users",              icon: UsersIcon },
+  { label: "Library",                href: "/admin/library",            icon: BookOpen },
+  { label: "My Profile",             href: "/profile",                  icon: UserIcon },
+  { label: "Legal",                  href: "/legal",                    icon: ShieldAlert },
+  { label: "Privacy",                href: "/privacy",                  icon: Shield },
+  { label: "Terms",                 href: "/terms",                    icon: ClipboardList },
 ];
 
 const ORG_NAV_ITEMS = [
@@ -98,12 +108,12 @@ const CITIZEN_NAV_GROUPS = [
 ];
 
 const STAFF_NAV_GROUPS = [
-  { label: "Your Space", hrefs: ["/dashboard"], collapsible: false },
-  { label: "Animal Welfare", hrefs: ["/animals", "/cases", "/respond", "/map", "/adopt", "/foster", "/lost-found", "/wildlife", "/safety", "/abc", "/cruelty", "/memorials"], collapsible: false },
-  { label: "Community & Support", hrefs: ["/funding", "/my/donations", "/community", "/collectives", "/partners", "/ambulance"], collapsible: false },
-  { label: "Operations", hrefs: ["/dispatch", "/adoption-admin", "/rehome/review", "/admin/verifications", "/admin/reimbursements", "/admin/cases", "/admin/partner-requests", "/admin/ambulance", "/admin/memorials", "/impact"], collapsible: false },
-  { label: "Administration", hrefs: ["/admin/users", "/admin/beta/feedback", "/admin/library"], collapsible: false },
-  { label: "More", hrefs: ["/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
+  { label: "Overview", hrefs: ["/dashboard"], collapsible: false },
+  { label: "Animal Welfare", hrefs: ["/admin/cases", "/map", "/cruelty", "/respond", "/animals"], collapsible: false },
+  { label: "Operations & Reviews", hrefs: ["/dispatch", "/adoption-admin", "/rehome/review", "/admin/verifications", "/admin/reimbursements", "/admin/partner-requests", "/admin/ambulance"], collapsible: false },
+  { label: "Community & Impact", hrefs: ["/admin/memorials", "/funding", "/impact", "/admin/beta/feedback"], collapsible: false },
+  { label: "Administration", hrefs: ["/admin/users", "/admin/library"], collapsible: false },
+  { label: "Account", hrefs: ["/profile", "/legal", "/privacy", "/terms"], collapsible: true },
 ];
 
 const ORG_NAV_GROUPS = [
@@ -123,7 +133,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isOrgWorkspace = pathname === "/org" || pathname.startsWith("/org/");
   const showOrgNav = !isStaff && (isNgo || isOrgWorkspace);
   const navItems = isStaff
-    ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS.filter((item) => item.href !== "/admin/library" || user?.role === "admin")]
+    ? ADMIN_NAV_ITEMS.filter((item) => item.href !== "/admin/library" || user?.role === "admin")
     : showOrgNav
       ? [
           { label: "My Collectives", href: "/collectives", icon: HeartHandshake },
