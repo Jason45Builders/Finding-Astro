@@ -133,25 +133,35 @@ export default function AdminLibraryPage() {
   async function uploadSelectedFiles() {
     if (!selectedBook || (!completeFile && !coverFile)) return;
     setUploading(true); setError(""); setNotice("");
+    const completed: string[] = [];
     try {
-      const patch: Record<string, unknown> = {};
       if (completeFile) {
         if (completeFile.type !== "application/pdf") throw new Error("The complete-book upload currently supports PDF only.");
         const uploaded = await uploadMedia(completeFile, "document");
-        patch.primaryFileStoragePath = uploaded.key;
-        patch.primaryFileFormat = "pdf";
+        await requestApi(`/admin/library/books/${selectedBook.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ primaryFileStoragePath: uploaded.key, primaryFileFormat: "pdf" }),
+        });
+        completed.push("PDF edition");
+        setCompleteFile(null);
+        setNotice("PDF edition uploaded and connected. Continuing with other selected assets…");
       }
       if (coverFile) {
         if (!["image/jpeg", "image/png", "image/webp"].includes(coverFile.type)) throw new Error("Cover images must be JPEG, PNG, or WebP.");
         const uploaded = await uploadMedia(coverFile, "animal_photo");
-        patch.coverStoragePath = uploaded.key;
+        await requestApi(`/admin/library/books/${selectedBook.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ coverStoragePath: uploaded.key }),
+        });
+        completed.push("cover image");
+        setCoverFile(null);
       }
-      await requestApi(`/admin/library/books/${selectedBook.id}`, { method: "PATCH", body: JSON.stringify(patch) });
-      setCompleteFile(null); setCoverFile(null);
-      setNotice("Selected assets uploaded and connected to the publication.");
+      setNotice(`${completed.join(" and ")} uploaded and connected to the publication.`);
       await loadBooks(selectedBook.id);
-    } catch (err) { setError(err instanceof Error ? err.message : "Upload failed. Check the file and retry."); }
-    finally { setUploading(false); }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed. Check the file and retry.");
+      if (completed.length) setNotice(`${completed.join(" and ")} uploaded and connected. The remaining selected asset was not completed; retry it separately.`);
+    } finally { setUploading(false); }
   }
 
   async function addChapter(event: FormEvent) {
