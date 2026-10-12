@@ -16,6 +16,7 @@ import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { statusToken } from "@/lib/status";
+import { useAuth } from "@/lib/auth";
 
 const OpenCasesMap = dynamic(() => import("@/components/cases/OpenCasesMap"), {
   ssr: false,
@@ -33,6 +34,7 @@ const PRIORITY_WEIGHT: Record<string, number> = { high: 3, medium: 2, low: 1 };
 
 export default function RespondersDispatch() {
   const router = useRouter();
+  const { user } = useAuth();
   const [openCases, setOpenCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -98,10 +100,12 @@ export default function RespondersDispatch() {
   }, []);
 
   useEffect(() => {
-    // Use the saved home location only as a starting point; users can request
-    // a fresh device location at any time.
-    // Location permission is never requested automatically.
-  }, []);
+    const savedLocation = user?.homeLocation;
+    if (!savedLocation) return;
+    setNearbyLat(savedLocation.latitude);
+    setNearbyLng(savedLocation.longitude);
+    void loadNearby(savedLocation.latitude, savedLocation.longitude);
+  }, [user, loadNearby]);
 
   const detectLocation = () => {
     setLocationError(null);
