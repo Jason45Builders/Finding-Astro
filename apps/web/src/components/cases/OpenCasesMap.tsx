@@ -1,19 +1,16 @@
 'use client';
 
+import { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { icon } from 'leaflet';
 import 'leaflet-defaulticon-compatibility';
-
-interface CaseLocation {
-  latitude: number;
-  longitude: number;
-}
+import { DEFAULT_MAP_CENTER, getMapCoordinates } from '@/lib/map-utils';
 
 interface CaseForMap {
   id: string;
   title: string;
-  location: CaseLocation;
-  locationText?: string;
+  location?: unknown;
+  locationText?: string | null;
   priority?: string;
 }
 
@@ -35,44 +32,67 @@ const defaultIcon = icon({
   shadowSize: [41, 41],
 });
 
-function FitBounds({ cases }: { cases: CaseForMap[] }) {
+function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();
-  if (cases.length > 0) {
-    const bounds = cases.map((c) => [c.location.latitude, c.location.longitude] as [number, number]);
-    map.fitBounds(bounds, { padding: [40, 40] });
-  }
+  const pointsKey = points.map(([lat, lng]) => `${lat},${lng}`).join('|');
+  const stablePoints = useMemo(
+    () => pointsKey ? pointsKey.split('|').map((point) => point.split(',').map(Number) as [number, number]) : [],
+    [pointsKey],
+  );
+
+  useEffect(() => {
+    if (stablePoints.length === 1) map.setView(stablePoints[0], 14);
+    else if (stablePoints.length > 1) map.fitBounds(stablePoints, { padding: [36, 36], maxZoom: 14 });
+    else map.setView(DEFAULT_MAP_CENTER, 12);
+    map.invalidateSize();
+  }, [map, stablePoints]);
+
   return null;
 }
 
 export default function OpenCasesMap({ cases }: { cases: CaseForMap[] }) {
-  if (!cases.length) {
-    return (
-      <div className="w-full h-full bg-slate-100 rounded-xl flex items-center justify-center text-xs text-slate-400">
-        No open cases to display
-      </div>
-    );
-  }
+  const mappedCases = useMemo(() => cases.flatMap((item) => {
+    const coordinates = getMapCoordinates(item);
+    return coordinates ? [{ ...item, latitude: coordinates.latitude, longitude: coordinates.longitude }] : [];
+  }), [cases]);
 
-  const center: [number, number] = [cases[0].location.latitude, cases[0].location.longitude];
+  const bounds = useMemo(
+    () => mappedCases.map((item) => [item.latitude, item.longitude] as [number, number]),
+    [mappedCases],
+  );
 
   return (
-    <MapContainer center={center} zoom={13} className="w-full h-full rounded-xl" scrollWheelZoom={false}>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <FitBounds cases={cases} />
-      {cases.map((c) => (
-        <Marker key={c.id} position={[c.location.latitude, c.location.longitude]} icon={c.priority === 'high' ? emergencyIcon : defaultIcon}>
-          <Popup>
-            <div className="text-sm">
-              <p className="font-semibold">{c.title}</p>
-              <p className="text-xs text-slate-500">{c.locationText ?? `${c.location.latitude.toFixed(4)}, ${c.location.longitude.toFixed(4)}`}</p>
-              <p className="text-xs capitalize">{c.priority}</p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+    <div className="relative h-full min-h-[320px] w-full overflow-hidden rounded-xl">
+      <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} className="h-full w-full" scrollWheelZoom={false}>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
+        />
+        <FitBounds points={bounds} />
+        {mappedCases.map((item) => (
+          <Marker
+            key={item.id}
+            position={[item.latitude, item.longitude]}
+            icon={item.priority === 'high' ? emergencyIcon : defaultIcon}
+          >
+            <Popup>
+              <div className="text-sm">
+                <p className="font-semibold">{item.title}</p>
+                <p className="text-xs text-slate-500">
+                  {item.locationText || `${item.latitude.toFixed(4)}, ${item.longitude.toFixed(4)}`}
+                </p>
+                <p className="text-xs capitalize">{item.priority || 'Unspecified'} priority</p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+      {mappedCases.length === 0 && (
+        <div className="pointer-events-none absolute bottom-4 left-1/2 z-[500] -translate-x-1/2 rounded-full bg-white/95 px-4 py-2 text-xs font-semibold text-slate-700 shadow">
+          No open cases with valid coordinates
+        </div>
+      )}
+    </div>
   );
 }
