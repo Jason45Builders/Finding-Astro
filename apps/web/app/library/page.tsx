@@ -52,7 +52,7 @@ export default function LibraryPage() {
   const [category, setCategory] = useState("All topics");
   const [language, setLanguage] = useState("All languages");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState("");\n  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -77,7 +77,7 @@ export default function LibraryPage() {
     }
     const timer = setTimeout(load, 180);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [query, category, language]);
+  }, [query, category, language, reloadKey]);
 
   const categories = useMemo(() => ["All topics", ...Array.from(new Set(books.map((book) => book.category))).sort()], [books]);
   const languages = useMemo(() => ["All languages", ...Array.from(new Set(books.map((book) => book.language))).sort()], [books]);
@@ -117,7 +117,7 @@ export default function LibraryPage() {
         </div>
 
         {loading ? <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="animate-pulse"><div className="aspect-[3/4] rounded-xl bg-surface-variant/50" /><div className="mt-3 h-4 w-4/5 rounded bg-surface-variant/50" /><div className="mt-2 h-3 w-2/3 rounded bg-surface-variant/40" /></div>)}</div>
-          : error ? <div role="alert" className="rounded-2xl border border-error/20 bg-error-container/30 p-6"><h2 className="font-bold">The library is temporarily unavailable</h2><p className="mt-2 text-sm text-on-surface-variant">{error}</p><button onClick={() => setQuery((value) => value)} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary">Try again</button></div>
+          : error ? <div role="alert" className="rounded-2xl border border-error/20 bg-error-container/30 p-6"><h2 className="font-bold">The library is temporarily unavailable</h2><p className="mt-2 text-sm text-on-surface-variant">{error}</p><button onClick={() => setReloadKey((value) => value + 1)} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary">Try again</button></div>
           : books.length === 0 ? <div className="rounded-2xl border border-dashed border-outline/30 px-6 py-16 text-center"><BookOpen className="mx-auto text-on-surface-variant" size={34} /><h2 className="mt-4 text-xl font-bold">No publications found</h2><p className="mt-2 text-sm text-on-surface-variant">Try a different search or filter. New Finding Astro publications will appear here when published.</p><button onClick={() => { setQuery(""); setCategory("All topics"); setLanguage("All languages"); }} className="mt-5 rounded-lg border border-outline/25 px-4 py-2 text-sm font-semibold">Clear filters</button></div>
           : <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:grid-cols-5">{books.map((book, index) => <Link key={book.id} href={`/library/${book.slug}`} className="group min-w-0 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4"><BookCover book={book} index={index} /><div className="mt-4 flex items-start justify-between gap-2"><div className="min-w-0"><p className="mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">{book.category}</p><h2 className="line-clamp-2 text-base font-extrabold leading-snug group-hover:text-primary sm:text-lg">{book.title}</h2><p className="mt-1 truncate text-sm text-on-surface-variant">{book.author_name}</p></div><ArrowUpRight size={17} className="mt-1 shrink-0 text-on-surface-variant transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" /></div><div className="mt-3 flex items-center gap-2 text-xs text-on-surface-variant"><span className="rounded-full bg-surface-variant/50 px-2 py-1">{book.publication_type === "complete_file" ? (book.primary_file_format?.toUpperCase() ?? "BOOK") : "CHAPTERS"}</span><span className="inline-flex items-center gap-1"><Languages size={12} />{book.language.toUpperCase()}</span></div></Link>)}</div>}
       </section>
