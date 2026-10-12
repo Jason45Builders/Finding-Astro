@@ -94,12 +94,21 @@ export async function PATCH(req: NextRequest) {
   if (!["pending_review", "needs_info"].includes(request.status)) return badRequest("INVALID_STATUS", "This request has already been reviewed or withdrawn");
 
   let linkedAnimalId = request.linked_animal_id as string | null;
+  const status = b.action === "approve" ? "approved" : b.action === "reject" ? "rejected" : "needs_info";
   if (b.action === "approve") {
     if (linkedAnimalId) return badRequest("ALREADY_PUBLISHED", "This request already has a linked animal listing");
+    // Claim the request before creating the public listing so concurrent moderators cannot publish duplicates.
+    const { data: claim, error: claimError } = await db.from("rehome_requests").update({
+      status: "publishing", reviewer_user_id: auth.user.id, review_notes: b.reviewNotes ?? null, updated_at: new Date().toISOString(),
+    }).eq("id", request.id).in("status", ["pending_review", "needs_info"]).select("id").maybeSingle();
+    if (claimError) return serverError(claimError.message);
+    if (!claim) return badRequest("REVIEW_RACE", "This request was changed by another reviewer. Refresh and try again.");
+    const publicLat = Math.round(Number(request.latitude) * 100) / 100;
+    const publicLng = Math.round(Number(request.longitude) * 100) / 100;
     const { data: animal, error: animalError } = await db.from("animals").insert({
       species: request.species, name: request.animal_name, breed: request.breed,
       approx_age_months: request.age_months, gender: request.gender,
-      description: request.description, location: `POINT(${request.longitude} ${request.latitude})`,
+      description: request.description, location: `POINT(${publicLng} ${publicLat})`,
       territory_label: request.location_text, primary_photo_url: request.photo_url,
       photo_urls: request.photo_url ? [request.photo_url] : [], status: "community",
       created_by_user_id: request.applicant_user_id, welfare_group_id: null,
@@ -108,15 +117,17 @@ export async function PATCH(req: NextRequest) {
       visibility_changed_at: new Date().toISOString(), vaccination_status: "unverified",
       is_sterilized: false, disappearance_risk_level: "stable",
     }).select("id").single();
-    if (animalError) return serverError(animalError.message);
+    if (animalError) {
+      await db.from("rehome_requests").update({ status: "pending_review", reviewer_user_id: null, updated_at: new Date().toISOString() }).eq("id", request.id).eq("status", "publishing");
+      return serverError(animalError.message);
+    }
     linkedAnimalId = animal.id;
   }
-  const status = b.action === "approve" ? "approved" : b.action === "reject" ? "rejected" : "needs_info";
   const { data, error } = await db.from("rehome_requests").update({
     status, reviewer_user_id: auth.user.id, review_notes: b.reviewNotes ?? null,
     linked_animal_id: linkedAnimalId, reviewed_at: b.action === "needs_info" ? null : new Date().toISOString(),
     updated_at: new Date().toISOString(),
-  }).eq("id", request.id).in("status", ["pending_review", "needs_info"]).select("id,status,linked_animal_id,review_notes").maybeSingle();
+  }).eq("id", request.id).eq("status", b.action === "approve" ? "publishing" : request.status).select("id,status,linked_animal_id,review_notes").maybeSingle();
   if (error) return serverError(error.message);
   if (!data) return badRequest("REVIEW_RACE", "This request was changed by another reviewer. Refresh and try again.");
   await audit({ tableName: "rehome_requests", recordId: request.id, action: "UPDATE", actorId: auth.user.id, actorRole: auth.user.role, newData: data });
