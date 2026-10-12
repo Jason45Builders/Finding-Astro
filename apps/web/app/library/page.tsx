@@ -14,7 +14,8 @@ type Book = {
   publication_type: "complete_file" | "chapter_based" | "hybrid";
   category: string;
   language: string;
-  cover_storage_path?: string | null;\n  cover_url?: string | null;
+  cover_storage_path?: string | null;
+  cover_url?: string | null;
   primary_file_format?: string | null;
   is_featured: boolean;
   published_at?: string | null;
