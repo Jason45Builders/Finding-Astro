@@ -326,13 +326,19 @@ Committed on feature/finding-astro-library:
 - Admin publishing studio at apps/web/app/admin/library/page.tsx, linked from the actual staff sidebar.
 - Reader catalogue and chapter/PDF reading pages at apps/web/app/library/page.tsx and apps/web/app/library/[slug]/page.tsx.
 - Authenticated per-user progress API and chapter-level save/resume integration.
+- Public topic/language facets endpoint and paginated catalogue discovery.
+- Accessibility refinements: skip navigation, named landmarks, responsive cover artwork, proportional heading scaling, and graceful malformed-response messages.
+- Publication validation enforces a supported PDF for complete-file/hybrid types and at least one readable published rich-text chapter for chapter-based/hybrid types.
+- PDF content responses are marked private/no-store; storage key validation rejects traversal/backslash/control characters.
+- Chapter APIs are restricted to bounded structured-text blocks until chapter-file viewing is implemented.
+- The migration uses schema-qualified `extensions.uuid_generate_v4()` to match the connected Supabase project.
 
 Release blockers and remaining scope:
 - No local lint, typecheck, tests, SQL execution, build, or browser validation has run.
 - GitHub's Vercel status for a feature-branch code commit reported a build-rate-limit/upgrade page; no successful preview deployment was confirmed.
-- Migrations have not been applied to a test or production database.
-- Draft preview, chapter-file upload/delivery, PDF page position, upload progress and orphan reconciliation remain.
-- Storage bucket configuration must be verified before rollout.
+- Read-only inspection confirmed the live Supabase project does not yet have the Library tables and the migrations are unapplied. No production schema change was made.
+- Draft preview, chapter-file upload/delivery, PDF page position, upload progress and orphan reconciliation remain. A complete-file PDF viewer and chapter-based reader are implemented, but need browser validation.
+- Read-only inspection confirmed the public `finding-astro-media` bucket and private `finding-astro-private` bucket exist with the expected visibility; still validate upload and retrieval end to end.
 - The current complete-book upload UI supports PDF and uses the existing 10 MiB media-upload limit. EPUB is not supported end to end.
 
 ## 15. Working rules
@@ -349,3 +355,28 @@ Release blockers and remaining scope:
 ## 16. Definition of done
 
 The feature is complete only when admin publishing works end to end; complete-file and chapter-based formats work as explicitly claimed; published content is readable on mobile and desktop; drafts are protected by enforced authorization; progress is private and resumable; failures are understandable/recoverable; migrations and storage/RLS policies are committed/documented; existing workflows pass regression checks; build/lint/typecheck/tests are run and results recorded; the tracker is current; and all work remains on the feature branch until the user approves integration.
+
+
+## 19. Production-readiness hardening checkpoint (2026-10-12)
+
+The current reader uses the existing application theme tokens (background/surface, primary/secondary containers, outline, on-surface and error roles) rather than introducing a parallel visual system. The catalogue is designed around editorial covers, strong hierarchy, accessible search/filter controls, responsive cards, and clear loading/empty/error states. The detail page retains responsive artwork and a dedicated reading surface.
+
+Additional implementation details:
+- Public catalogue is paginated in batches of 24 and exposes the total count; topic/language options are loaded separately from published-only metadata.
+- Public filters are cached for five minutes and include stale-while-revalidate.
+- Complete-file pages use the full reading width without an empty chapter sidebar; hybrid pages provide both chapters and the PDF edition.
+- Skip links and named landmarks support keyboard/screen-reader navigation. Structured-text headings scale proportionally with text-size controls.
+- Malformed JSON/HTML infrastructure responses are converted to a clear retry message on reader pages.
+- Book publishing validates the effective resulting status, rights confirmation, PDF format, storage path shape, and readable chapter availability.
+- Published PDF delivery is not shared-cacheable, preventing stale CDN copies from surviving an unpublish operation.
+- The chapter editor API rejects PDF/EPUB chapter formats until a real chapter-file viewer exists; unsupported formats should not be presented as working features.
+
+Live environment audit:
+- Supabase project is active; library tables are absent, and both Library migrations remain unapplied.
+- `finding-astro-media` is public and `finding-astro-private` is private.
+- The current Supabase security advisor reports an existing critical issue on `public.spatial_ref_sys`: RLS is disabled. This is outside the Library scope and was not changed. It requires separate review before broader production hardening.
+
+Release gate:
+- The current feature-head GitHub Actions `typecheck-and-build` check was queued at the last observation; wait for and inspect its result before claiming code validation.
+- Vercel's status remains a build-rate-limit failure. No current feature-head preview has been confirmed.
+- Do not apply migrations to production until the build passes, migration SQL has been validated against a non-production database, and the end-to-end workflow has been browser-tested.
