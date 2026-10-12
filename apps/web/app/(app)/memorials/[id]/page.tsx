@@ -8,7 +8,6 @@ import { api, MemorialPost } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { Photo } from "@/components/ui/Photo";
 import { PageSpinner } from "@/components/ui/Spinner";
 
@@ -47,7 +46,7 @@ export default function MemorialDetailPage() {
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary"><Heart className="h-8 w-8" /></div>
       <h1 className="mt-4 text-xl font-black text-on-surface">Memorial not available</h1>
       <p className="mt-2 text-sm text-on-surface-variant">{error || "This memorial may have been removed or is not available to your account."}</p>
-      <Link href="/memorials" className="mt-5 inline-flex"><Button variant="secondary"><ArrowLeft className="h-4 w-4" /> Back to Memorial Wall</Button></Link>
+      <Link href="/memorials" className="mt-5 inline-flex items-center gap-2 rounded-md bg-secondary-container px-4 py-2.5 text-sm font-bold text-on-secondary-container transition-colors hover:bg-secondary/20"><ArrowLeft className="h-4 w-4" /> Back to Memorial Wall</Link>
     </div>
   );
 
