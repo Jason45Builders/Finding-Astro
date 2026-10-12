@@ -361,3 +361,19 @@ Delivered on the existing `feature/finding-astro-library` branch. No additional 
 - The complete-file layout, hybrid PDF action, mobile cover artwork and proportional text sizing use the existing Finding Astro design tokens; no parallel theme was introduced.
 - The only observed GitHub Actions run after fixing the workspace install completed at commit `160f336` and failed at `npm run lint` because the repository had no ESLint configuration and `next lint` launched an interactive prompt.
 - Added `apps/web/.eslintrc.json` afterward. No new check run for the newer code head has been observed, so current code remains unvalidated by CI.
+
+
+### Pass 6 — testable validation and request-race fixes (2026-10-12)
+**Status: PARTIAL — tests added; latest-head CI/build still unconfirmed**
+
+- Extracted publication-readiness and storage-key checks into `apps/web/src/lib/library-validation.ts`.
+- Added `apps/web/tests/library-validation.test.ts` covering namespace allowlists, traversal/backslash/control-character rejection, rights confirmation, PDF requirements, and readable-chapter requirements.
+- Admin publication PATCH now uses the tested validation helpers and preserves the original `published_at` timestamp when an already-published publication receives metadata edits. Republish after draft/archive still receives a fresh publication timestamp.
+- Catalogue pagination now aborts stale requests when query/category/language filters change; stale pagination results cannot append to a newer result set.
+- Reader resume no longer overrides a chapter the user manually selects while the saved-progress request is still pending.
+- Latest source changes are committed to the existing branch. No new branch was created.
+
+**Validation state**
+- The observed CI run at `160f336` installed dependencies, then failed at lint because ESLint configuration was missing. That config has been added; the subsequent code/test commits have no successful current-head CI result attached yet.
+- Vercel can list the preview deployment but the current connection receives a 403 when asked to create a deployment or fetch build events under the team scope. Do not try another connected Vercel account without confirming which account should be used.
+- Live Supabase schema inspection remains read-only; no Library migration has been applied.
