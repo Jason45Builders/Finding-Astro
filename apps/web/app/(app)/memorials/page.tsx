@@ -105,7 +105,7 @@ export default function MemorialsPage() {
                 </div>
               </Card>
             </Link>
-          ))
+          ))}
         </div>
       )}
     </div>
