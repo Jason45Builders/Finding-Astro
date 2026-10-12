@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 
 type Membership = {
@@ -80,10 +80,8 @@ export default function MyCollectivesPage() {
                 </p>
               </div>
             </div>
-            <Link href="/community/rescue-collective/create" className="shrink-0">
-              <Button variant="secondary" className="w-full sm:w-auto">
-                <Plus className="h-4 w-4" /> Create a Collective
-              </Button>
+            <Link href="/community/rescue-collective/create" className={buttonVariants({ variant: "secondary", className: "w-full shrink-0 sm:w-auto" })}>
+              <Plus className="h-4 w-4" /> Create a Collective
             </Link>
           </div>
         </div>
@@ -128,8 +126,8 @@ export default function MyCollectivesPage() {
               <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-on-surface-variant">
                 Rescue Collectives help local rescuers share animal records, tasks, events and volunteer coordination. You can start one as a citizen; a registered NGO is not required.
               </p>
-              <Link href="/community/rescue-collective/create" className="mt-5 inline-flex">
-                <Button variant="primary"><Plus className="h-4 w-4" /> Start a Rescue Collective</Button>
+              <Link href="/community/rescue-collective/create" className={buttonVariants({ variant: "primary", className: "mt-5 inline-flex" })}>
+                <Plus className="h-4 w-4" /> Start a Rescue Collective
               </Link>
             </div>
           ) : (
