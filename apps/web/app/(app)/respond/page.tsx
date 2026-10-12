@@ -17,6 +17,7 @@ import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { statusToken } from "@/lib/status";
 import { useAuth } from "@/lib/auth";
+import { getMapCoordinates } from "@/lib/map-utils";
 
 const OpenCasesMap = dynamic(() => import("@/components/cases/OpenCasesMap"), {
   ssr: false,
@@ -145,7 +146,7 @@ export default function RespondersDispatch() {
   }, [openCases, query, priorityFilter, sortMode]);
 
   const highPriorityCount = openCases.filter((c) => c.priority === "high").length;
-  const mappedCount = openCases.filter((c) => Boolean(c.location)).length;
+  const mappedCount = openCases.filter((c) => getMapCoordinates(c) !== null).length;
 
   const handleClaim = async (caseId: string) => {
     setClaimingId(caseId);
