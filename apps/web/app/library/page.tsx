@@ -14,7 +14,7 @@ type Book = {
   publication_type: "complete_file" | "chapter_based" | "hybrid";
   category: string;
   language: string;
-  cover_storage_path?: string | null;
+  cover_storage_path?: string | null;\n  cover_url?: string | null;
   primary_file_format?: string | null;
   is_featured: boolean;
   published_at?: string | null;
@@ -31,14 +31,14 @@ const COVER_STYLES = [
 
 function BookCover({ book, index }: { book: Book; index: number }) {
   return (
-    <div className={`relative flex aspect-[3/4] w-full flex-col justify-between overflow-hidden rounded-xl bg-gradient-to-br p-5 shadow-sm ${COVER_STYLES[index % COVER_STYLES.length]}`}>
+    <div className={`relative flex aspect-[3/4] w-full flex-col justify-between overflow-hidden rounded-xl bg-gradient-to-br p-5 shadow-sm ${COVER_STYLES[index % COVER_STYLES.length]}`}>{book.cover_url && <><img src={book.cover_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/10" /></>}
       <div className="flex items-center justify-between gap-2 text-[10px] font-bold uppercase tracking-[0.18em] opacity-70">
-        <span>Finding Astro</span><BookOpen size={15} />
+        <span className={book.cover_url ? "relative z-10 text-white" : "relative z-10"}>Finding Astro</span><BookOpen size={15} className="relative z-10" />
       </div>
       <div className="relative z-10">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] opacity-65">{book.category}</p>
-        <h2 className="line-clamp-4 text-xl font-extrabold leading-tight tracking-tight sm:text-2xl">{book.title}</h2>
-        {book.subtitle && <p className="mt-2 line-clamp-2 text-xs opacity-75">{book.subtitle}</p>}
+        <p className={`relative z-10 mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] opacity-75 ${book.cover_url ? "text-white" : ""}`}>{book.category}</p>
+        <h2 className={`relative z-10 line-clamp-4 text-xl font-extrabold leading-tight tracking-tight sm:text-2xl ${book.cover_url ? "text-white" : ""}`}>{book.title}</h2>
+        {book.subtitle && <p className={`relative z-10 mt-2 line-clamp-2 text-xs opacity-75 ${book.cover_url ? "text-white" : ""}`}>{book.subtitle}</p>}
       </div>
       <div className="absolute -bottom-10 -right-8 h-36 w-36 rounded-full border-[18px] border-current/10" />
       <div className="absolute -bottom-5 -right-2 h-20 w-20 rounded-full border border-current/20" />
