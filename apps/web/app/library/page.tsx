@@ -138,7 +138,8 @@ export default function LibraryPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-on-background">\n      <a href="#library-results" className="sr-only z-50 rounded-lg bg-surface px-4 py-3 font-bold text-primary focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:ring-2 focus:ring-primary">Skip to publications</a>
+    <main className="min-h-screen bg-background text-on-background">
+      <a href="#library-results" className="sr-only z-50 rounded-lg bg-surface px-4 py-3 font-bold text-primary focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:ring-2 focus:ring-primary">Skip to publications</a>
       <header className="border-b border-outline/15 bg-surface">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
           <Link href="/" className="flex items-center gap-2 text-sm font-extrabold tracking-tight"><span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-on-primary"><BookOpen size={19} /></span> FINDING ASTRO <span className="font-medium text-on-surface-variant">/ Library</span></Link>
