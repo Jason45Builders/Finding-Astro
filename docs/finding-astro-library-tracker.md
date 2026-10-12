@@ -182,6 +182,7 @@ Do not report a percentage based on file count or number of commits. Report by c
 
 Files changed:
 - supabase/migrations/20261012170000_finding_astro_library.sql — books, chapters, progress tables; constraints/indexes; RLS enabled.
+- supabase/migrations/20261012183000_library_chapter_reorder.sql — atomic chapter reordering function restricted to service_role.
 - apps/web/app/api/v1/library/books/route.ts — published catalogue API.
 - apps/web/app/api/v1/library/books/[slug]/route.ts — published book detail and chapter metadata.
 - apps/web/app/api/v1/library/books/[slug]/chapters/[chapterId]/route.ts — published chapter content endpoint.
@@ -214,7 +215,7 @@ Next substantial work:
 **Status: PARTIAL**
 
 Additional files changed:
-- apps/web/app/admin/library/page.tsx — admin publishing studio with metadata, PDF and cover upload, structured chapter creation, rights confirmation, publish/unpublish/archive controls.
+- apps/web/app/admin/library/page.tsx — admin publishing studio with metadata, PDF and cover upload, structured chapter create/edit/reorder, rights confirmation, publish/unpublish/archive controls.
 - apps/web/app/(app)/layout.tsx — admin sidebar link, visible only for role admin.
 - apps/web/app/library/page.tsx — public catalogue with search, category/language filters, responsive cards and retry/empty/loading/error states.
 - apps/web/app/library/[slug]/page.tsx — publication detail, chapter navigation, structured text renderer, text-size controls, PDF iframe and open-in-new-tab action.
@@ -224,7 +225,7 @@ Additional files changed:
 Important limitations:
 - Admin upload reuses the existing authenticated media upload endpoint: complete PDFs are uploaded as private purpose=document assets; covers use the existing public animal_photo purpose. Only admin-authorized Library APIs can attach paths to publications.
 - The upload interface does not yet show byte-level progress. If one of multiple selected uploads succeeds and a later upload or database patch fails, a tracked media object may remain unlinked; cleanup/reconciliation is still needed.
-- The admin interface currently creates structured-text chapters but does not yet provide chapter editing/reordering or chapter-file uploads.
+- The admin interface now supports structured-text chapter editing and up/down reordering through an atomic database function; chapter-file uploads are still not in the UI.
 - Draft preview is not implemented; draft content remains excluded from public APIs.
 - The PDF reader streams the full file and does not implement HTTP byte-range requests. It is intended for the existing 10 MiB upload limit and requires browser validation.
 
@@ -257,3 +258,17 @@ Remaining:
 
 Validation:
 - Source files and GitHub commits confirmed. No automated test or build was run.
+
+
+### Pass 2 follow-up — chapter maintenance (2026-10-12)
+**Status: PARTIAL**
+
+Delivered:
+- Added supabase/migrations/20261012183000_library_chapter_reorder.sql with a transaction-safe reorder function that temporarily moves all chapters into a non-conflicting order range, then assigns contiguous order values. Function execution is restricted to service_role.
+- Added POST /api/v1/admin/library/books/[bookId]/chapters/reorder with admin authorization, CSRF protection, UUID validation, and server-side RPC call.
+- Admin chapter editor now supports editing structured text and moving chapters up/down; ordering uses the atomic RPC rather than conflicting single-row updates.
+
+Validation:
+- GitHub confirmed migration, endpoint, and admin UI commits.
+- SQL has not been executed; function permissions and ordering behaviour need database validation.
+- No automated tests or build were run.
