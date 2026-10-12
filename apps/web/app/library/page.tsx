@@ -53,7 +53,8 @@ export default function LibraryPage() {
   const [category, setCategory] = useState("All topics");
   const [language, setLanguage] = useState("All languages");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");\n  const [reloadKey, setReloadKey] = useState(0);
+  const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
