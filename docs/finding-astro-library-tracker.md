@@ -345,3 +345,11 @@ Delivered on the existing `feature/finding-astro-library` branch. No additional 
 - The first Actions run failed at `actions/setup-node` before `npm ci` because the cache path pointed to a nonexistent workspace lockfile.
 - Root npm workspace/lockfile is confirmed; the workflow has been corrected to use root `npm ci`, root scripts, Node 22, and the root lockfile.
 - GitHub Actions has not produced a check run for the latest follow-up commits at the last observation. Continue investigating the trigger/run status before calling the source validated.
+
+
+### CI follow-up — ESLint bootstrap (2026-10-12)
+- The corrected workflow successfully installed the root workspace dependencies.
+- The next step failed because `next lint` opened an interactive “configure ESLint” prompt: the app had no ESLint config, so the non-interactive CI runner exited before typecheck/tests/build.
+- Added `apps/web/.eslintrc.json` extending `next/core-web-vitals` and `next/typescript`, with generated/build directories ignored.
+- A fresh workflow run is required to determine whether the existing codebase has actual lint findings. The previous run did not reach typecheck, tests, or build.
+- Dependency installation also reported 19 audit findings (5 moderate, 13 high, 1 critical). This is an existing dependency-tree risk signal, not yet triaged by package/advisory; do not run an automatic breaking upgrade without reviewing the exact affected packages.
