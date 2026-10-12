@@ -24,6 +24,11 @@ type Book = {
 type ApiResponse = { success: boolean; data?: { books: Book[]; count: number; limit?: number; offset?: number }; message?: string };
 type FacetsResponse = { success: boolean; data?: { categories: string[]; languages: string[] }; message?: string };
 
+async function parseApiResponse<T>(response: Response): Promise<T> {
+  try { return await response.json() as T; }
+  catch { throw new Error("The server returned an unexpected response. Please try again."); }
+}
+
 const COVER_STYLES = [
   "from-amber-100 via-orange-50 to-rose-100 text-stone-900",
   "from-emerald-100 via-teal-50 to-cyan-100 text-slate-900",
@@ -74,7 +79,7 @@ export default function LibraryPage() {
         params.set("limit", "24");
         params.set("offset", "0");
         const response = await fetch(`/api/v1/library/books?${params.toString()}`, { signal: controller.signal, cache: "no-store" });
-        const payload = await response.json() as ApiResponse;
+        const payload = await parseApiResponse<ApiResponse>(response);
         if (!response.ok || !payload.success) throw new Error(payload.message || "The library could not be loaded.");
         setBooks(payload.data?.books ?? []);
         setTotalCount(payload.data?.count ?? 0);
@@ -94,7 +99,7 @@ export default function LibraryPage() {
     const controller = new AbortController();
     fetch("/api/v1/library/facets", { signal: controller.signal, cache: "force-cache" })
       .then(async (response) => {
-        const payload = await response.json() as FacetsResponse;
+        const payload = await parseApiResponse<FacetsResponse>(response);
         if (!response.ok || !payload.success) throw new Error(payload.message || "Unable to load filters");
         setFacets({ categories: payload.data?.categories ?? [], languages: payload.data?.languages ?? [] });
       })
