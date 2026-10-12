@@ -22,7 +22,7 @@
 ### B. Citizen navigation
 - [x] Replace flat citizen list with labeled sections.
 - [x] Remove the ten collective-operation links from the citizen sidebar.
-- [ ] Add one **My Collectives** entry linking to `/collectives`.
+- [x] Add one **My Collectives** entry linking to `/collectives`.
 - [x] Keep less-frequent destinations discoverable under More.
 - [x] Keep mobile bottom navigation compact and workspace-aware.
 
@@ -39,7 +39,7 @@
 - [x] Add clear links to My Collectives and Citizen Dashboard.
 - [x] Use workspace-specific mobile shortcuts.
 - [x] Reused existing nested-route active matching; runtime verification pending.
-- [ ] Preserve existing `/org/layout.tsx` membership guard.
+- [x] Preserve existing `/org/layout.tsx` membership guard (left unchanged).
 
 ### E. Quality and regression
 - [ ] TypeScript typecheck.
