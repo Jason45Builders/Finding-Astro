@@ -86,6 +86,7 @@ export default async function RootPage() {
             <a className="font-title-md text-sm text-on-surface-variant hover:text-secondary transition-colors duration-150 ease-out" href="#how-it-works">How it Works</a>
             <a className="font-title-md text-sm text-on-surface-variant hover:text-secondary transition-colors duration-150 ease-out" href="#transparency">Transparency</a>
             <a className="font-title-md text-sm text-on-surface-variant hover:text-secondary transition-colors duration-150 ease-out" href="#partners">Partners</a>
+            <Link className="font-title-md text-sm font-bold text-primary hover:text-secondary transition-colors duration-150 ease-out" href="/library">Library</Link>
           </div>
           <div className="flex gap-2 md:gap-3">
             <Link href="/auth/login"><Button variant="outline" size="sm" className="md:h-11 md:px-6 md:text-sm">Sign In</Button></Link>
@@ -115,6 +116,9 @@ export default async function RootPage() {
                   </Button>
                 </Link>
               </div>
+              <Link href="/library" className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-primary transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <BookOpen size={17} /> Explore the free animal-welfare library <span aria-hidden="true">→</span>
+              </Link>
             </div>
             <div className="relative aspect-square md:aspect-auto md:h-[440px] rounded-[40px] overflow-hidden bg-primary">
               <Image
