@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, CheckCircle2, Clock3, Heart, MapPin, PawPrint, Quo
 import { api, MemorialPost } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Photo } from "@/components/ui/Photo";
 import { PageSpinner } from "@/components/ui/Spinner";
