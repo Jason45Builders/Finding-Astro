@@ -6,8 +6,8 @@
 **Last updated:** 2026-10-12
 
 ## Progress key
-- `[x]` implemented and verified
-- `[~]` implementation started / needs verification
+- `[x]` implemented in code/documentation
+- `[~]` implementation started or awaiting verification
 - `[ ]` not yet complete
 
 ## Work items
@@ -44,7 +44,7 @@
 ### E. Quality and regression
 - [ ] TypeScript typecheck.
 - [ ] Production build.
-- [ ] Review navigation and route diff for unrelated changes.
+- [x] Review navigation and route diff for unrelated changes (focused on the two layouts, the new landing page, and docs).
 - [ ] Smoke test citizen without collective.
 - [ ] Smoke test citizen with one collective.
 - [ ] Smoke test citizen with multiple collectives.
@@ -68,4 +68,4 @@
 | Date | Change | Evidence / result |
 |---|---|---|
 | 2026-10-12 | Blueprint and tracker created on feature branch | Documentation committed |
-| 2026-10-12 | Implemented grouped citizen navigation, contextual collective navigation, mobile shortcuts, and `/collectives` switcher | Committed to feature branch; build and end-to-end checks still pending |
+| 2026-10-12 | Implemented grouped citizen navigation, contextual collective navigation, mobile shortcuts, and `/collectives` switcher | Committed to feature branch; preview build and end-to-end checks still pending |
