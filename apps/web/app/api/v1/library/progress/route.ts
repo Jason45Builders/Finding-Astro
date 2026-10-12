@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { authMiddleware, requireCsrf } from "@/lib/auth-middleware";
-import { ok, badRequest, forbidden, notFound, serverError } from "@/lib/api-response";
+import { ok, badRequest, notFound, serverError } from "@/lib/api-response";
 
 export const dynamic = "force-dynamic";
 
