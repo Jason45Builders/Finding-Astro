@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Heart, Plus, MapPin, Calendar, ShieldAlert, Sparkles, ArrowUpRight, PawPrint, Quote } from "lucide-react";
+import { Heart, Plus, MapPin, Calendar, ArrowUpRight, PawPrint, Quote } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
