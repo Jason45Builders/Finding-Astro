@@ -165,7 +165,7 @@ Copy and complete this section at the end of each substantial pass:
 
 | ID | Item | Severity | Status | Evidence / next action |
 |---|---|---|---|---|
-| LIB-001 | Confirm current app routes, framework, and package scripts | High | Open | Inspect repository before choosing route/file locations |
+| LIB-001 | Confirm current app routes, framework, and package scripts | High | Done | Next.js 15 App Router, package scripts, and actual sidebar identified; see blueprint audit findings |
 | LIB-002 | Confirm trusted admin-role enforcement | Critical | Open | Audit server handlers and database RLS/policies |
 | LIB-003 | Confirm Storage bucket and upload conventions | High | Open | Inspect current Supabase configuration and media helpers |
 | LIB-004 | Decide guest reading versus sign-in requirement | Medium | Open | Match existing auth behaviour and mission intent |
