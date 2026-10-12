@@ -50,6 +50,7 @@ const BASE_NAV_ITEMS = [
 const ADMIN_NAV_ITEMS = [
   { label: "Dispatch",           href: "/dispatch",               icon: Radio },
   { label: "Adoption Review",    href: "/adoption-admin",         icon: Heart },
+  { label: "Rehome Review",      href: "/rehome/review",          icon: PawPrint },
   { label: "Verifications",      href: "/admin/verifications",     icon: UserCheck },
   { label: "Reimbursements",     href: "/admin/reimbursements",    icon: DollarSign },
   { label: "Case Oversight",     href: "/admin/cases",             icon: ClipboardList },
@@ -99,7 +100,7 @@ const STAFF_NAV_GROUPS = [
   { label: "Your Space", hrefs: ["/dashboard"], collapsible: false },
   { label: "Animal Welfare", hrefs: ["/animals", "/cases", "/respond", "/map", "/adopt", "/foster", "/lost-found", "/wildlife", "/safety", "/abc", "/cruelty", "/memorials"], collapsible: false },
   { label: "Community & Support", hrefs: ["/funding", "/my/donations", "/community", "/collectives", "/partners", "/ambulance"], collapsible: false },
-  { label: "Operations", hrefs: ["/dispatch", "/adoption-admin", "/admin/verifications", "/admin/reimbursements", "/admin/cases", "/admin/partner-requests", "/admin/ambulance", "/admin/memorials", "/impact"], collapsible: false },
+  { label: "Operations", hrefs: ["/dispatch", "/adoption-admin", "/rehome/review", "/admin/verifications", "/admin/reimbursements", "/admin/cases", "/admin/partner-requests", "/admin/ambulance", "/admin/memorials", "/impact"], collapsible: false },
   { label: "Administration", hrefs: ["/admin/users", "/admin/beta/feedback"], collapsible: false },
   { label: "More", hrefs: ["/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
 ];
