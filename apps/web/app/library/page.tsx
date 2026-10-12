@@ -21,7 +21,8 @@ type Book = {
   published_at?: string | null;
 };
 
-type ApiResponse = { success: boolean; data?: { books: Book[]; count: number }; message?: string };
+type ApiResponse = { success: boolean; data?: { books: Book[]; count: number; limit?: number; offset?: number }; message?: string };
+type FacetsResponse = { success: boolean; data?: { categories: string[]; languages: string[] }; message?: string };
 
 const COVER_STYLES = [
   "from-amber-100 via-orange-50 to-rose-100 text-stone-900",
@@ -55,6 +56,10 @@ export default function LibraryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState("");
+  const [facets, setFacets] = useState<{ categories: string[]; languages: string[] }>({ categories: [], languages: [] });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -66,10 +71,14 @@ export default function LibraryPage() {
         if (query.trim()) params.set("q", query.trim());
         if (category !== "All topics") params.set("category", category);
         if (language !== "All languages") params.set("language", language);
+        params.set("limit", "24");
+        params.set("offset", "0");
         const response = await fetch(`/api/v1/library/books?${params.toString()}`, { signal: controller.signal, cache: "no-store" });
         const payload = await response.json() as ApiResponse;
         if (!response.ok || !payload.success) throw new Error(payload.message || "The library could not be loaded.");
         setBooks(payload.data?.books ?? []);
+        setTotalCount(payload.data?.count ?? 0);
+        setLoadMoreError("");
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") return;
         setError(err instanceof Error ? err.message : "The library could not be loaded.");
@@ -81,8 +90,46 @@ export default function LibraryPage() {
     return () => { clearTimeout(timer); controller.abort(); };
   }, [query, category, language, reloadKey]);
 
-  const categories = useMemo(() => ["All topics", ...Array.from(new Set(books.map((book) => book.category))).sort()], [books]);
-  const languages = useMemo(() => ["All languages", ...Array.from(new Set(books.map((book) => book.language))).sort()], [books]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/v1/library/facets", { signal: controller.signal, cache: "force-cache" })
+      .then(async (response) => {
+        const payload = await response.json() as FacetsResponse;
+        if (!response.ok || !payload.success) throw new Error(payload.message || "Unable to load filters");
+        setFacets({ categories: payload.data?.categories ?? [], languages: payload.data?.languages ?? [] });
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, []);
+
+  const categories = useMemo(() => ["All topics", ...(facets.categories.length ? facets.categories : Array.from(new Set(books.map((book) => book.category)))].sort((a, b) => a === "All topics" ? -1 : b === "All topics" ? 1 : a.localeCompare(b)), [books, facets.categories]);
+  const languages = useMemo(() => ["All languages", ...(facets.languages.length ? facets.languages : Array.from(new Set(books.map((book) => book.language)))].sort((a, b) => a === "All languages" ? -1 : b === "All languages" ? 1 : a.localeCompare(b)), [books, facets.languages]);
+
+  async function loadMore() {
+    setLoadingMore(true);
+    setLoadMoreError("");
+    try {
+      const params = new URLSearchParams();
+      if (query.trim()) params.set("q", query.trim());
+      if (category !== "All topics") params.set("category", category);
+      if (language !== "All languages") params.set("language", language);
+      params.set("limit", "24");
+      params.set("offset", String(books.length));
+      const response = await fetch(`/api/v1/library/books?${params.toString()}`, { cache: "no-store" });
+      const payload = await response.json() as ApiResponse;
+      if (!response.ok || !payload.success) throw new Error(payload.message || "More publications could not be loaded.");
+      const nextBooks = payload.data?.books ?? [];
+      setBooks((current) => {
+        const seen = new Set(current.map((book) => book.id));
+        return [...current, ...nextBooks.filter((book) => !seen.has(book.id))];
+      });
+      setTotalCount(payload.data?.count ?? totalCount);
+    } catch (err) {
+      setLoadMoreError(err instanceof Error ? err.message : "More publications could not be loaded.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   return (
     <main className="min-h-screen bg-background text-on-background">
@@ -104,7 +151,7 @@ export default function LibraryPage() {
               <p className="mt-5 max-w-2xl text-base leading-7 text-on-surface-variant sm:text-lg">Explore Finding Astro publications on animal care, adoption, community welfare, and the people making a difference. Free to read, built around the welfare mission.</p>
             </div>
             <div className="rounded-2xl border border-outline/15 bg-background/80 p-5">
-              <div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-xl bg-secondary-container text-on-secondary-container"><BookOpen size={21} /></span><div><p className="text-2xl font-extrabold tabular-nums">{loading ? "—" : books.length}</p><p className="text-xs text-on-surface-variant">Publications available</p></div></div>
+              <div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-xl bg-secondary-container text-on-secondary-container"><BookOpen size={21} /></span><div><p className="text-2xl font-extrabold tabular-nums">{loading ? "—" : totalCount}</p><p className="text-xs text-on-surface-variant">Publications available</p></div></div>
               <p className="mt-4 text-sm leading-6 text-on-surface-variant">Every publication is intended to turn learning into more informed, compassionate animal care.</p>
             </div>
           </div>
@@ -122,6 +169,11 @@ export default function LibraryPage() {
           : error ? <div role="alert" className="rounded-2xl border border-error/20 bg-error-container/30 p-6"><h2 className="font-bold">The library is temporarily unavailable</h2><p className="mt-2 text-sm text-on-surface-variant">{error}</p><button onClick={() => setReloadKey((value) => value + 1)} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary">Try again</button></div>
           : books.length === 0 ? <div className="rounded-2xl border border-dashed border-outline/30 px-6 py-16 text-center"><BookOpen className="mx-auto text-on-surface-variant" size={34} /><h2 className="mt-4 text-xl font-bold">No publications found</h2><p className="mt-2 text-sm text-on-surface-variant">Try a different search or filter. New Finding Astro publications will appear here when published.</p><button onClick={() => { setQuery(""); setCategory("All topics"); setLanguage("All languages"); }} className="mt-5 rounded-lg border border-outline/25 px-4 py-2 text-sm font-semibold">Clear filters</button></div>
           : <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:grid-cols-5">{books.map((book, index) => <Link key={book.id} href={`/library/${book.slug}`} className="group min-w-0 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4"><BookCover book={book} index={index} /><div className="mt-4 flex items-start justify-between gap-2"><div className="min-w-0"><p className="mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">{book.category}</p><h2 className="line-clamp-2 text-base font-extrabold leading-snug group-hover:text-primary sm:text-lg">{book.title}</h2><p className="mt-1 truncate text-sm text-on-surface-variant">{book.author_name}</p></div><ArrowUpRight size={17} className="mt-1 shrink-0 text-on-surface-variant transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" /></div><div className="mt-3 flex items-center gap-2 text-xs text-on-surface-variant"><span className="rounded-full bg-surface-variant/50 px-2 py-1">{book.publication_type === "complete_file" ? (book.primary_file_format?.toUpperCase() ?? "BOOK") : "CHAPTERS"}</span><span className="inline-flex items-center gap-1"><Languages size={12} />{book.language.toUpperCase()}</span></div></Link>)}</div>}
+        {!loading && !error && books.length > 0 && <div className="mt-10 flex flex-col items-center gap-3 border-t border-outline/10 pt-8">
+          <p className="text-sm text-on-surface-variant" aria-live="polite">Showing <span className="font-bold text-on-background">{books.length}</span> of <span className="font-bold text-on-background">{totalCount}</span> publications</p>
+          {loadMoreError && <p role="alert" className="text-sm text-error">{loadMoreError}</p>}
+          {books.length < totalCount && <button type="button" onClick={() => void loadMore()} disabled={loadingMore} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-outline/20 bg-surface px-5 py-3 text-sm font-bold transition hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-wait disabled:opacity-60">{loadingMore ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" /> Loading publications…</> : "Load more publications"}</button>}
+        </div>}
       </section>
 
       <footer className="border-t border-outline/15 bg-surface px-5 py-8 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col gap-2 text-xs text-on-surface-variant sm:flex-row sm:items-center sm:justify-between"><p>Finding Astro Library · Free educational publications for animal welfare</p><Link href="/" className="inline-flex items-center gap-1 font-semibold hover:text-primary">Explore Finding Astro <ArrowUpRight size={13} /></Link></div></footer>
