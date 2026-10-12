@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Heart, Search, CheckCircle, XCircle, Clock, FileText, Eye } from "lucide-react";
 import { api, AdoptionApplication, Animal } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -123,6 +124,10 @@ export default function AdoptionAdminPage() {
           <Heart className="w-6 h-6 text-secondary" /> Adoption Review
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">Review and manage adoption applications</p>
+        <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container-low p-4">
+          <div><p className="font-semibold text-on-surface">Citizen rehoming verification</p><p className="text-sm text-on-surface-variant">Review owner rehoming requests and community-animal reports. These are separate from adopter applications.</p></div>
+          <Button variant="primary" onClick={() => router.push("/rehome/review")}>Open rehome verification</Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
