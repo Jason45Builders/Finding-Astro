@@ -123,7 +123,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isOrgWorkspace = pathname === "/org" || pathname.startsWith("/org/");
   const showOrgNav = !isStaff && (isNgo || isOrgWorkspace);
   const navItems = isStaff
-    ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS]
+    ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS.filter((item) => item.href !== "/admin/library" || user?.role === "admin")]
     : showOrgNav
       ? [
           { label: "My Collectives", href: "/collectives", icon: HeartHandshake },
