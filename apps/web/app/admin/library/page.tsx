@@ -57,6 +57,7 @@ export default function AdminLibraryPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [authMissing, setAuthMissing] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   const loadBooks = useCallback(async (preferredId?: string) => {
     setLoading(true); setError("");
@@ -65,6 +66,8 @@ export default function AdminLibraryPage() {
       const result = await requestApi(`/admin/library/books${suffix}`);
       const items = (result.data?.books ?? []) as Book[];
       setBooks(items);
+      setAuthMissing(false);
+      setAccessDenied(false);
       const nextId = preferredId && items.some((item) => item.id === preferredId) ? preferredId : selectedId && items.some((item) => item.id === selectedId) ? selectedId : "";
       setSelectedId(nextId);
       if (!nextId) { setForm(emptyForm); setChapters([]); }
@@ -75,7 +78,9 @@ export default function AdminLibraryPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unable to load publications.";
       setError(message);
-      setAuthMissing(/authentication|required|unauthorized|administrator/i.test(message));
+      const normalized = message.toLowerCase();
+      setAuthMissing(/authentication required|unauthorized|sign in/.test(normalized));
+      setAccessDenied(/administrator access required|forbidden/.test(normalized));
     } finally { setLoading(false); }
   }, [statusFilter, selectedId]);
 
@@ -250,7 +255,7 @@ export default function AdminLibraryPage() {
       <div className="mx-auto max-w-7xl px-5 py-7 sm:px-8 sm:py-10">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Publishing studio</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">Create welfare publications, upload a complete PDF or add chapters, then publish when the content is ready.</p></div><label className="flex items-center gap-2 text-sm"><span className="text-on-surface-variant">Show</span><select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="rounded-lg border border-outline/20 bg-surface px-3 py-2"><option value="all">All publications</option><option value="draft">Drafts</option><option value="published">Published</option><option value="archived">Archived</option></select></label></div>
 
-        {error && <div role="alert" className="mb-5 rounded-xl border border-error/25 bg-error-container/25 p-4 text-sm"><p className="font-bold">{authMissing ? "Administrator sign-in required" : "Something needs attention"}</p><p className="mt-1">{error}</p>{authMissing && <Link href="/login" className="mt-2 inline-block font-bold underline">Go to sign in</Link>}</div>}
+        {error && <div role="alert" className="mb-5 rounded-xl border border-error/25 bg-error-container/25 p-4 text-sm"><p className="font-bold">{authMissing ? "Administrator sign-in required" : accessDenied ? "Administrator access required" : "Something needs attention"}</p><p className="mt-1">{error}</p>{authMissing ? <Link href="/login" className="mt-2 inline-block font-bold underline">Go to sign in</Link> : accessDenied ? <Link href="/dashboard" className="mt-2 inline-block font-bold underline">Back to dashboard</Link> : null}</div>}
         {notice && <div role="status" className="mb-5 flex items-start gap-2 rounded-xl border border-emerald-600/20 bg-emerald-500/10 p-4 text-sm"><Check size={17} className="mt-0.5 shrink-0 text-emerald-700" /><span>{notice}</span></div>}
 
         <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
