@@ -23,7 +23,8 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ slug: 
       .eq("status", "published")
       .order("sort_order", { ascending: true });
     if (chapterError) return serverError("Unable to load publication chapters", chapterError);
-    const { primary_file_storage_path: _privatePath, ...publicBook } = book;\n    return ok({ book: { ...publicBook, has_complete_file: Boolean(_privatePath), cover_url: publicBook.cover_storage_path ? (String(publicBook.cover_storage_path).startsWith("http") ? publicBook.cover_storage_path : supabaseAdmin().storage.from("finding-astro-media").getPublicUrl(publicBook.cover_storage_path).data.publicUrl) : null }, chapters: chapters ?? [] });
+    const { primary_file_storage_path: _privatePath, ...publicBook } = book;
+    return ok({ book: { ...publicBook, has_complete_file: Boolean(_privatePath), cover_url: publicBook.cover_storage_path ? (String(publicBook.cover_storage_path).startsWith("http") ? publicBook.cover_storage_path : supabaseAdmin().storage.from("finding-astro-media").getPublicUrl(publicBook.cover_storage_path).data.publicUrl) : null }, chapters: chapters ?? [] });
   } catch (error) {
     return serverError("Unable to load publication", error);
   }
