@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Popup, useMap } from 'react-leaflet';
 import { icon } from 'leaflet';
 import 'leaflet-defaulticon-compatibility';
+import ResilientTileLayer from '@/components/maps/ResilientTileLayer';
 import { DEFAULT_MAP_CENTER, getMapCoordinates } from '@/lib/map-utils';
 
 interface CaseForMap {
@@ -71,11 +72,7 @@ export default function OpenCasesMap({ cases }: { cases: CaseForMap[] }) {
   return (
     <div className="relative h-[360px] min-h-[320px] w-full overflow-hidden rounded-xl">
       <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} style={{ height: '100%', minHeight: '320px', width: '100%' }} scrollWheelZoom={false}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
-        />
+        <ResilientTileLayer />
         <FitBounds points={bounds} />
         {mappedCases.map((item) => (
           <Marker
