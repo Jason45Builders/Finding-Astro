@@ -166,6 +166,7 @@ async function handleMarkAdoptable(req: NextRequest, user: { id: string; role: s
 async function handleApprove(appId: string | undefined, req: NextRequest, user: { id: string; role: string }) {
   const loaded = await loadStaffApplication(req, appId, user);
   if ("error" in loaded) return loaded.error;
+  if (loaded.data.status !== "pending_review") return badRequest("INVALID_STATUS", "Only pending applications can be approved");
   const parsed = validateBody(ReviewSchema, await req.json().catch(() => ({})));
   if (!parsed.ok) return parsed.response;
   const update: Record<string, unknown> = { status: "approved", review_notes: parsed.data.reviewNotes ?? null, reviewed_by_user_id: user.id, updated_at: new Date().toISOString() };
@@ -181,6 +182,7 @@ async function handleApprove(appId: string | undefined, req: NextRequest, user: 
 async function handleReject(appId: string | undefined, req: NextRequest, user: { id: string; role: string }) {
   const loaded = await loadStaffApplication(req, appId, user);
   if ("error" in loaded) return loaded.error;
+  if (loaded.data.status !== "pending_review") return badRequest("INVALID_STATUS", "Only pending applications can be rejected");
   const parsed = validateBody(ReviewSchema, await req.json().catch(() => ({})));
   if (!parsed.ok) return parsed.response;
   const update = { status: "rejected", rejection_reason: parsed.data.rejectionReason ?? null, review_notes: parsed.data.reviewNotes ?? null, reviewed_by_user_id: user.id, updated_at: new Date().toISOString() };
