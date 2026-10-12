@@ -102,7 +102,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isStaff = user?.role === "admin" || user?.role === "govt";
   const isNgo = user?.role === "ngo";
   const isOrgWorkspace = pathname === "/org" || pathname.startsWith("/org/");
-  const showOrgNav = isNgo || isOrgWorkspace;
+  const showOrgNav = !isStaff && (isNgo || isOrgWorkspace);
   const navItems = isStaff
     ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS]
     : showOrgNav
