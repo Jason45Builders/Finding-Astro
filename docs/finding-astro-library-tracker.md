@@ -19,7 +19,7 @@
 | Storage strategy and upload workflow | PARTIAL | Existing media endpoint inspected; 10 MiB allowlist supports images/PDF only; Library-specific secure upload flow remains to build |
 | Admin publishing studio | PARTIAL | Admin UI and book/chapter APIs exist; end-to-end upload, preview, reorder, and tests remain |
 | Reader catalogue and reader | PARTIAL | Catalogue, chapter reader, and PDF viewing route added; full runtime validation and progress remain |
-| Reading progress/accessibility | TODO | Pass 4 |
+| Reading progress/accessibility | PARTIAL | Owner-scoped progress API and chapter resume/save integrated; accessibility and cross-format position remain |
 | Regression/release validation | TODO | Pass 5 |
 | Preview deployment | TODO | Only if connector/config permits; never assume |
 | Merge/deploy to production | BLOCKED | Requires user approval |
@@ -170,7 +170,7 @@ Copy and complete this section at the end of each substantial pass:
 | LIB-003 | Confirm Storage bucket and upload conventions | High | Open | Inspect current Supabase configuration and media helpers |
 | LIB-004 | Decide guest reading versus sign-in requirement | Medium | Open | Match existing auth behaviour and mission intent |
 | LIB-005 | Confirm supported PDF/EPUB viewer options | Medium | Open | Inspect dependencies and test real mobile rendering |
-| LIB-006 | Define safe file size/type allowlist | High | Partial | Generic media upload currently allows PDF/images up to 10 MiB; EPUB remains unsupported in the upload flow |\n| LIB-007 | Clean up media objects when multi-asset upload partially fails | Medium | Open | Track media IDs and reconcile unlinked uploads on retry/failure |\n| LIB-008 | Add reading progress and resume | Medium | Open | Implement owner-scoped progress API and reader integration |
+| LIB-006 | Define safe file size/type allowlist | High | Partial | Generic media upload currently allows PDF/images up to 10 MiB; EPUB remains unsupported in the upload flow |\n| LIB-007 | Clean up media objects when multi-asset upload partially fails | Medium | Open | Track media IDs and reconcile unlinked uploads on retry/failure |\n| LIB-008 | Add reading progress and resume | Medium | Partial | Chapter-level API and reader integration committed; PDF page/scroll positions remain |
 
 ## Completion accounting
 
@@ -237,3 +237,23 @@ Next substantial work:
 - Audit/validate the schema and migration against the target Supabase project without applying unreviewed production changes.
 - Add reading progress/resume and chapter-file delivery/edit/reorder support.
 - Add automated tests and run actual build/typecheck/test commands through an available development environment.
+
+
+### Pass 4 progress checkpoint — chapter-level reading progress (2026-10-12)
+**Status: PARTIAL**
+
+Delivered:
+- apps/web/app/api/v1/library/progress/route.ts provides authenticated GET and PUT endpoints.
+- Progress is always filtered/written using the authenticated user ID; clients cannot submit another user's ID.
+- Save validation requires a published book and, when supplied, a published chapter belonging to that book.
+- Position JSON is constrained to a small typed object rather than arbitrary JSON.
+- Reader page loads saved chapter progress for signed-in users and falls back to the first chapter if progress is unavailable.
+- Opening a chapter asynchronously saves the user's current chapter position; progress failures do not block reading.
+
+Remaining:
+- Restore PDF page position and richer text anchors.
+- Add tests for cross-user access and invalid/unpublished chapter IDs.
+- Validate browser behaviour and prevent overlapping progress writes if rapid navigation occurs.
+
+Validation:
+- Source files and GitHub commits confirmed. No automated test or build was run.
