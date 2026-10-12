@@ -223,7 +223,7 @@ export default function AdminLibraryPage() {
       setNotice(editingChapterId ? "Chapter updated." : "Chapter added. It remains hidden from readers until its parent book is published.");
       await loadChapters(selectedBook.id);
     } catch (err) { setError(err instanceof Error ? err.message : "Unable to add chapter."); }
-    finally { setSaving(false); }
+    finally { setSaving(false); setUploading(false); }
   }
 
   function editChapter(chapter: Chapter) {
@@ -233,6 +233,7 @@ export default function AdminLibraryPage() {
       return;
     }
     setEditingChapterId(chapter.id);
+    setChapterFormat("rich_text");
     setChapterTitle(chapter.title);
     setChapterSummary(chapter.summary ?? "");
     setChapterText(chapter.content_body?.blocks?.map((block) => block.text ?? "").filter(Boolean).join("\n\n") ?? chapter.content_body?.text ?? "");
