@@ -42,8 +42,8 @@
 - [x] Preserve existing `/org/layout.tsx` membership guard (left unchanged).
 
 ### E. Quality and regression
-- [ ] TypeScript typecheck.
-- [ ] Production build.
+- [x] TypeScript typecheck (Vercel production build type validation passed on code commit `8672a7866aeb471b636fdf9d59e19288afaa83f3`).
+- [x] Production build completed and preview deployment reached `READY` for code commit `8672a7866aeb471b636fdf9d59e19288afaa83f3`.
 - [x] Review navigation and route diff for unrelated changes (focused on the two layouts, the new landing page, and docs).
 - [ ] Smoke test citizen without collective.
 - [ ] Smoke test citizen with one collective.
@@ -52,7 +52,7 @@
 - [ ] Smoke test mobile drawer and bottom navigation.
 - [ ] Confirm existing links/deep links remain valid.
 - [ ] Confirm donation and payment flows were not modified.
-- [ ] Record CI and Vercel preview result before merge.
+- [~] Record CI and Vercel preview result before merge; preview is READY for code commit `8672a7866aeb471b636fdf9d59e19288afaa83f3` at https://finding-astro-c5scg6r0b-jason-s-builders.vercel.app. A later tracker-only commit is still queued.
 
 ## Implementation notes
 
@@ -68,4 +68,4 @@
 | Date | Change | Evidence / result |
 |---|---|---|
 | 2026-10-12 | Blueprint and tracker created on feature branch | Documentation committed |
-| 2026-10-12 | Implemented grouped citizen navigation, contextual collective navigation, mobile shortcuts, and `/collectives` switcher | Committed to feature branch; preview build and end-to-end checks still pending |
+| 2026-10-12 | Implemented grouped citizen navigation, contextual collective navigation, mobile shortcuts, and `/collectives` switcher | Code commit `8672a7866aeb471b636fdf9d59e19288afaa83f3` passed Next.js compile, type validation, static page generation (147/147), and reached Vercel `READY`; authenticated persona smoke tests remain pending |
