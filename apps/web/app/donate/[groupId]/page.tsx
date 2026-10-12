@@ -109,7 +109,7 @@ export default function PublicDonationPage({ params }: { params: Promise<{ group
                 </div>
                 {progress != null && <div className="mt-4">
                   <div className="h-3 rounded-full bg-surface-container-high overflow-hidden"><div className="h-full bg-primary rounded-full" style={{ width: `${progress}%` }} /></div>
-                  <p className="mt-2 text-xs text-on-surface-variant">{progress}% of this month's target · {donation.verifiedCount} verified donations</p>
+                  <p className="mt-2 text-xs text-on-surface-variant">{progress}% of this month&apos;s target · {donation.verifiedCount} verified donations</p>
                 </div>}
               </div>
 
