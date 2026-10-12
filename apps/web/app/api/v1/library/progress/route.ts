@@ -67,6 +67,7 @@ export async function PUT(req: NextRequest) {
         .eq("id", input.chapterId)
         .eq("book_id", input.bookId)
         .eq("status", "published")
+        .eq("content_format", "rich_text")
         .maybeSingle();
       if (chapterError) return serverError("Unable to validate chapter", chapterError);
       if (!chapter) return badRequest("INVALID_CHAPTER", "Chapter does not belong to this published book");
