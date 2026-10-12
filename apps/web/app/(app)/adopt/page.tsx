@@ -116,6 +116,7 @@ function AdoptPageInner() {
           <Heart className="w-6 h-6 text-secondary" /> Adoption Centre
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">Give a community animal a permanent home</p>
+        <p className="text-sm mt-2"><Link href="/rehome" className="text-primary underline underline-offset-4">Need to find a home for an animal? Submit a rehoming request</Link></p>
       </div>
 
       <TabBar>
