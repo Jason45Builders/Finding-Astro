@@ -207,7 +207,7 @@ export default function LibraryPage() {
                    <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-surface/95 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-primary"><Sparkles size={13} /> Featured reading</span>
                  </div>
                  <div className="flex flex-col justify-center p-6 sm:p-8 md:p-10">
-                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Editor's pick · {featuredBook.category}</p>
+                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Editor&apos;s pick · {featuredBook.category}</p>
                    <h2 className="mt-3 text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{featuredBook.title}</h2>
                    {featuredBook.subtitle && <p className="mt-2 text-sm font-semibold text-on-surface-variant">{featuredBook.subtitle}</p>}
                    <p className="mt-4 line-clamp-3 text-sm leading-6 text-on-surface-variant">{featuredBook.description || "Explore practical knowledge and compassionate ideas that help communities care for animals better."}</p>
