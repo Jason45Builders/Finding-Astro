@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Heart, Plus, MapPin, Calendar, ArrowUpRight, PawPrint, Quote } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -51,10 +51,10 @@ export default function MemorialsPage() {
           </h1>
           <p className="text-sm text-on-surface-variant mt-1">Remembering the community dogs we loved and lost.</p>
         </div>
-        <Link href="/memorials/new"><Button variant="primary"><Plus className="w-4 h-4" /> Add a Memory</Button></Link>
+        <Link href="/memorials/new" className={buttonVariants({ variant: "primary", className: "inline-flex" })}><Plus className="w-4 h-4" /> Add a Memory</Link>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {(["all", "natural_death", "suspicious_death"] as Filter[]).map((f) => (
           <button key={f} onClick={() => setFilter(f)} className={`px-4 py-2 rounded-md text-xs font-bold capitalize transition-colors ${filter === f ? "bg-primary text-on-primary" : "bg-surface-container-low text-on-surface-variant"}`}>
             {f.replace("_", " ")}
