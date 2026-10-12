@@ -19,8 +19,9 @@ const ChapterSchema = z.object({
   title: z.string().trim().min(1).max(240),
   summary: z.string().max(2000).optional().default(""),
   sortOrder: z.number().int().min(0).optional(),
-  contentFormat: z.literal("rich_text"),
-  contentBody: RichTextBodySchema,
+  contentFormat: z.enum(["rich_text", "pdf"]),
+  contentBody: RichTextBodySchema.optional(),
+  storagePath: z.string().regex(/^documents\/[0-9]{4}-[0-9]{2}-[0-9]{2}\/[a-f0-9]{32}\.pdf$/).optional(),
   status: z.enum(["draft", "published"]).optional().default("draft"),
 });
 
@@ -67,6 +68,15 @@ export async function POST(req: NextRequest, context: { params: Promise<{ bookId
       return badRequest("VALIDATION_ERROR", parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; "));
     }
     const input = parsed.data;
+    if (input.contentFormat === "rich_text" && !input.contentBody) {
+      return badRequest("CONTENT_REQUIRED", "Text chapters require chapter content");
+    }
+    if (input.contentFormat === "pdf" && !input.storagePath) {
+      return badRequest("CONTENT_REQUIRED", "PDF chapters require an uploaded PDF file");
+    }
+    if (input.contentFormat === "pdf" && input.storagePath && !input.storagePath.endsWith(".pdf")) {
+      return badRequest("INVALID_FILE", "Chapter file must be a PDF");
+    }
     const { data: maxRow, error: orderError } = input.sortOrder === undefined
       ? await supabaseAdmin().from("library_chapters").select("sort_order").eq("book_id", bookId).order("sort_order", { ascending: false }).limit(1).maybeSingle()
       : { data: null, error: null };
@@ -81,8 +91,8 @@ export async function POST(req: NextRequest, context: { params: Promise<{ bookId
         summary: input.summary,
         sort_order: sortOrder,
         content_format: input.contentFormat,
-        content_body: input.contentBody,
-        storage_path: null,
+        content_body: input.contentFormat === "rich_text" ? input.contentBody : null,
+        storage_path: input.contentFormat === "pdf" ? input.storagePath : null,
         status: input.status,
         created_by: auth.user.id,
         updated_by: auth.user.id,
