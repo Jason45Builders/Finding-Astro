@@ -380,3 +380,21 @@ Release gate:
 - The current feature-head GitHub Actions `typecheck-and-build` check was queued at the last observation; wait for and inspect its result before claiming code validation.
 - Vercel's status remains a build-rate-limit failure. No current feature-head preview has been confirmed.
 - Do not apply migrations to production until the build passes, migration SQL has been validated against a non-production database, and the end-to-end workflow has been browser-tested.
+
+
+## 20. Validation checkpoint (2026-10-12)
+
+A GitHub Actions run completed the production build successfully for the Library feature source:
+- Focused Library lint: PASS.
+- TypeScript typecheck: PASS.
+- Production build: PASS, using a CI-only placeholder JWT secret to satisfy import-time environment validation. This is a compile/build result, not a runtime environment validation.
+- New Library validation unit tests: 6/6 PASS.
+- Full repository test suite: 34/35 PASS. The remaining failure is the existing `tests/org-permissions.test.ts:22` role-capability expectation; the Library changes do not alter that permission matrix.
+- The full release check is therefore not green yet.
+
+Production rollout remains blocked on:
+- Triaging the npm audit report (19 findings: 13 high, 1 critical, 5 moderate).
+- Resolving the existing role-permissions test with the policy owner.
+- A current Vercel preview build and browser/mobile workflow validation; current Vercel team scope returns 403 for deployment logs/creation.
+- Applying the Library migrations only after validation in a non-production database.
+- Separate owner review of the pre-existing critical Supabase advisor finding for `public.spatial_ref_sys` RLS disabled.
