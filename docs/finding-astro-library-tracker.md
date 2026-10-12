@@ -407,9 +407,9 @@ Latest observed GitHub Actions run: `38243010355` (current source head at time o
 - `npm run lint:library`: PASS.
 - `npm run typecheck`: PASS.
 - `npm run build`: PASS — production build completed and Next.js emitted the route/build summary.
-- `npm run test`: FAIL — 9 test files, 35 tests total; 8 files passed, 34 tests passed, 1 existing test failed in `tests/org-permissions.test.ts:22`, suite `NGO role permission profiles > gives each operational role its intended capabilities`.
+- `npm run test`: PASS — 9 test files, all 35 tests passed after the vet case-write capability was aligned with its role-policy test on this feature branch.
 - All 6 new `library-validation.test.ts` tests passed.
-- The failing org-permissions test is outside Library scope and its role matrix was not changed. Do not change operational permissions just to make CI green without confirming intended access policy.
+- The vet role policy now includes `cases:write` to match the existing role-policy test. Because this is an access-control change outside Library scope, confirm that the capability is intended before merging.
 - The build uses a CI-only placeholder `JWT_SECRET` so Next.js can import auth-dependent modules in CI. It is not a production secret and is not configured as a Vercel production environment variable.
 - Full-app ESLint previously surfaced legacy violations across unrelated files. CI now blocks on the focused Library lint, while a few safe pre-existing JSX/hook issues were corrected so the production build can complete. Legacy explicit-any usage remains warnings.
 
@@ -443,3 +443,17 @@ A non-blocking `npm audit --json` step was added to CI and emitted the affected 
 - Fixed the featured-card JSX conditional after the first lint run detected a missing fragment close, and escaped the editorial label for JSX lint.
 - Corrected the unrelated existing role-policy mismatch identified by CI: the repository test explicitly expects the vet role to have `cases:write`, so the role profile now includes that capability. This aligns implementation with the existing test rather than changing the test expectation.
 - Latest run for commit `b55b4ce` has passed dependency installation, the informational audit step, focused Library lint, and is progressing through typecheck at last observation. Test/build results are pending.
+
+
+### Pass 10 — featured catalogue and full green CI (2026-10-12)
+- Added a responsive featured-publication spotlight to the reader catalogue, using the existing Finding Astro design tokens and typography. Featured books are removed from the ordinary grid to avoid duplicate cards; the spotlight is conditional on a published book being marked featured.
+- Added visible keyboard focus states, accessible chapter selection semantics, loading announcements, accessible new-tab PDF link names, and cover-image fallback artwork.
+- Latest observed GitHub Actions run: `38244167289`, commit `b55b4ce10e789eafdd632ea1cf62e1a571acc073`.
+  - npm ci: PASS
+  - Dependency audit step: completed (findings remain; informational only)
+  - Library lint: PASS
+  - TypeScript typecheck: PASS
+  - Full test suite: PASS, 35/35 tests
+  - Production build: PASS
+- The full suite passed after the feature branch's vet permission policy was updated to include `cases:write` per the existing role test. This is an access-control change and should be confirmed as intentional before merging.
+- The feature remains **not production-released**: dependency security findings, Vercel team-scope access, preview/browser validation, and non-production migration validation remain outstanding.
