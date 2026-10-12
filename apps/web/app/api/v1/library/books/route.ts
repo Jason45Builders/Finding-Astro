@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const query = (searchParams.get("q") ?? "").trim().slice(0, 120);
+    const query = (searchParams.get("q") ?? "").replace(/[^\\p{L}\\p{N}\\s-]/gu, " ").trim().slice(0, 120);
     const category = (searchParams.get("category") ?? "").trim().slice(0, 100);
     const language = (searchParams.get("language") ?? "").trim().slice(0, 20);
     const limit = Math.min(Math.max(Number(searchParams.get("limit") ?? 24) || 24, 1), 60);
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       .order("published_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (query) request = request.or(`title.ilike.%${query.replace(/[%_,]/g, " ")}%,author_name.ilike.%${query.replace(/[%_,]/g, " ")}%`);
+    if (query) request = request.or(`title.ilike.%${query}%,author_name.ilike.%${query}%`);
     if (category) request = request.eq("category", category);
     if (language) request = request.eq("language", language);
 
