@@ -21,6 +21,7 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ slug: 
       .select("id, title, summary, sort_order, content_format")
       .eq("book_id", book.id)
       .eq("status", "published")
+      .eq("content_format", "rich_text")
       .order("sort_order", { ascending: true });
     if (chapterError) return serverError("Unable to load publication chapters", chapterError);
     const { primary_file_storage_path: _privatePath, ...publicBook } = book;
