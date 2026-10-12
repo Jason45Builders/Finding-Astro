@@ -14,11 +14,11 @@
 | Create isolated feature branch from Working | DONE | Branch created in GitHub |
 | Detailed blueprint | DONE | Product, data model, security, UX, testing, and pass plan documented |
 | Persistent tracker | DONE | This file |
-| Repository/framework audit | PARTIAL | Next.js 15 monorepo, custom JWT auth, media upload flow and package scripts inspected; admin UI location/deployed Storage config still to confirm |
+| Repository/framework audit | PARTIAL | Next.js 15 monorepo, custom JWT auth, media upload flow, package scripts and actual app sidebar identified; deployed Storage config still to confirm |
 | Supabase schema and policies | PARTIAL | Additive Library migration committed; RLS enabled fail-closed; API-level auth still required due service-role bypass |
 | Storage strategy and upload workflow | PARTIAL | Existing media endpoint inspected; 10 MiB allowlist supports images/PDF only; Library-specific secure upload flow remains to build |
-| Admin publishing studio | PARTIAL | Admin book/chapter APIs added; upload integration and admin UI remain |
-| Reader catalogue and reader | PARTIAL | Published-only catalogue/detail/chapter APIs added; actual reader pages/viewer remain |
+| Admin publishing studio | PARTIAL | Admin UI and book/chapter APIs exist; end-to-end upload, preview, reorder, and tests remain |
+| Reader catalogue and reader | PARTIAL | Catalogue, chapter reader, and PDF viewing route added; full runtime validation and progress remain |
 | Reading progress/accessibility | TODO | Pass 4 |
 | Regression/release validation | TODO | Pass 5 |
 | Preview deployment | TODO | Only if connector/config permits; never assume |
@@ -170,11 +170,11 @@ Copy and complete this section at the end of each substantial pass:
 | LIB-003 | Confirm Storage bucket and upload conventions | High | Open | Inspect current Supabase configuration and media helpers |
 | LIB-004 | Decide guest reading versus sign-in requirement | Medium | Open | Match existing auth behaviour and mission intent |
 | LIB-005 | Confirm supported PDF/EPUB viewer options | Medium | Open | Inspect dependencies and test real mobile rendering |
-| LIB-006 | Define safe file size/type allowlist | High | Open | Check expected books and platform limits before implementation |
+| LIB-006 | Define safe file size/type allowlist | High | Partial | Generic media upload currently allows PDF/images up to 10 MiB; EPUB remains unsupported in the upload flow |\n| LIB-007 | Clean up media objects when multi-asset upload partially fails | Medium | Open | Track media IDs and reconcile unlinked uploads on retry/failure |\n| LIB-008 | Add reading progress and resume | Medium | Open | Implement owner-scoped progress API and reader integration |
 
 ## Completion accounting
 
-Do not report a percentage based on file count or number of commits. Report by completed acceptance criteria and working end-to-end paths. Planning documentation is complete and the first schema migration is committed. The end-to-end feature is not yet implemented; no reader or admin UI exists from this work so far.
+Do not report a percentage based on file count or number of commits. Report by completed acceptance criteria and working end-to-end paths. Planning, schema foundation, API routes, initial admin publishing UI, and reader pages are committed. The feature remains partial: no runtime checks have been executed, the migration is unapplied, and progress/resume plus several publishing workflows remain.
 
 
 ### Pass 2/3 progress checkpoint — API foundation (2026-10-12)
@@ -208,3 +208,32 @@ Validation:
 Next substantial work:
 - Complete repository/admin UI discovery and migration compatibility review.
 - Implement secure Library file upload/delivery, then build the admin publishing UI and reader pages as cohesive batches.
+
+
+### Pass 2/3 progress checkpoint — publishing and reader UI (2026-10-12)
+**Status: PARTIAL**
+
+Additional files changed:
+- apps/web/app/admin/library/page.tsx — admin publishing studio with metadata, PDF and cover upload, structured chapter creation, rights confirmation, publish/unpublish/archive controls.
+- apps/web/app/(app)/layout.tsx — admin sidebar link, visible only for role admin.
+- apps/web/app/library/page.tsx — public catalogue with search, category/language filters, responsive cards and retry/empty/loading/error states.
+- apps/web/app/library/[slug]/page.tsx — publication detail, chapter navigation, structured text renderer, text-size controls, PDF iframe and open-in-new-tab action.
+- apps/web/app/api/v1/library/books/[slug]/content/route.ts — published-only PDF streaming from private Storage with path and PDF-signature validation.
+- Updated catalogue/detail APIs to resolve public cover URLs and expose only a boolean for complete-file availability, not the private storage path.
+
+Important limitations:
+- Admin upload reuses the existing authenticated media upload endpoint: complete PDFs are uploaded as private purpose=document assets; covers use the existing public animal_photo purpose. Only admin-authorized Library APIs can attach paths to publications.
+- The upload interface does not yet show byte-level progress. If one of multiple selected uploads succeeds and a later upload or database patch fails, a tracked media object may remain unlinked; cleanup/reconciliation is still needed.
+- The admin interface currently creates structured-text chapters but does not yet provide chapter editing/reordering or chapter-file uploads.
+- Draft preview is not implemented; draft content remains excluded from public APIs.
+- The PDF reader streams the full file and does not implement HTTP byte-range requests. It is intended for the existing 10 MiB upload limit and requires browser validation.
+
+Validation:
+- GitHub confirmed commits for the UI, route handlers, sidebar integration, and follow-up fixes.
+- No local dependency install, lint, typecheck, unit test, SQL execution, build, browser run, or deployment was executed in this connector session.
+- Migration remains unapplied; APIs/UI are not yet release-ready.
+
+Next substantial work:
+- Audit/validate the schema and migration against the target Supabase project without applying unreviewed production changes.
+- Add reading progress/resume and chapter-file delivery/edit/reorder support.
+- Add automated tests and run actual build/typecheck/test commands through an available development environment.
