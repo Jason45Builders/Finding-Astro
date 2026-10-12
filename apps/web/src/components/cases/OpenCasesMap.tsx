@@ -44,7 +44,14 @@ function FitBounds({ points }: { points: [number, number][] }) {
     if (stablePoints.length === 1) map.setView(stablePoints[0], 14);
     else if (stablePoints.length > 1) map.fitBounds(stablePoints, { padding: [36, 36], maxZoom: 14 });
     else map.setView(DEFAULT_MAP_CENTER, 12);
-    map.invalidateSize();
+
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize({ pan: false });
+    });
+    resizeObserver.observe(map.getContainer());
+    map.invalidateSize({ pan: false });
+
+    return () => resizeObserver.disconnect();
   }, [map, stablePoints]);
 
   return null;
@@ -62,8 +69,8 @@ export default function OpenCasesMap({ cases }: { cases: CaseForMap[] }) {
   );
 
   return (
-    <div className="relative h-full min-h-[320px] w-full overflow-hidden rounded-xl">
-      <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} className="h-full w-full" scrollWheelZoom={false}>
+    <div className="relative h-[360px] min-h-[320px] w-full overflow-hidden rounded-xl">
+      <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} style={{ height: '100%', minHeight: '320px', width: '100%' }} scrollWheelZoom={false}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
