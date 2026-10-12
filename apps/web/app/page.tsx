@@ -155,7 +155,7 @@ export default async function RootPage() {
           <div className="max-w-[1200px] mx-auto">
             <div className="text-center md:mb-16 mb-stack-md">
               <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-3">A Transparent Journey</h2>
-              <p className="text-on-surface-variant max-w-2xl mx-auto">Every report follows the same accountable path, from the moment it's filed to the moment it's resolved.</p>
+              <p className="text-on-surface-variant max-w-2xl mx-auto">Every report follows the same accountable path, from the moment it&apos;s filed to the moment it&apos;s resolved.</p>
             </div>
             <div className="relative flex flex-col md:flex-row md:justify-between gap-8 md:gap-6">
               <div className="hidden md:block absolute top-10 left-0 right-0 h-0.5 bg-outline-variant z-0" />
