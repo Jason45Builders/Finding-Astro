@@ -17,7 +17,7 @@ create table if not exists public.rehome_requests (
   photo_url text,
   ownership_confirmed boolean not null default false,
   helper_acknowledged boolean not null default false,
-  status text not null default 'pending_review' check (status in ('pending_review','needs_info','approved','rejected','withdrawn')),
+  status text not null default 'pending_review' check (status in ('pending_review','needs_info','publishing','approved','rejected','withdrawn')),
   reviewer_user_id uuid references auth.users(id) on delete set null,
   review_notes text,
   linked_animal_id uuid references public.animals(id) on delete set null,
