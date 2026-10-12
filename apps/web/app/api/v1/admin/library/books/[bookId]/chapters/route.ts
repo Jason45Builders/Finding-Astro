@@ -77,6 +77,18 @@ export async function POST(req: NextRequest, context: { params: Promise<{ bookId
     if (input.contentFormat === "pdf" && input.storagePath && !input.storagePath.endsWith(".pdf")) {
       return badRequest("INVALID_FILE", "Chapter file must be a PDF");
     }
+    if (input.contentFormat === "pdf" && input.storagePath) {
+      const { data: uploadedMedia, error: mediaError } = await supabaseAdmin()
+        .from("media_uploads")
+        .select("id")
+        .eq("storage_key", input.storagePath)
+        .eq("storage_bucket", "finding-astro-private")
+        .eq("purpose", "document")
+        .eq("status", "ready")
+        .maybeSingle();
+      if (mediaError) return serverError("Unable to verify uploaded chapter PDF", mediaError);
+      if (!uploadedMedia) return badRequest("PDF_UPLOAD_REQUIRED", "Upload the PDF through the publication editor before attaching it as a chapter");
+    }
     const { data: maxRow, error: orderError } = input.sortOrder === undefined
       ? await supabaseAdmin().from("library_chapters").select("sort_order").eq("book_id", bookId).order("sort_order", { ascending: false }).limit(1).maybeSingle()
       : { data: null, error: null };
