@@ -12,7 +12,7 @@ import {
   MoreHorizontal, Store, MessageSquare, Ambulance,
   PawPrint, Calendar, Activity,
   Home as HomeIcon, CheckCircle2, Settings, HeartHandshake,
-  Stethoscope, FileCheck2
+  Stethoscope, FileCheck2, BookOpen
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api, Notification } from "@/lib/api";
@@ -56,6 +56,7 @@ const ADMIN_NAV_ITEMS = [
   { label: "Case Oversight",     href: "/admin/cases",             icon: ClipboardList },
   { label: "Partner Requests",   href: "/admin/partner-requests",  icon: Store },
   { label: "Users",              href: "/admin/users",             icon: UsersIcon },
+  { label: "Library",            href: "/admin/library",           icon: BookOpen },
   { label: "Feedback",      href: "/admin/beta/feedback",     icon: MessageSquare },
   { label: "Ambulance",      href: "/admin/ambulance",         icon: Ambulance },
   { label: "Memorial Wall",   href: "/admin/memorials",         icon: Heart },
@@ -101,7 +102,7 @@ const STAFF_NAV_GROUPS = [
   { label: "Animal Welfare", hrefs: ["/animals", "/cases", "/respond", "/map", "/adopt", "/foster", "/lost-found", "/wildlife", "/safety", "/abc", "/cruelty", "/memorials"], collapsible: false },
   { label: "Community & Support", hrefs: ["/funding", "/my/donations", "/community", "/collectives", "/partners", "/ambulance"], collapsible: false },
   { label: "Operations", hrefs: ["/dispatch", "/adoption-admin", "/rehome/review", "/admin/verifications", "/admin/reimbursements", "/admin/cases", "/admin/partner-requests", "/admin/ambulance", "/admin/memorials", "/impact"], collapsible: false },
-  { label: "Administration", hrefs: ["/admin/users", "/admin/beta/feedback"], collapsible: false },
+  { label: "Administration", hrefs: ["/admin/users", "/admin/beta/feedback", "/admin/library"], collapsible: false },
   { label: "More", hrefs: ["/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
 ];
 
@@ -122,7 +123,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isOrgWorkspace = pathname === "/org" || pathname.startsWith("/org/");
   const showOrgNav = !isStaff && (isNgo || isOrgWorkspace);
   const navItems = isStaff
-    ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS]
+    ? [...BASE_NAV_ITEMS, ...ADMIN_NAV_ITEMS.filter((item) => item.href !== "/admin/library" || user?.role === "admin")]
     : showOrgNav
       ? [
           { label: "My Collectives", href: "/collectives", icon: HeartHandshake },

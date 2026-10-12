@@ -20,6 +20,7 @@ import {
   HeartHandshake,
   Lock,
   FileCheck2,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -86,6 +87,7 @@ export default async function RootPage() {
             <a className="font-title-md text-sm text-on-surface-variant hover:text-secondary transition-colors duration-150 ease-out" href="#how-it-works">How it Works</a>
             <a className="font-title-md text-sm text-on-surface-variant hover:text-secondary transition-colors duration-150 ease-out" href="#transparency">Transparency</a>
             <a className="font-title-md text-sm text-on-surface-variant hover:text-secondary transition-colors duration-150 ease-out" href="#partners">Partners</a>
+            <Link className="font-title-md text-sm font-bold text-primary hover:text-secondary transition-colors duration-150 ease-out" href="/library">Library</Link>
           </div>
           <div className="flex gap-2 md:gap-3">
             <Link href="/auth/login"><Button variant="outline" size="sm" className="md:h-11 md:px-6 md:text-sm">Sign In</Button></Link>
@@ -115,6 +117,9 @@ export default async function RootPage() {
                   </Button>
                 </Link>
               </div>
+              <Link href="/library" className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-primary transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <BookOpen size={17} /> Explore the free animal-welfare library <span aria-hidden="true">→</span>
+              </Link>
             </div>
             <div className="relative aspect-square md:aspect-auto md:h-[440px] rounded-[40px] overflow-hidden bg-primary">
               <Image
@@ -155,7 +160,7 @@ export default async function RootPage() {
           <div className="max-w-[1200px] mx-auto">
             <div className="text-center md:mb-16 mb-stack-md">
               <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-3">A Transparent Journey</h2>
-              <p className="text-on-surface-variant max-w-2xl mx-auto">Every report follows the same accountable path, from the moment it's filed to the moment it's resolved.</p>
+              <p className="text-on-surface-variant max-w-2xl mx-auto">Every report follows the same accountable path, from the moment it&apos;s filed to the moment it&apos;s resolved.</p>
             </div>
             <div className="relative flex flex-col md:flex-row md:justify-between gap-8 md:gap-6">
               <div className="hidden md:block absolute top-10 left-0 right-0 h-0.5 bg-outline-variant z-0" />

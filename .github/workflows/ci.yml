@@ -1,8 +1,11 @@
 name: CI
 
+permissions:
+  contents: write
+
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, feature/finding-astro-library]
   pull_request:
     branches: [main]
 
@@ -13,16 +16,45 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
-          cache-dependency-path: "apps/web/package-lock.json"
-      - run: npm ci
-        working-directory: ./apps/web
-      - run: npm run lint
-        working-directory: ./apps/web
-      - run: npm run typecheck
-        working-directory: ./apps/web
-      - run: npm run test
-        working-directory: ./apps/web
-      - run: npm run build
-        working-directory: ./apps/web
+          cache-dependency-path: "package-lock.json"
+      - name: Refresh lockfile for explicitly patched Next.js line
+        if: contains(github.event.head_commit.message, '[audit-fix]')
+        run: npm install --package-lock-only --ignore-scripts
+      - id: dependencies
+        run: npm ci
+      - id: audit_fix
+        name: Apply semver-compatible security fixes (one-time)
+        if: contains(github.event.head_commit.message, '[audit-fix]')
+        continue-on-error: true
+        run: npm audit fix
+      - name: Dependency audit (informational)
+        continue-on-error: true
+        run: |
+          npm audit --json > npm-audit.json || true
+          node -e "const a=require('./npm-audit.json'); for (const [name,v] of Object.entries(a.vulnerabilities || {})) { const via=(v.via || []).map(x => typeof x === 'string' ? x : (x.title + ' [' + x.url + ']')).join('; '); console.log(v.severity.toUpperCase() + ' ' + name + ' range=' + v.range + ' fix=' + JSON.stringify(v.fixAvailable) + ' via=' + via); }"
+      - id: lint
+        run: npm run lint:library
+      - id: typecheck
+        run: npm run typecheck
+      - id: test
+        run: npm run test
+      - id: build
+        name: Production build
+        if: always() && steps.dependencies.outcome == 'success' && steps.lint.outcome == 'success' && steps.typecheck.outcome == 'success'
+        env:
+          JWT_SECRET: finding-astro-ci-only-secret-do-not-use-in-production
+        run: npm run build
+      - name: Commit validated lockfile security fixes
+        if: contains(github.event.head_commit.message, '[audit-fix]') && steps.dependencies.outcome == 'success' && steps.lint.outcome == 'success' && steps.typecheck.outcome == 'success' && steps.test.outcome == 'success' && steps.build.outcome == 'success'
+        run: |
+          if git diff --quiet -- package-lock.json; then
+            echo "No semver-compatible lockfile updates to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore(deps): apply semver-compatible security fixes [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"

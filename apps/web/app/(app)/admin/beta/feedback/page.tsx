@@ -38,17 +38,6 @@ export default function AdminBetaFeedbackPage() {
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  if (!isLoading && (!user || !["admin", "govt", "ngo", "hospital"].includes(user.role))) {
-    return (
-      <div className="max-w-2xl mx-auto text-center space-y-6">
-        <Card className="p-8">
-          <h1 className="font-headline-lg text-on-surface">Admin Access Required</h1>
-          <p className="text-sm text-on-surface-variant mt-2">You do not have permission to view beta feedback.</p>
-          <Link href="/dashboard"><Button variant="primary" className="mt-4">Back to dashboard</Button></Link>
-        </Card>
-      </div>
-    );
-  }
 
   const load = async () => {
     setLoading(true);
@@ -65,6 +54,18 @@ export default function AdminBetaFeedbackPage() {
   };
 
   useEffect(() => { load(); }, []);
+
+  if (!isLoading && (!user || !["admin", "govt", "ngo", "hospital"].includes(user.role))) {
+    return (
+      <div className="max-w-2xl mx-auto text-center space-y-6">
+        <Card className="p-8">
+          <h1 className="font-headline-lg text-on-surface">Admin Access Required</h1>
+          <p className="text-sm text-on-surface-variant mt-2">You do not have permission to view beta feedback.</p>
+          <Link href="/dashboard"><Button variant="primary" className="mt-4">Back to dashboard</Button></Link>
+        </Card>
+      </div>
+    );
+  }
 
   const filtered = items.filter((item) => {
     if (statusFilter !== "all" && item.status !== statusFilter) return false;

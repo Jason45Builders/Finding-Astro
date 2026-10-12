@@ -49,6 +49,7 @@ export default function WelfareGroupAdminPage({ params }: { params: Promise<{ id
       }
     };
     if (canAccess) void load();
+    return () => { cancelled = true; };
   }, [id, activeTab, canAccess]);
 
   const handleVerify = async () => {

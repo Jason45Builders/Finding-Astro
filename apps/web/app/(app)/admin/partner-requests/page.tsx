@@ -42,16 +42,6 @@ export default function AdminPartnerRequestsPage() {
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
 
-  if (!isLoading && (!user || !["admin", "govt"].includes(user.role))) {
-    return (
-      <div className="max-w-2xl mx-auto text-center space-y-6">
-        <Card className="p-8">
-          <h1 className="font-headline-lg text-on-surface">Admin Access Required</h1>
-          <p className="text-on-surface-variant text-sm mt-2">You do not have permission to view partner requests.</p>
-        </Card>
-      </div>
-    );
-  }
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -67,6 +57,17 @@ export default function AdminPartnerRequestsPage() {
   };
 
   useEffect(() => { fetchRequests(); }, []);
+
+  if (!isLoading && (!user || !["admin", "govt"].includes(user.role))) {
+    return (
+      <div className="max-w-2xl mx-auto text-center space-y-6">
+        <Card className="p-8">
+          <h1 className="font-headline-lg text-on-surface">Admin Access Required</h1>
+          <p className="text-on-surface-variant text-sm mt-2">You do not have permission to view partner requests.</p>
+        </Card>
+      </div>
+    );
+  }
 
   const handleApprove = async (id: string) => {
     setProcessing(id);

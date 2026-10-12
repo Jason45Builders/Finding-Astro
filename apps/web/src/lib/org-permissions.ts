@@ -63,6 +63,7 @@ export const ORG_ROLE_PERMISSIONS: Record<OrgRole, readonly OrgPermission[]> = {
   volunteer: ["tasks:write"],
   vet: [
     "animals:write",
+    "cases:write",
     "medical:write",
     "followups:write",
   ],

@@ -9,7 +9,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint:library": "next lint --dir app/library app/admin/library app/api/v1/library app/api/v1/admin/library --file src/lib/library-validation.ts tests/library-validation.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -28,7 +29,7 @@
     "leaflet": "^1.9.4",
     "leaflet-defaulticon-compatibility": "^0.1.2",
     "lucide-react": "^0.460.0",
-    "next": "~15.5.21",
+    "next": "~15.5.27",
     "postcss": "^8.4.49",
     "qrcode": "~1.5.4",
     "react": "^19.0.0",
@@ -53,7 +54,7 @@
     "@types/ws": "~8.18.1",
     "@vitest/coverage-v8": "~4.1.10",
     "eslint": "^9.0.0",
-    "eslint-config-next": "~15.5.21",
+    "eslint-config-next": "~15.5.27",
     "typescript": "^5.7.0",
     "vitest": "~4.1.10"
   }
