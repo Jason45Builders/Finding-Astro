@@ -3,7 +3,7 @@
 - **Feature branch:** feature/finding-astro-library
 - **Base branch:** Working
 - **Blueprint:** docs/finding-astro-library-blueprint.md
-- **Status:** In progress — repository audit underway; schema migration added
+- **Status:** In progress — admin/reader foundation committed; hardening and validation underway
 - **Last updated:** 2026-10-12
 - **Rule:** Update this tracker during every substantial implementation pass. Do not mark work complete without observed evidence.
 
@@ -14,14 +14,14 @@
 | Create isolated feature branch from Working | DONE | Branch created in GitHub |
 | Detailed blueprint | DONE | Product, data model, security, UX, testing, and pass plan documented |
 | Persistent tracker | DONE | This file |
-| Repository/framework audit | PARTIAL | Next.js 15 monorepo, custom JWT auth, media upload flow, package scripts and actual app sidebar identified; deployed Storage config still to confirm |
+| Repository/framework audit | DONE | Next.js 15 App Router, auth flow, media upload contract, existing sidebar, Supabase schema/migrations and actual Storage bucket visibility verified |
 | Supabase schema and policies | PARTIAL | Additive Library migration committed; RLS enabled fail-closed; API-level auth still required due service-role bypass |
-| Storage strategy and upload workflow | PARTIAL | Existing media endpoint inspected; 10 MiB allowlist supports images/PDF only; Library-specific secure upload flow remains to build |
+| Storage strategy and upload workflow | PARTIAL | Confirmed public finding-astro-media and private finding-astro-private buckets; UI reuses the 10 MiB authenticated media upload route; orphan reconciliation/progress remain |
 | Admin publishing studio | PARTIAL | Admin UI and book/chapter APIs exist; end-to-end upload, preview, reorder, and tests remain |
-| Reader catalogue and reader | PARTIAL | Catalogue, chapter reader, and PDF viewing route added; full runtime validation and progress remain |
+| Reader catalogue and reader | PARTIAL | Search, filters, cached facets, pagination, mobile cover artwork, chapter reader, hybrid PDF action and private PDF route committed; runtime checks remain |
 | Reading progress/accessibility | PARTIAL | Owner-scoped progress API and chapter resume/save integrated; accessibility and cross-format position remain |
-| Regression/release validation | TODO | Pass 5 |
-| Preview deployment | TODO | Only if connector/config permits; never assume |
+| Regression/release validation | BLOCKED | Vercel build-rate-limit failure; GitHub Actions check not yet observed |
+| Preview deployment | BLOCKED | Latest Vercel status points to build-rate-limit/upgrade page; no current feature-head preview verified |
 | Merge/deploy to production | BLOCKED | Requires user approval |
 
 ## Branch and repository safeguards
@@ -280,3 +280,47 @@ Validation:
 - GitHub combined status for code commit 00350a040316bc9a634a5f0818638d38da8a7555 reports Vercel status **failure** with the target URL indicating a Vercel build-rate-limit/upgrade page.
 - This is an environment/build-quota blocker, not evidence that the application code passed or failed compilation. No successful preview deployment was confirmed.
 - Next action: retry after the Vercel build limit resets or run lint/typecheck/tests/build in a local/CI environment with available capacity. Do not merge based on the current status.
+
+
+### Pass 5 — Reader/admin hardening and production audit (2026-10-12)
+**Status: PARTIAL — source hardening committed; execution validation remains blocked**
+
+Delivered on the existing `feature/finding-astro-library` branch. No additional branch was created.
+
+**Reader UI and discovery**
+- Added a dedicated public facets endpoint for topic/language options, cached for five minutes at the shared-cache layer.
+- Added paginated discovery in batches of 24 with a visible “showing N of total” count, a load-more action, and recoverable load-more errors.
+- Added skip-navigation links and explicit content landmarks to catalogue and reader pages.
+- Cover art now appears on mobile as well as desktop.
+- Hybrid publications expose a direct complete-PDF action while retaining chapter navigation.
+- Complete-file editions no longer reserve a blank table-of-contents column.
+- Structured-text headings now scale with the reader's text-size control.
+- Public pages now show a stable, human-readable message if infrastructure returns malformed/non-JSON content instead of surfacing a JSON parse exception.
+
+**API/storage hardening**
+- Published PDF delivery now uses `Cache-Control: private, no-store, max-age=0` so a shared cache cannot continue serving a previously published PDF after unpublishing.
+- Tightened storage path checks for public cover and private document assets, rejecting traversal, backslash and control-character paths.
+- Publishing now validates the *effective* status even when an administrator edits metadata on an already-published item.
+- Complete-file and hybrid publications must have a PDF; chapter-based and hybrid publications must have at least one published, readable rich-text chapter.
+- Until a chapter-file viewer is implemented, create/update APIs accept structured-text chapters only; the API no longer accepts PDF/EPUB chapter metadata that the UI cannot actually render.
+- Structured chapter bodies are constrained to a bounded block count, supported block types and text lengths.
+- Qualified Library table UUID defaults as `extensions.uuid_generate_v4()`, matching the live Supabase project's extension schema.
+
+**Live environment verification (read-only)**
+- Supabase project “Finding Astro” is active.
+- The existing `finding-astro-media` bucket is public and `finding-astro-private` is private, matching the cover/PDF delivery strategy.
+- The live database has no `library_books`, `library_chapters`, or `library_reading_progress` tables yet; neither Library migration has been applied. No production schema change was made.
+- Added the existing CI workflow's push trigger for this feature branch so typecheck/build checks can run without depending solely on Vercel.
+
+**Unresolved release blockers**
+- No successful typecheck, lint, test suite, production build, SQL migration execution, or browser test has been observed.
+- GitHub's Vercel status continues to report a build-rate-limit/upgrade URL; it does not prove that source compilation failed, but it prevents confirming a valid preview.
+- Need to verify that the GitHub Actions workflow actually starts on the current feature head and inspect its step results. If it does not run, investigate repository Actions permissions/settings.
+- Need a safe database validation environment before applying the migrations; do not apply to production as a shortcut.
+- Need to verify the complete upload→publish→read workflow in a browser and add automated tests for publication-state enforcement, chapter ownership, progress ownership, malformed responses, and reorder behaviour.
+- The Supabase security advisor reports a pre-existing critical finding: `public.spatial_ref_sys` has RLS disabled. This is outside the Library changes and was not modified. It requires separate owner review; enabling RLS without appropriate policies may break intended PostGIS access.
+
+**Next substantial pass**
+- Confirm CI results and fix compile/type/lint errors first.
+- Add test coverage around publish validation, storage path checks, private PDF delivery and chapter progress.
+- Validate both migrations in a non-production database, then browser-test the whole workflow and document exact rollout steps.
