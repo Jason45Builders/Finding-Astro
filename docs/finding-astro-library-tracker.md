@@ -170,7 +170,9 @@ Copy and complete this section at the end of each substantial pass:
 | LIB-003 | Confirm Storage bucket and upload conventions | High | Open | Inspect current Supabase configuration and media helpers |
 | LIB-004 | Decide guest reading versus sign-in requirement | Medium | Open | Match existing auth behaviour and mission intent |
 | LIB-005 | Confirm supported PDF/EPUB viewer options | Medium | Open | Inspect dependencies and test real mobile rendering |
-| LIB-006 | Define safe file size/type allowlist | High | Partial | Generic media upload currently allows PDF/images up to 10 MiB; EPUB remains unsupported in the upload flow |\n| LIB-007 | Clean up media objects when multi-asset upload partially fails | Medium | Open | Track media IDs and reconcile unlinked uploads on retry/failure |\n| LIB-008 | Add reading progress and resume | Medium | Partial | Chapter-level API and reader integration committed; PDF page/scroll positions remain |
+| LIB-006 | Define safe file size/type allowlist | High | Partial | Generic media upload currently allows PDF/images up to 10 MiB; EPUB remains unsupported in the upload flow |
+| LIB-007 | Clean up media objects when multi-asset upload partially fails | Medium | Open | Track media IDs and reconcile unlinked uploads on retry/failure |
+| LIB-008 | Add reading progress and resume | Medium | Partial | Chapter-level API and reader integration committed; PDF page/scroll positions remain |
 
 ## Completion accounting
 
@@ -236,7 +238,7 @@ Validation:
 
 Next substantial work:
 - Audit/validate the schema and migration against the target Supabase project without applying unreviewed production changes.
-- Add reading progress/resume and chapter-file delivery/edit/reorder support.
+- Add PDF page-position persistence, draft preview, and chapter-file upload/delivery; run database and runtime validation.
 - Add automated tests and run actual build/typecheck/test commands through an available development environment.
 
 
