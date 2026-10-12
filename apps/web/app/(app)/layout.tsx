@@ -12,7 +12,7 @@ import {
   MoreHorizontal, Store, MessageSquare, Ambulance,
   PawPrint, Calendar, Activity,
   Home as HomeIcon, CheckCircle2, Settings, HeartHandshake,
-  Stethoscope, FileCheck2
+  Stethoscope, FileCheck2, BookOpen
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api, Notification } from "@/lib/api";
@@ -55,7 +55,8 @@ const ADMIN_NAV_ITEMS = [
   { label: "Reimbursements",     href: "/admin/reimbursements",    icon: DollarSign },
   { label: "Case Oversight",     href: "/admin/cases",             icon: ClipboardList },
   { label: "Partner Requests",   href: "/admin/partner-requests",  icon: Store },
-  { label: "Users",              href: "/admin/users",             icon: UsersIcon },\n  { label: "Library",            href: "/admin/library",           icon: BookOpen },
+  { label: "Users",              href: "/admin/users",             icon: UsersIcon },
+  { label: "Library",            href: "/admin/library",           icon: BookOpen },
   { label: "Feedback",      href: "/admin/beta/feedback",     icon: MessageSquare },
   { label: "Ambulance",      href: "/admin/ambulance",         icon: Ambulance },
   { label: "Memorial Wall",   href: "/admin/memorials",         icon: Heart },
