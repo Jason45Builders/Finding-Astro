@@ -1,8 +1,9 @@
 'use client';
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, Marker, Popup } from 'react-leaflet';
 import { icon } from 'leaflet';
 import 'leaflet-defaulticon-compatibility';
+import ResilientTileLayer from '@/components/maps/ResilientTileLayer';
 
 const animalIcon = icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
@@ -15,11 +16,8 @@ const animalIcon = icon({
 
 export default function SingleAnimalMap({ lat, lng, name, status }: { lat: number; lng: number; name: string; status: string }) {
   return (
-    <MapContainer center={[lat, lng]} zoom={15} className="w-full h-full rounded-xl" scrollWheelZoom={false}>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <MapContainer center={[lat, lng]} zoom={15} className="w-full rounded-xl" style={{ height: 288, width: "100%", background: "#e5e7eb" }} scrollWheelZoom={false}>
+      <ResilientTileLayer />
       <Marker position={[lat, lng]} icon={animalIcon}>
         <Popup>
           <div className="text-sm">

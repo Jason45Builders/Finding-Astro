@@ -71,7 +71,7 @@ export default function OpenCasesMap({ cases }: { cases: CaseForMap[] }) {
 
   return (
     <div className="relative h-[360px] min-h-[320px] w-full overflow-hidden rounded-xl">
-      <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} style={{ height: '100%', minHeight: '320px', width: '100%' }} scrollWheelZoom={false}>
+      <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} style={{ height: 360, width: '100%', background: '#e5e7eb' }} scrollWheelZoom={false}>
         <ResilientTileLayer />
         <FitBounds points={bounds} />
         {mappedCases.map((item) => (
