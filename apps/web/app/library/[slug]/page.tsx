@@ -50,6 +50,7 @@ export default function LibraryBookPage() {
   const [chapterError, setChapterError] = useState("");
   const [showContents, setShowContents] = useState(true);
   const [fontScale, setFontScale] = useState(1);
+  const [hasChosenChapter, setHasChosenChapter] = useState(false);
   const chapterRequestRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export default function LibraryBookPage() {
     chapterRequestRef.current?.abort();
     const chapterController = new AbortController();
     chapterRequestRef.current = chapterController;
+    setHasChosenChapter(true);
     setActiveIndex(index);
     setChapterLoading(true);
     setChapterError("");
@@ -118,7 +120,7 @@ export default function LibraryBookPage() {
   }, [slug]);
 
   useEffect(() => {
-    if (!chapters.length || activeChapter || book?.publication_type === "complete_file") return;
+    if (!chapters.length || activeChapter || hasChosenChapter || book?.publication_type === "complete_file") return;
     let cancelled = false;
     async function resumeReading() {
       const token = window.localStorage.getItem("fa_token");
@@ -145,7 +147,7 @@ export default function LibraryBookPage() {
     }
     void resumeReading();
     return () => { cancelled = true; };
-  }, [chapters, activeChapter, book?.id, book?.publication_type, openChapter]);
+  }, [chapters, activeChapter, hasChosenChapter, book?.id, book?.publication_type, openChapter]);
 
   if (loading) return <main className="grid min-h-screen place-items-center bg-background"><div className="flex items-center gap-3 text-sm text-on-surface-variant"><LoaderCircle className="animate-spin" size={20} /> Opening publication…</div></main>;
   if (error || !book) return <main className="min-h-screen bg-background px-5 py-16"><div className="mx-auto max-w-xl rounded-2xl border border-outline/20 bg-surface p-8 text-center"><BookOpen className="mx-auto text-on-surface-variant" size={34} /><h1 className="mt-4 text-2xl font-extrabold">Publication unavailable</h1><p role="alert" className="mt-2 text-sm text-on-surface-variant">{error || "This publication may have been unpublished."}</p><Link href="/library" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-on-primary"><ArrowLeft size={16} /> Back to library</Link></div></main>;
