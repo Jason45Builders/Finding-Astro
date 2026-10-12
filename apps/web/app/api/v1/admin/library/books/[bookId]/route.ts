@@ -64,7 +64,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ bookI
     const input = parsed.data;
     const isSafeStoragePath = (value: string, prefix: string) => {
       const parts = value.split("/");
-      return value.startsWith(prefix) && !value.includes("\\\\") && parts.every((part) => part.length > 0 && part !== "." && part !== ".." && !/[\\u0000-\\u001f]/.test(part));
+      return value.startsWith(prefix) && !value.includes(String.fromCharCode(92)) && parts.every((part) => part.length > 0 && part !== "." && part !== ".." && !Array.from(part).some((char) => char.charCodeAt(0) < 32));
     };
     if (typeof input.coverStoragePath === "string" && !isSafeStoragePath(input.coverStoragePath, "animals/")) {
       return badRequest("INVALID_COVER_PATH", "Cover must reference an uploaded public image asset");
