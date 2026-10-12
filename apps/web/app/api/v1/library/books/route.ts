@@ -1,0 +1,34 @@
+import { NextRequest } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { ok, serverError } from "@/lib/api-response";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const query = (searchParams.get("q") ?? "").trim().slice(0, 120);
+    const category = (searchParams.get("category") ?? "").trim().slice(0, 100);
+    const language = (searchParams.get("language") ?? "").trim().slice(0, 20);
+    const limit = Math.min(Math.max(Number(searchParams.get("limit") ?? 24) || 24, 1), 60);
+    const offset = Math.max(Number(searchParams.get("offset") ?? 0) || 0, 0);
+
+    let request = supabaseAdmin()
+      .from("library_books")
+      .select("id, title, slug, subtitle, description, author_name, publication_type, category, language, cover_storage_path, primary_file_format, is_featured, published_at", { count: "exact" })
+      .eq("status", "published")
+      .order("is_featured", { ascending: false })
+      .order("published_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (query) request = request.or(`title.ilike.%${query.replace(/[%_,]/g, " ")}%,author_name.ilike.%${query.replace(/[%_,]/g, " ")}%`);
+    if (category) request = request.eq("category", category);
+    if (language) request = request.eq("language", language);
+
+    const { data, error, count } = await request;
+    if (error) return serverError("Unable to load the library", error);
+    return ok({ books: data ?? [], count: count ?? 0, limit, offset });
+  } catch (error) {
+    return serverError("Unable to load the library", error);
+  }
+}
