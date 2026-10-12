@@ -18,6 +18,11 @@ jobs:
           cache-dependency-path: "package-lock.json"
       - id: dependencies
         run: npm ci
+      - name: Dependency audit (informational)
+        continue-on-error: true
+        run: |
+          npm audit --json > npm-audit.json || true
+          node -e "const a=require('./npm-audit.json'); for (const [name,v] of Object.entries(a.vulnerabilities || {})) { const via=(v.via || []).map(x => typeof x === 'string' ? x : (x.title + ' [' + x.url + ']')).join('; '); console.log(v.severity.toUpperCase() + ' ' + name + ' range=' + v.range + ' fix=' + JSON.stringify(v.fixAvailable) + ' via=' + via); }"
       - id: lint
         run: npm run lint:library
       - id: typecheck
