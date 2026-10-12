@@ -71,7 +71,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ bookI
     }
     const { data: current, error: readError } = await supabaseAdmin()
       .from("library_books")
-      .select("id, publication_type, primary_file_storage_path, primary_file_format, status, rights_confirmed_at")
+      .select("id, publication_type, primary_file_storage_path, primary_file_format, status, rights_confirmed_at, published_at")
       .eq("id", bookId)
       .maybeSingle();
     if (readError) return serverError("Unable to validate publication", readError);
@@ -123,7 +123,9 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ bookI
         const chapterFailure = validateReadableChapterCount(finalType, count ?? 0);
         if (chapterFailure) return badRequest(chapterFailure.code, chapterFailure.message);
       }
-      changes.published_at = new Date().toISOString();
+      if (current.status !== "published" || !current.published_at) {
+        changes.published_at = new Date().toISOString();
+      }
     }
     if (input.status !== undefined) changes.status = input.status;
 
