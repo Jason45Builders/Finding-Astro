@@ -20,6 +20,7 @@ import {
   HeartHandshake,
   Lock,
   FileCheck2,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
