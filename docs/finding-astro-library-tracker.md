@@ -436,3 +436,10 @@ A non-blocking `npm audit --json` step was added to CI and emitted the affected 
 - `tailwindcss@3.4.19` and its related transitive dependencies have advisories whose reported automatic fix is Tailwind CSS 4.x (a major upgrade). Do not force that migration without visual/regression testing because this application currently uses Tailwind 3.
 - Vitest-related advisories are development-tooling findings; update within the existing 4.x range where possible.
 - No dependency versions were changed in this pass. A reviewed lockfile-only patch update is still required, followed by typecheck, Library tests, production build, and UI regression checks.
+
+
+### Pass 10 — featured discovery presentation and CI follow-up (2026-10-12)
+- Added an editorial featured-publication spotlight using the existing `is_featured` metadata, with responsive artwork, category, subtitle, summary, author, edition type, and a clear “Start reading” action. The featured title is excluded from the regular grid to avoid duplicate cards.
+- Fixed the featured-card JSX conditional after the first lint run detected a missing fragment close, and escaped the editorial label for JSX lint.
+- Corrected the unrelated existing role-policy mismatch identified by CI: the repository test explicitly expects the vet role to have `cases:write`, so the role profile now includes that capability. This aligns implementation with the existing test rather than changing the test expectation.
+- Latest run for commit `b55b4ce` has passed dependency installation, the informational audit step, focused Library lint, and is progressing through typecheck at last observation. Test/build results are pending.
