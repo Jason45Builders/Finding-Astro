@@ -293,6 +293,48 @@ Adjust boundaries only when repository findings justify it. Each pass must remai
 | Deletion | Prefer unpublish/archive | Cleanup and retention policy |
 | Rollout | Feature branch, then preview | No production merge/deploy without approval |
 
+## 17. Confirmed repository audit findings (2026-10-12)
+
+These findings are based on inspecting the Working branch; revisit them if the branch changes.
+
+- The repository is a monorepo. The web app is Next.js 15 with the App Router under apps/web and API handlers under apps/web/app/api/v1. Root npm scripts delegate build, lint, typecheck, and tests to apps/web.
+- The project uses Supabase and a custom bearer-JWT application auth flow. API handlers import authMiddleware and supabaseAdmin through the apps/web/src/lib alias.
+- authMiddleware verifies the bearer token and re-reads the user's current role and ban status from public.users. The users table uses UUID IDs and its role enum includes admin.
+- supabaseAdmin uses the service-role key and bypasses RLS. Every Library API route must explicitly enforce authorization and ownership. Never expose this client to browser code.
+- The existing media upload handler is apps/web/app/api/v1/media/upload/route.ts. It validates file signatures for an allowlist of images and PDF, enforces 10 MiB, scans uploads, writes media_uploads records, uploads to Storage, then finalises the record. EPUB is not in the current allowlist. Private assets use an authenticated proxy.
+- The root README documents finding-astro-media (public) and finding-astro-private (private) buckets. Actual deployed bucket settings remain unverified.
+- The root README mentions apps/admin-dashboard as a separate deployment, but expected files there were not found on Working. The actual staff sidebar is apps/web/app/(app)/layout.tsx. The Library admin screen is at apps/web/app/admin/library/page.tsx and is linked from that sidebar.
+- The initial schema enables uuid-ossp and defines public.users. The Library uses additive migrations and does not edit the historical initial schema.
+- The package manifest contains Zod, Supabase JS, React 19, and Next.js 15. No EPUB/PDF reader dependency was confirmed in the inspected package manifest.
+
+### Decisions after audit
+
+1. Use Next.js App Router route handlers and the existing auth/response helpers.
+2. Re-check current database role for every admin operation; do not rely on the role claim in the JWT alone.
+3. Keep binaries in Supabase Storage and metadata/paths in the database.
+4. Support PDF and structured-text chapters in the first release; do not advertise EPUB until a real reader and upload path are tested.
+5. Enable RLS on Library tables. Because current server-side service-role access bypasses RLS, API checks are mandatory.
+6. Do not add Library content to the generic media endpoint as an unrestricted purpose. The admin UI currently reuses existing authenticated media purposes, and only admin APIs may attach a resulting storage path to a publication.
+
+## 18. Implementation snapshot (2026-10-12)
+
+Committed on feature/finding-astro-library:
+- supabase/migrations/20261012170000_finding_astro_library.sql — books, chapters, reading progress, constraints/indexes, and RLS enabled.
+- supabase/migrations/20261012183000_library_chapter_reorder.sql — atomic chapter reorder function restricted to service_role.
+- Admin APIs for book metadata/lifecycle, chapter CRUD/hide/reorder, and publication rights/content validation.
+- Published-only reader APIs for catalogue, details, structured chapter content, and PDF delivery.
+- Admin publishing studio at apps/web/app/admin/library/page.tsx, linked from the actual staff sidebar.
+- Reader catalogue and chapter/PDF reading pages at apps/web/app/library/page.tsx and apps/web/app/library/[slug]/page.tsx.
+- Authenticated per-user progress API and chapter-level save/resume integration.
+
+Release blockers and remaining scope:
+- No local lint, typecheck, tests, SQL execution, build, or browser validation has run.
+- GitHub's Vercel status for a feature-branch code commit reported a build-rate-limit/upgrade page; no successful preview deployment was confirmed.
+- Migrations have not been applied to a test or production database.
+- Draft preview, chapter-file upload/delivery, PDF page position, upload progress and orphan reconciliation remain.
+- Storage bucket configuration must be verified before rollout.
+- The current complete-book upload UI supports PDF and uses the existing 10 MiB media-upload limit. EPUB is not supported end to end.
+
 ## 15. Working rules
 
 1. Work only on feature/finding-astro-library; do not commit feature changes to Working or master.
