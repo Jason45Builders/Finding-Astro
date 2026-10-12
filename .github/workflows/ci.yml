@@ -16,8 +16,14 @@ jobs:
           node-version: 22
           cache: "npm"
           cache-dependency-path: "package-lock.json"
-      - run: npm ci
-      - run: npm run lint:library
-      - run: npm run typecheck
-      - run: npm run test
-      - run: npm run build
+      - id: dependencies
+        run: npm ci
+      - id: lint
+        run: npm run lint:library
+      - id: typecheck
+        run: npm run typecheck
+      - id: test
+        run: npm run test
+      - name: Production build
+        if: always() && steps.dependencies.outcome == 'success' && steps.lint.outcome == 'success' && steps.typecheck.outcome == 'success'
+        run: npm run build
