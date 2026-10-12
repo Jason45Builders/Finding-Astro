@@ -67,4 +67,5 @@
 
 | Date | Change | Evidence / result |
 |---|---|---|
-| 2026-10-12 | Blueprint and tracker created on feature branch | Documentation committed |\n| 2026-10-12 | Implemented grouped citizen navigation, contextual collective navigation, mobile shortcuts, and `/collectives` switcher | Committed to feature branch; build and end-to-end checks still pending |
+| 2026-10-12 | Blueprint and tracker created on feature branch | Documentation committed |
+| 2026-10-12 | Implemented grouped citizen navigation, contextual collective navigation, mobile shortcuts, and `/collectives` switcher | Committed to feature branch; build and end-to-end checks still pending |
