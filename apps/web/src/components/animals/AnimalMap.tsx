@@ -1,18 +1,81 @@
 'use client';
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { useEffect, useMemo } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet';
 import 'leaflet-defaulticon-compatibility';
+import { DEFAULT_MAP_CENTER, getMapCoordinates } from '@/lib/map-utils';
+
+type AnimalPoint = {
+  id: string;
+  name: string | null;
+  species: string;
+  breed?: string | null;
+  territoryLabel?: string | null;
+  latitude: number;
+  longitude: number;
+};
+
+function FitAnimalPoints({ points }: { points: [number, number][] }) {
+  const map = useMap();
+  const pointsKey = points.map(([lat, lng]) => `${lat},${lng}`).join('|');
+  const stablePoints = useMemo(
+    () => pointsKey ? pointsKey.split('|').map((point) => point.split(',').map(Number) as [number, number]) : [],
+    [pointsKey],
+  );
+
+  useEffect(() => {
+    if (stablePoints.length === 1) map.setView(stablePoints[0], 14);
+    else if (stablePoints.length > 1) map.fitBounds(stablePoints, { padding: [32, 32], maxZoom: 14 });
+    else map.setView(DEFAULT_MAP_CENTER, 12);
+    map.invalidateSize();
+  }, [map, stablePoints]);
+
+  return null;
+}
 
 export default function AnimalMap({ animals }: { animals: any[] }) {
+  const points = useMemo<AnimalPoint[]>(() => animals.flatMap((animal) => {
+    const coordinates = getMapCoordinates(animal);
+    return coordinates ? [{
+      id: String(animal.id),
+      name: animal.name ?? null,
+      species: String(animal.species ?? 'Animal'),
+      breed: animal.breed ?? null,
+      territoryLabel: animal.territoryLabel ?? null,
+      ...coordinates,
+    }] : [];
+  }), [animals]);
+
+  const bounds = useMemo(
+    () => points.map((point) => [point.latitude, point.longitude] as [number, number]),
+    [points],
+  );
+
   return (
-    <MapContainer center={[13.0827, 80.2707]} zoom={13} style={{ height: '100%', width: '100%' }}>
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      {animals.map((a) => a.location && (
-        <Marker key={a.id} position={[a.location.latitude ?? a.location.lat, a.location.longitude ?? a.location.lng]}>
-          <Popup>{a.name || a.species}</Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+    <div className="relative h-full min-h-[400px] w-full overflow-hidden rounded-xl">
+      <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} style={{ height: '100%', width: '100%'}>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
+        />
+        <FitAnimalPoints points={bounds} />
+        {points.map((animal) => (
+          <Marker key={animal.id} position={[animal.latitude, animal.longitude]}>
+            <Popup>
+              <strong>{animal.name || 'Unnamed animal'}</strong>
+              <div className="capitalize">{animal.species}{animal.breed ? ` · ${animal.breed}` : ''}</div>
+              {animal.territoryLabel && <div>{animal.territoryLabel}</div>}
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+      {points.length === 0 && (
+        <div className="pointer-events-none absolute bottom-4 left-1/2 z-[500] -translate-x-1/2 rounded-full bg-white/95 px-4 py-2 text-xs font-semibold text-slate-700 shadow">
+          No animals with valid coordinates in this view
+        </div>
+      )}
+    </div>
   );
 }
