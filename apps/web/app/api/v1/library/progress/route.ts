@@ -9,7 +9,11 @@ export const dynamic = "force-dynamic";
 const SaveProgressSchema = z.object({
   bookId: z.string().uuid(),
   chapterId: z.string().uuid().nullable().optional(),
-  position: z.record(z.unknown()).optional().default({}),
+  position: z.object({
+    kind: z.enum(["chapter", "pdf_page", "text_offset"]).optional(),
+    offset: z.number().int().min(0).max(1000000000).optional(),
+    page: z.number().int().min(1).max(1000000).optional(),
+  }).strict().optional().default({}),
 });
 
 export async function GET(req: NextRequest) {
