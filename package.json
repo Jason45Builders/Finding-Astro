@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Finding Astro — civic animal welfare platform for Chennai",
-  "workspaces": ["apps/web"],
+  "workspaces": [
+    "apps/web"
+  ],
   "overrides": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -15,7 +17,8 @@
     "lint": "cd apps/web && npm run lint",
     "typecheck": "cd apps/web && npm run typecheck",
     "test": "cd apps/web && npm run test",
-    "test:watch": "cd apps/web && npm run test:watch"
+    "test:watch": "cd apps/web && npm run test:watch",
+    "lint:library": "npm run lint:library --workspace=apps/web"
   },
   "engines": {
     "node": ">=20.0.0",
