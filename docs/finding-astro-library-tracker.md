@@ -476,3 +476,9 @@ A non-blocking `npm audit --json` step was added to CI and emitted the affected 
 ### Dependency remediation attempt (2026-10-12)
 - The repository CI already has a guarded one-time `npm audit fix` path triggered by a commit message containing `[audit-fix]`. It applies semver-compatible lockfile updates, runs lint/typecheck/tests/build, and only commits the updated lockfile if all validation steps pass.
 - Triggering that existing guarded path now is preferable to manually editing integrity hashes or forcing a major Tailwind upgrade. Any lockfile update will be committed only after validation passes; major-version changes are not authorized by this path.
+
+
+### Framework security patch (2026-10-12)
+- Updated the app's Next.js and matching ESLint config ranges to `~15.5.27`, the latest stable 15.5 patch line observed in the upstream release list.
+- Updated the existing guarded audit-fix workflow to regenerate the root lockfile *before* `npm ci` on explicitly tagged `[audit-fix]` runs. This is required because `npm ci` correctly rejects a package manifest/lockfile mismatch.
+- The lockfile will be committed only if focused lint, typecheck, the full test suite and production build pass. A fresh run is being triggered against the updated workflow; do not consider the framework patch validated until it finishes.
