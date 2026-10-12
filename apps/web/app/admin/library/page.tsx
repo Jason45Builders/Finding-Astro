@@ -46,7 +46,8 @@ export default function AdminLibraryPage() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [chapterTitle, setChapterTitle] = useState("");
   const [chapterText, setChapterText] = useState("");
-  const [chapterSummary, setChapterSummary] = useState("");\n  const [editingChapterId, setEditingChapterId] = useState("");
+  const [chapterSummary, setChapterSummary] = useState("");
+  const [editingChapterId, setEditingChapterId] = useState("");
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [completeFile, setCompleteFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
