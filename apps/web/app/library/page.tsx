@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BookOpen, Search, SlidersHorizontal, ArrowUpRight, Languages, Sparkles } from "lucide-react";
 
 type Book = {
@@ -65,11 +65,14 @@ export default function LibraryPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState("");
   const [facets, setFacets] = useState<{ categories: string[]; languages: string[] }>({ categories: [], languages: [] });
+  const loadMoreControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
     async function load() {
       setLoading(true);
+      setLoadingMore(false);
+      setLoadMoreError("");
       setError("");
       try {
         const params = new URLSearchParams();
@@ -92,7 +95,12 @@ export default function LibraryPage() {
       }
     }
     const timer = setTimeout(load, 180);
-    return () => { clearTimeout(timer); controller.abort(); };
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+      loadMoreControllerRef.current?.abort();
+      loadMoreControllerRef.current = null;
+    };
   }, [query, category, language, reloadKey]);
 
   useEffect(() => {
@@ -117,6 +125,9 @@ export default function LibraryPage() {
   }, [books, facets.languages]);
 
   async function loadMore() {
+    loadMoreControllerRef.current?.abort();
+    const controller = new AbortController();
+    loadMoreControllerRef.current = controller;
     setLoadingMore(true);
     setLoadMoreError("");
     try {
@@ -126,9 +137,10 @@ export default function LibraryPage() {
       if (language !== "All languages") params.set("language", language);
       params.set("limit", "24");
       params.set("offset", String(books.length));
-      const response = await fetch(`/api/v1/library/books?${params.toString()}`, { cache: "no-store" });
+      const response = await fetch(`/api/v1/library/books?${params.toString()}`, { cache: "no-store", signal: controller.signal });
       const payload = await parseApiResponse<ApiResponse>(response);
       if (!response.ok || !payload.success) throw new Error(payload.message || "More publications could not be loaded.");
+      if (controller.signal.aborted) return;
       const nextBooks = payload.data?.books ?? [];
       setBooks((current) => {
         const seen = new Set(current.map((book) => book.id));
@@ -136,9 +148,13 @@ export default function LibraryPage() {
       });
       setTotalCount(payload.data?.count ?? totalCount);
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
       setLoadMoreError(err instanceof Error ? err.message : "More publications could not be loaded.");
     } finally {
-      setLoadingMore(false);
+      if (loadMoreControllerRef.current === controller) {
+        loadMoreControllerRef.current = null;
+        setLoadingMore(false);
+      }
     }
   }
 
@@ -172,14 +188,14 @@ export default function LibraryPage() {
 
       <section id="library-results" aria-label="Browse publications" className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12">
         <div className="mb-8 grid gap-3 lg:grid-cols-[minmax(240px,1fr)_220px_190px]">
-          <label className="flex min-h-12 items-center gap-3 rounded-xl border border-outline/20 bg-surface px-4 focus-within:border-primary"><Search size={18} className="shrink-0 text-on-surface-variant" /><input aria-label="Search publications" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search books, authors, or topics" className="w-full bg-transparent text-sm outline-none placeholder:text-on-surface-variant/70" /></label>
+          <label className="flex min-h-12 items-center gap-3 rounded-xl border border-outline/20 bg-surface px-4 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30"><Search size={18} className="shrink-0 text-on-surface-variant" /><input aria-label="Search publications" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search books, authors, or topics" className="w-full bg-transparent text-sm outline-none placeholder:text-on-surface-variant/70" /></label>
           <label className="flex min-h-12 items-center gap-2 rounded-xl border border-outline/20 bg-surface px-4"><SlidersHorizontal size={16} className="text-on-surface-variant" /><select aria-label="Filter by topic" value={category} onChange={(event) => setCategory(event.target.value)} className="w-full bg-transparent text-sm outline-none"><option>All topics</option>{categories.filter((item) => item !== "All topics").map((item) => <option key={item}>{item}</option>)}</select></label>
           <label className="flex min-h-12 items-center gap-2 rounded-xl border border-outline/20 bg-surface px-4"><Languages size={16} className="text-on-surface-variant" /><select aria-label="Filter by language" value={language} onChange={(event) => setLanguage(event.target.value)} className="w-full bg-transparent text-sm outline-none"><option>All languages</option>{languages.filter((item) => item !== "All languages").map((item) => <option key={item}>{item}</option>)}</select></label>
         </div>
 
         {loading ? <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="animate-pulse"><div className="aspect-[3/4] rounded-xl bg-surface-variant/50" /><div className="mt-3 h-4 w-4/5 rounded bg-surface-variant/50" /><div className="mt-2 h-3 w-2/3 rounded bg-surface-variant/40" /></div>)}</div>
           : error ? <div role="alert" className="rounded-2xl border border-error/20 bg-error-container/30 p-6"><h2 className="font-bold">The library is temporarily unavailable</h2><p className="mt-2 text-sm text-on-surface-variant">{error}</p><button type="button" onClick={() => setReloadKey((value) => value + 1)} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Try again</button></div>
-          : books.length === 0 ? <div className="rounded-2xl border border-dashed border-outline/30 px-6 py-16 text-center"><BookOpen className="mx-auto text-on-surface-variant" size={34} /><h2 className="mt-4 text-xl font-bold">No publications found</h2><p className="mt-2 text-sm text-on-surface-variant">Try a different search or filter. New Finding Astro publications will appear here when published.</p><button onClick={() => { setQuery(""); setCategory("All topics"); setLanguage("All languages"); }} className="mt-5 rounded-lg border border-outline/25 px-4 py-2 text-sm font-semibold">Clear filters</button></div>
+          : books.length === 0 ? <div className="rounded-2xl border border-dashed border-outline/30 px-6 py-16 text-center"><BookOpen className="mx-auto text-on-surface-variant" size={34} /><h2 className="mt-4 text-xl font-bold">No publications found</h2><p className="mt-2 text-sm text-on-surface-variant">Try a different search or filter. New Finding Astro publications will appear here when published.</p><button type="button" onClick={() => { setQuery(""); setCategory("All topics"); setLanguage("All languages"); }} className="mt-5 rounded-lg border border-outline/25 px-4 py-2 text-sm font-semibold">Clear filters</button></div>
           : <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:grid-cols-5">{books.map((book, index) => <Link key={book.id} href={`/library/${book.slug}`} className="group min-w-0 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4"><BookCover book={book} index={index} /><div className="mt-4 flex items-start justify-between gap-2"><div className="min-w-0"><p className="mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">{book.category}</p><h2 className="line-clamp-2 text-base font-extrabold leading-snug group-hover:text-primary sm:text-lg">{book.title}</h2><p className="mt-1 truncate text-sm text-on-surface-variant">{book.author_name}</p></div><ArrowUpRight size={17} className="mt-1 shrink-0 text-on-surface-variant transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" /></div><div className="mt-3 flex items-center gap-2 text-xs text-on-surface-variant"><span className="rounded-full bg-surface-variant/50 px-2 py-1">{book.publication_type === "complete_file" ? (book.primary_file_format?.toUpperCase() ?? "BOOK") : book.publication_type === "hybrid" ? "PDF + CHAPTERS" : "CHAPTERS"}</span><span className="inline-flex items-center gap-1"><Languages size={12} />{book.language.toUpperCase()}</span></div></Link>)}</div>}
         {!loading && !error && books.length > 0 && <div className="mt-10 flex flex-col items-center gap-3 border-t border-outline/10 pt-8">
           <p className="text-sm text-on-surface-variant" aria-live="polite">Showing <span className="font-bold text-on-background">{books.length}</span> of <span className="font-bold text-on-background">{totalCount}</span> publications</p>
