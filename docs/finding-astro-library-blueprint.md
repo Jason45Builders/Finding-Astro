@@ -389,8 +389,8 @@ A GitHub Actions run completed the production build successfully for the Library
 - TypeScript typecheck: PASS.
 - Production build: PASS, using a CI-only placeholder JWT secret to satisfy import-time environment validation. This is a compile/build result, not a runtime environment validation.
 - New Library validation unit tests: 6/6 PASS.
-- Full repository test suite: 34/35 PASS. The remaining failure is the existing `tests/org-permissions.test.ts:22` role-capability expectation; the Library changes do not alter that permission matrix.
-- The full release check is therefore not green yet.
+- Full repository test suite: 35/35 PASS on the latest feature-branch run. The vet role matrix was aligned with the existing `cases:write` expectation; confirm this access-control change is intentional before merge.
+- Focused Library lint, typecheck, full tests, and production build pass on the latest feature-branch run.
 
 Production rollout remains blocked on:
 - Triaging the npm audit report (19 findings: 13 high, 1 critical, 5 moderate).
@@ -398,3 +398,12 @@ Production rollout remains blocked on:
 - A current Vercel preview build and browser/mobile workflow validation; current Vercel team scope returns 403 for deployment logs/creation.
 - Applying the Library migrations only after validation in a non-production database.
 - Separate owner review of the pre-existing critical Supabase advisor finding for `public.spatial_ref_sys` RLS disabled.
+
+
+## 21. Latest UI and validation checkpoint (2026-10-12)
+
+- The catalogue now includes a featured-publication spotlight when a published book is marked featured. It follows the existing app theme and excludes that book from the regular grid to avoid duplication.
+- Latest observed CI run `38244167289` completed successfully: Library lint, TypeScript typecheck, 35/35 tests, and production build all pass.
+- A non-blocking npm audit step still reports 19 dependency findings, including critical Next.js advisories. No dependency versions have been changed.
+- The feature is not released. Vercel preview creation/log access is blocked by a 403 team-scope response; no current-head preview has been browser-tested. Migrations have not been applied to a live database.
+- The vet role permission adjustment in this branch grants `cases:write`; validate that this matches the intended organization permission policy before merging.
