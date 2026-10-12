@@ -10,16 +10,14 @@ export type EmbeddedMapPoint = MapCoordinates & {
   category?: string;
 };
 
-function mapUrl(points: EmbeddedMapPoint[], selected: EmbeddedMapPoint | undefined) {
-  const center = selected ?? points[0] ?? { latitude: 13.0827, longitude: 80.2707 };
-  const lats = points.length ? points.map((point) => point.latitude) : [center.latitude];
-  const lngs = points.length ? points.map((point) => point.longitude) : [center.longitude];
-  const latSpan = Math.max(Math.max(...lats) - Math.min(...lats), 0.012);
-  const lngSpan = Math.max(Math.max(...lngs) - Math.min(...lngs), 0.012);
-  const south = Math.max(-85, Math.min(...lats) - latSpan * 0.18);
-  const north = Math.min(85, Math.max(...lats) + latSpan * 0.18);
-  const west = Math.max(-180, Math.min(...lngs) - lngSpan * 0.18);
-  const east = Math.min(180, Math.max(...lngs) + lngSpan * 0.18);
+function mapUrl(selected: EmbeddedMapPoint | undefined) {
+  const center = selected ?? { latitude: 13.0827, longitude: 80.2707 };
+  const latSpan = 0.012;
+  const lngSpan = 0.012;
+  const south = Math.max(-85, center.latitude - latSpan * 0.68);
+  const north = Math.min(85, center.latitude + latSpan * 0.68);
+  const west = Math.max(-180, center.longitude - lngSpan * 0.68);
+  const east = Math.min(180, center.longitude + lngSpan * 0.68);
   const bbox = [west, south, east, north].map((value) => value.toFixed(6)).join(',');
   return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${center.latitude.toFixed(6)}%2C${center.longitude.toFixed(6)}`;
 }
@@ -35,7 +33,7 @@ export default function OpenStreetMapEmbed({
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = points.find((point) => point.id === selectedId) ?? points[0];
-  const src = useMemo(() => mapUrl(points, selected), [points, selected]);
+  const src = useMemo(() => mapUrl(selected), [selected]);
   const openUrl = selected
     ? `https://www.openstreetmap.org/?mlat=${selected.latitude}&mlon=${selected.longitude}#map=16/${selected.latitude}/${selected.longitude}`
     : 'https://www.openstreetmap.org/';
