@@ -24,7 +24,15 @@ function FitMapToPoints({ points }: { points: [number, number][] }) {
     } else {
       map.setView(DEFAULT_MAP_CENTER, 12);
     }
-    map.invalidateSize();
+
+    const container = map.getContainer();
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize({ pan: false });
+    });
+    resizeObserver.observe(container);
+    map.invalidateSize({ pan: false });
+
+    return () => resizeObserver.disconnect();
   }, [map, stablePoints]);
 
   return null;
@@ -73,8 +81,8 @@ export default function CityMap({
   );
 
   return (
-    <div className="relative h-full min-h-[400px] w-full overflow-hidden rounded-xl">
-      <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} style={{ height: '100%', width: '100%' }}>
+    <div className="relative h-[520px] min-h-[420px] w-full overflow-hidden rounded-xl">
+      <MapContainer center={DEFAULT_MAP_CENTER} zoom={12} style={{ height: '100%', minHeight: '420px', width: '100%' }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
