@@ -127,7 +127,7 @@ export default function LibraryPage() {
       params.set("limit", "24");
       params.set("offset", String(books.length));
       const response = await fetch(`/api/v1/library/books?${params.toString()}`, { cache: "no-store" });
-      const payload = await response.json() as ApiResponse;
+      const payload = await parseApiResponse<ApiResponse>(response);
       if (!response.ok || !payload.success) throw new Error(payload.message || "More publications could not be loaded.");
       const nextBooks = payload.data?.books ?? [];
       setBooks((current) => {
