@@ -28,22 +28,59 @@ export default function RehomePage() {
   const load = async () => setRows(await api.request<RehomeRequest[]>("/rehome"));
   useEffect(()=>{if(!user)return;load().catch(e=>setError(e instanceof Error?e.message:"Could not load requests")).finally(()=>setLoading(false));},[user]);
   function set<K extends keyof typeof form>(key:K,value:typeof form[K]){setForm(p=>({...p,[key]:value}));}
+  async function preparePhotoForUpload(file: File): Promise<File> {
+    // Vercel serverless requests have a smaller payload ceiling than the media API's
+    // 10 MB file limit. Keep the multipart request below that ceiling by optimizing
+    // large photos in the browser before sending them to the upload route.
+    if (file.size <= 3 * 1024 * 1024) return file;
+    const bitmap = await createImageBitmap(file);
+    try {
+      const scale = Math.min(1, 1920 / Math.max(bitmap.width, bitmap.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Your browser could not process this photo. Try a smaller image.");
+      context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      for (const quality of [0.82, 0.72, 0.62, 0.52]) {
+        const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/webp", quality));
+        if (blob && blob.size <= 3 * 1024 * 1024) {
+          const baseName = file.name.replace(/\.[^.]+$/, "") || "animal-photo";
+          return new File([blob], baseName + ".webp", { type: "image/webp", lastModified: Date.now() });
+        }
+      }
+      throw new Error("This photo could not be reduced enough for upload. Please choose a smaller photo.");
+    } finally {
+      bitmap.close();
+    }
+  }
+
   async function uploadAnimalPhoto(file: File | undefined) {
     if (!file) return;
     setPhotoError("");
-    if (!file.type.startsWith("image/")) { setPhotoError("Choose an image file (JPG, PNG or WebP)."); return; }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) { setPhotoError("Choose a JPG, PNG or WebP image."); return; }
     if (file.size > 10 * 1024 * 1024) { setPhotoError("Photo must be 10 MB or smaller."); return; }
     setUploadingPhoto(true);
     try {
+      const uploadFile = await preparePhotoForUpload(file);
       const body = new FormData();
-      body.append("file", file);
-      body.append("originalName", file.name);
-      body.append("mimeType", file.type);
+      body.append("file", uploadFile);
+      body.append("originalName", uploadFile.name);
+      body.append("mimeType", uploadFile.type);
       body.append("purpose", "animal_photo");
       const response = await fetch("/api/v1/media/upload", { method: "POST", body, credentials: "same-origin" });
-      const result = await response.json();
+      const responseText = await response.text();
+      let result: any;
+      try { result = JSON.parse(responseText); }
+      catch {
+        const detail = responseText.trim().slice(0, 180);
+        if (response.status === 413 || /request entity too large/i.test(detail)) {
+          throw new Error("The photo upload exceeded the server's request limit. Please choose a smaller image and try again.");
+        }
+        throw new Error(detail || "The server returned an unreadable upload response. Please try again.");
+      }
       if (!response.ok || !result?.success || !(result?.data?.publicUrl || result?.data?.cdnUrl)) {
-        throw new Error(result?.message || "Photo upload failed. Please try again.");
+        throw new Error(result?.message || result?.error || "Photo upload failed. Please try again.");
       }
       set("photoUrl", result.data.publicUrl || result.data.cdnUrl);
     } catch (e) {
@@ -60,7 +97,7 @@ export default function RehomePage() {
     <Card className="p-5"><form onSubmit={submit} className="space-y-4">
       <div><Label>Which situation applies?</Label><Select value={form.animalType} onChange={e=>set("animalType",e.target.value)}><option value="own_pet">My pet / animal I am authorised to rehome</option><option value="community_animal">A stray or community animal I am helping</option></Select></div>
       <div className="grid sm:grid-cols-2 gap-4"><div><Label>Species</Label><Select value={form.species} onChange={e=>set("species",e.target.value)}><option value="dog">Dog</option><option value="cat">Cat</option><option value="bird">Bird</option><option value="other">Other</option></Select></div><div><Label>Name (optional)</Label><Input value={form.animalName} onChange={e=>set("animalName",e.target.value)} maxLength={100}/></div><div><Label>Breed (optional)</Label><Input value={form.breed} onChange={e=>set("breed",e.target.value)} maxLength={100}/></div><div><Label>Age in months (optional)</Label><Input type="number" min="0" value={form.ageMonths} onChange={e=>set("ageMonths",e.target.value)}/></div><div><Label>Gender (optional)</Label><Select value={form.gender} onChange={e=>set("gender",e.target.value)}><option value="">Unknown</option><option value="male">Male</option><option value="female">Female</option><option value="unknown">Unknown</option></Select></div></div>
-      <div className="space-y-2 sm:col-span-2"><Label>Animal photo (optional)</Label><p className="text-xs text-on-surface-variant">Upload a clear photo so the review team and potential adopters can identify the animal. JPG, PNG or WebP; up to 10 MB.</p>{form.photoUrl ? <div className="flex items-start gap-3 rounded-lg border border-outline-variant p-3"><Photo src={form.photoUrl} alt="Uploaded animal" className="h-28 w-28 rounded-md object-cover" /><div className="min-w-0 flex-1"><p className="text-sm font-medium text-primary">Photo uploaded</p><p className="text-xs text-on-surface-variant">This photo will be included with the request and, if approved, the adoption listing.</p><Button type="button" variant="ghost" size="sm" className="mt-2" onClick={()=>{set("photoUrl","");setPhotoError("");}}><X className="h-4 w-4"/> Remove photo</Button></div></div> : <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-outline-variant bg-surface-container-low px-4 py-5 text-sm font-semibold hover:bg-surface-container-high"><ImagePlus className="h-5 w-5"/>{uploadingPhoto ? "Uploading photo…" : "Choose animal photo"}<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={uploadingPhoto} onChange={e=>{const file=e.currentTarget.files?.[0];void uploadAnimalPhoto(file);e.currentTarget.value="";}} /></label>}{photoError&&<p role="alert" className="text-sm text-error">{photoError}</p>}</div>
+      <div className="space-y-2 sm:col-span-2"><Label>Animal photo (optional)</Label><p className="text-xs text-on-surface-variant">Upload a clear photo so the review team and potential adopters can identify the animal. JPG, PNG or WebP; up to 10 MB. Large photos are optimized before upload.</p>{form.photoUrl ? <div className="flex items-start gap-3 rounded-lg border border-outline-variant p-3"><Photo src={form.photoUrl} alt="Uploaded animal" className="h-28 w-28 rounded-md object-cover" /><div className="min-w-0 flex-1"><p className="text-sm font-medium text-primary">Photo uploaded</p><p className="text-xs text-on-surface-variant">This photo will be included with the request and, if approved, the adoption listing.</p><Button type="button" variant="ghost" size="sm" className="mt-2" onClick={()=>{set("photoUrl","");setPhotoError("");}}><X className="h-4 w-4"/> Remove photo</Button></div></div> : <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-outline-variant bg-surface-container-low px-4 py-5 text-sm font-semibold hover:bg-surface-container-high"><ImagePlus className="h-5 w-5"/>{uploadingPhoto ? "Uploading photo…" : "Choose animal photo"}<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={uploadingPhoto} onChange={e=>{const file=e.currentTarget.files?.[0];void uploadAnimalPhoto(file);e.currentTarget.value="";}} /></label>}{photoError&&<p role="alert" className="text-sm text-error">{photoError}</p>}</div>
       <div><Label>Animal description and care needs</Label><Textarea required minLength={10} maxLength={2000} rows={3} value={form.description} onChange={e=>set("description",e.target.value)} placeholder="Temperament, health, vaccination, special needs…"/></div>
       <div><Label>Why does the animal need rehoming / assessment?</Label><Textarea required minLength={10} maxLength={2000} rows={3} value={form.rehomeReason} onChange={e=>set("rehomeReason",e.target.value)}/></div>
       <div><Label>Area / locality (not shown with your contact details)</Label><Input required value={form.locationText} onChange={e=>set("locationText",e.target.value)} placeholder="Neighbourhood, city"/></div>
