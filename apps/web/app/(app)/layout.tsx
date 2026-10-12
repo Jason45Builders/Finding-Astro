@@ -95,6 +95,23 @@ const CITIZEN_NAV_GROUPS = [
   { label: "More", hrefs: ["/memorials", "/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
 ];
 
+const STAFF_NAV_GROUPS = [
+  { label: "Your Space", hrefs: ["/dashboard"], collapsible: false },
+  { label: "Animal Welfare", hrefs: ["/animals", "/cases", "/respond", "/map", "/adopt", "/foster", "/lost-found", "/wildlife", "/safety", "/abc", "/cruelty", "/memorials"], collapsible: false },
+  { label: "Community & Support", hrefs: ["/funding", "/my/donations", "/community", "/collectives", "/partners", "/ambulance"], collapsible: false },
+  { label: "Operations", hrefs: ["/dispatch", "/adoption-admin", "/admin/verifications", "/admin/reimbursements", "/admin/cases", "/admin/partner-requests", "/admin/ambulance", "/admin/memorials", "/impact"], collapsible: false },
+  { label: "Administration", hrefs: ["/admin/users", "/admin/beta/feedback"], collapsible: false },
+  { label: "More", hrefs: ["/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
+];
+
+const ORG_NAV_GROUPS = [
+  { label: "Switch Space", hrefs: ["/collectives", "/dashboard"], collapsible: false },
+  { label: "Workspace", hrefs: ["/org/dashboard", "/org/animals", "/org/tasks", "/org/events"], collapsible: false },
+  { label: "People", hrefs: ["/org/volunteers", "/org/members"], collapsible: false },
+  { label: "Records & Finance", hrefs: ["/org/expenses", "/org/donations", "/org/documents"], collapsible: false },
+  { label: "Settings", hrefs: ["/org/settings"], collapsible: false },
+];
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -172,26 +189,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   const renderNavigation = () => {
-    if (showOrgNav) {
-      return (
-        <>
-          <p className="px-4 pt-2 pb-1 text-[10px] font-black uppercase tracking-widest text-outline">Workspace</p>
-          {navItems.map(item => <NavLink key={item.href} item={item} onClick={() => setMobileMenuOpen(false)} />)}
-        </>
-      );
-    }
-    if (isStaff) return navItems.map(item => <NavLink key={item.href} item={item} onClick={() => setMobileMenuOpen(false)} />);
+    const groups = showOrgNav ? ORG_NAV_GROUPS : isStaff ? STAFF_NAV_GROUPS : CITIZEN_NAV_GROUPS;
 
     return (
       <>
-        {CITIZEN_NAV_GROUPS.map((section) => {
-          const items = BASE_NAV_ITEMS.filter((item) => section.hrefs.includes(item.href));
+        {groups.map((section) => {
+          const items = navItems.filter((item) => section.hrefs.includes(item.href));
+          if (items.length === 0) return null;
+
+          const sectionHasActiveItem = items.some((item) => isActive(item.href));
           if (section.collapsible) {
             return (
-              <details key={section.label} className="group px-1 py-1" open={items.some((item) => isActive(item.href)) || undefined}>
+              <details key={section.label} className="group px-1 py-1" open={sectionHasActiveItem || undefined}>
                 <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-3 py-2 text-[10px] font-black uppercase tracking-widest text-outline hover:bg-surface-container [&::-webkit-details-marker]:hidden">
                   {section.label}
-                  <span className="text-xs transition-transform group-open:rotate-180">⌄</span>
+                  <span aria-hidden="true" className="text-xs transition-transform group-open:rotate-180">⌄</span>
                 </summary>
                 <div className="mt-1 space-y-0.5">
                   {items.map(item => <NavLink key={item.href} item={item} onClick={() => setMobileMenuOpen(false)} />)}
@@ -199,13 +211,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </details>
             );
           }
+
           return (
-            <div key={section.label} className="mb-2">
+            <section key={section.label} aria-label={section.label} className="mb-2">
               <p className="px-4 pt-3 pb-1 text-[10px] font-black uppercase tracking-widest text-outline">{section.label}</p>
               <div className="space-y-0.5">
                 {items.map(item => <NavLink key={item.href} item={item} onClick={() => setMobileMenuOpen(false)} />)}
               </div>
-            </div>
+            </section>
           );
         })}
       </>
