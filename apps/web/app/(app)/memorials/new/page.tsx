@@ -99,7 +99,7 @@ export default function NewMemorialPage() {
 
       if (memorial) {
         setSuccess(true);
-        setTimeout(() => router.push("/memorials"), 1500);
+        setTimeout(() => router.push("/memorials/" + memorial.id), 1500);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to create memorial");
