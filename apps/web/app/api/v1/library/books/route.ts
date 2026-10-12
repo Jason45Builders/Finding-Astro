@@ -27,7 +27,8 @@ export async function GET(req: NextRequest) {
 
     const { data, error, count } = await request;
     if (error) return serverError("Unable to load the library", error);
-    const books = (data ?? []).map((book) => ({ ...book, cover_url: book.cover_storage_path ? (String(book.cover_storage_path).startsWith("http") ? book.cover_storage_path : supabaseAdmin().storage.from("finding-astro-media").getPublicUrl(book.cover_storage_path).data.publicUrl) : null }));\n    return ok({ books, count: count ?? 0, limit, offset });
+    const books = (data ?? []).map((book) => ({ ...book, cover_url: book.cover_storage_path ? (String(book.cover_storage_path).startsWith("http") ? book.cover_storage_path : supabaseAdmin().storage.from("finding-astro-media").getPublicUrl(book.cover_storage_path).data.publicUrl) : null }));
+    return ok({ books, count: count ?? 0, limit, offset });
   } catch (error) {
     return serverError("Unable to load the library", error);
   }
