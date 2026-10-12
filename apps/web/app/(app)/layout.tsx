@@ -55,7 +55,7 @@ const ADMIN_NAV_ITEMS = [
   { label: "Reimbursements",     href: "/admin/reimbursements",    icon: DollarSign },
   { label: "Case Oversight",     href: "/admin/cases",             icon: ClipboardList },
   { label: "Partner Requests",   href: "/admin/partner-requests",  icon: Store },
-  { label: "Users",              href: "/admin/users",             icon: UsersIcon },
+  { label: "Users",              href: "/admin/users",             icon: UsersIcon },\n  { label: "Library",            href: "/admin/library",           icon: BookOpen },
   { label: "Feedback",      href: "/admin/beta/feedback",     icon: MessageSquare },
   { label: "Ambulance",      href: "/admin/ambulance",         icon: Ambulance },
   { label: "Memorial Wall",   href: "/admin/memorials",         icon: Heart },
@@ -101,7 +101,7 @@ const STAFF_NAV_GROUPS = [
   { label: "Animal Welfare", hrefs: ["/animals", "/cases", "/respond", "/map", "/adopt", "/foster", "/lost-found", "/wildlife", "/safety", "/abc", "/cruelty", "/memorials"], collapsible: false },
   { label: "Community & Support", hrefs: ["/funding", "/my/donations", "/community", "/collectives", "/partners", "/ambulance"], collapsible: false },
   { label: "Operations", hrefs: ["/dispatch", "/adoption-admin", "/rehome/review", "/admin/verifications", "/admin/reimbursements", "/admin/cases", "/admin/partner-requests", "/admin/ambulance", "/admin/memorials", "/impact"], collapsible: false },
-  { label: "Administration", hrefs: ["/admin/users", "/admin/beta/feedback"], collapsible: false },
+  { label: "Administration", hrefs: ["/admin/users", "/admin/beta/feedback", "/admin/library"], collapsible: false },
   { label: "More", hrefs: ["/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
 ];
 
