@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
-import { ArrowLeft, BookOpen, Check, FileText, ImagePlus, LoaderCircle, Plus, Save, Send, UploadCloud } from "lucide-react";
+import { ArrowLeft, ArrowDown, ArrowUp, BookOpen, Check, FileText, ImagePlus, LoaderCircle, Pencil, Plus, Save, Send, UploadCloud, X } from "lucide-react";
 
 type Book = {
   id: string; title: string; slug: string; subtitle?: string | null; description: string; author_name: string;
@@ -11,7 +11,7 @@ type Book = {
   status: "draft" | "published" | "archived"; is_featured: boolean; rights_confirmed_at?: string | null;
   published_at?: string | null; updated_at?: string | null;
 };
-type Chapter = { id: string; title: string; summary: string; sort_order: number; content_format: string; status: "draft" | "published" };
+type Chapter = { id: string; title: string; summary: string; sort_order: number; content_format: string; content_body?: { blocks?: Array<{ text?: string }> ; text?: string } | null; status: "draft" | "published" };
 type Payload = { success: boolean; data?: any; message?: string; code?: string };
 
 const emptyForm = {
@@ -46,7 +46,7 @@ export default function AdminLibraryPage() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [chapterTitle, setChapterTitle] = useState("");
   const [chapterText, setChapterText] = useState("");
-  const [chapterSummary, setChapterSummary] = useState("");
+  const [chapterSummary, setChapterSummary] = useState("");\n  const [editingChapterId, setEditingChapterId] = useState("");
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [completeFile, setCompleteFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -158,20 +158,48 @@ export default function AdminLibraryPage() {
     if (!selectedBook) return;
     setSaving(true); setError(""); setNotice("");
     try {
-      await requestApi(`/admin/library/books/${selectedBook.id}/chapters`, {
-        method: "POST",
-        body: JSON.stringify({
-          title: chapterTitle,
-          summary: chapterSummary,
-          contentFormat: "rich_text",
-          contentBody: { blocks: chapterText.split(/\n\s*\n/).map((text) => text.trim()).filter(Boolean).map((text) => ({ type: "paragraph", text })) },
-          status: "published",
-        }),
-      });
-      setChapterTitle(""); setChapterSummary(""); setChapterText("");
-      setNotice("Chapter added. It remains hidden from readers until its parent book is published.");
+      const chapterPayload = {
+        title: chapterTitle,
+        summary: chapterSummary,
+        contentFormat: "rich_text",
+        contentBody: { blocks: chapterText.split(/\n\s*\n/).map((text) => text.trim()).filter(Boolean).map((text) => ({ type: "paragraph", text })) },
+        status: "published",
+      };
+      if (editingChapterId) {
+        await requestApi(`/admin/library/books/${selectedBook.id}/chapters/${editingChapterId}`, { method: "PATCH", body: JSON.stringify(chapterPayload) });
+      } else {
+        await requestApi(`/admin/library/books/${selectedBook.id}/chapters`, { method: "POST", body: JSON.stringify(chapterPayload) });
+      }
+      setChapterTitle(""); setChapterSummary(""); setChapterText(""); setEditingChapterId("");
+      setNotice(editingChapterId ? "Chapter updated." : "Chapter added. It remains hidden from readers until its parent book is published.");
       await loadChapters(selectedBook.id);
     } catch (err) { setError(err instanceof Error ? err.message : "Unable to add chapter."); }
+    finally { setSaving(false); }
+  }
+
+  function editChapter(chapter: Chapter) {
+    setEditingChapterId(chapter.id);
+    setChapterTitle(chapter.title);
+    setChapterSummary(chapter.summary ?? "");
+    setChapterText(chapter.content_body?.blocks?.map((block) => block.text ?? "").filter(Boolean).join("\n\n") ?? chapter.content_body?.text ?? "");
+    setError(""); setNotice("");
+  }
+
+  async function moveChapter(index: number, direction: -1 | 1) {
+    if (!selectedBook) return;
+    const ordered = [...chapters].sort((a, b) => a.sort_order - b.sort_order);
+    const target = index + direction;
+    if (target < 0 || target >= ordered.length) return;
+    [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+    setSaving(true); setError(""); setNotice("");
+    try {
+      await requestApi(`/admin/library/books/${selectedBook.id}/chapters/reorder`, {
+        method: "POST",
+        body: JSON.stringify({ chapterIds: ordered.map((chapter) => chapter.id) }),
+      });
+      setNotice("Chapter order updated.");
+      await loadChapters(selectedBook.id);
+    } catch (err) { setError(err instanceof Error ? err.message : "Unable to reorder chapters."); }
     finally { setSaving(false); }
   }
 
@@ -211,8 +239,8 @@ export default function AdminLibraryPage() {
 
         <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
           <aside className="h-fit overflow-hidden rounded-2xl border border-outline/15 bg-surface">
-            <div className="flex items-center justify-between border-b border-outline/15 px-4 py-4"><h3 className="font-extrabold">Publications <span className="ml-1 text-xs font-semibold text-on-surface-variant">{books.length}</span></h3><button onClick={() => { setSelectedId(""); setForm(emptyForm); setError(""); setNotice(""); }} className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-on-primary"><Plus size={14} /> New</button></div>
-            <div className="max-h-[680px] overflow-y-auto p-2">{loading ? <div className="flex items-center gap-2 p-5 text-sm text-on-surface-variant"><LoaderCircle className="animate-spin" size={16} /> Loading publications…</div> : books.length === 0 ? <p className="p-5 text-sm text-on-surface-variant">No publications in this view yet.</p> : books.map((book) => <button key={book.id} onClick={() => { setSelectedId(book.id); setForm({ title: book.title, slug: book.slug, subtitle: book.subtitle ?? "", description: book.description ?? "", authorName: book.author_name, publicationType: book.publication_type, category: book.category, language: book.language }); setRightsConfirmed(false); setError(""); setNotice(""); }} className={`mb-1 w-full rounded-xl p-3 text-left transition ${selectedId === book.id ? "bg-primary/10 ring-1 ring-primary/25" : "hover:bg-surface-variant/60"}`}><div className="flex items-start justify-between gap-2"><span className="line-clamp-2 text-sm font-bold">{book.title}</span><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-extrabold uppercase ${book.status === "published" ? "bg-emerald-500/10 text-emerald-700" : book.status === "archived" ? "bg-surface-variant text-on-surface-variant" : "bg-amber-500/10 text-amber-800"}`}>{book.status}</span></div><p className="mt-1 text-xs text-on-surface-variant">{book.publication_type.replace("_", " ")} · {book.language.toUpperCase()}</p></button>)}</div>
+            <div className="flex items-center justify-between border-b border-outline/15 px-4 py-4"><h3 className="font-extrabold">Publications <span className="ml-1 text-xs font-semibold text-on-surface-variant">{books.length}</span></h3><button onClick={() => { setSelectedId(""); setForm(emptyForm); setEditingChapterId(""); setError(""); setNotice(""); }} className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-on-primary"><Plus size={14} /> New</button></div>
+            <div className="max-h-[680px] overflow-y-auto p-2">{loading ? <div className="flex items-center gap-2 p-5 text-sm text-on-surface-variant"><LoaderCircle className="animate-spin" size={16} /> Loading publications…</div> : books.length === 0 ? <p className="p-5 text-sm text-on-surface-variant">No publications in this view yet.</p> : books.map((book) => <button key={book.id} onClick={() => { setSelectedId(book.id); setForm({ title: book.title, slug: book.slug, subtitle: book.subtitle ?? "", description: book.description ?? "", authorName: book.author_name, publicationType: book.publication_type, category: book.category, language: book.language }); setEditingChapterId(""); setChapterTitle(""); setChapterSummary(""); setChapterText(""); setRightsConfirmed(false); setError(""); setNotice(""); }} className={`mb-1 w-full rounded-xl p-3 text-left transition ${selectedId === book.id ? "bg-primary/10 ring-1 ring-primary/25" : "hover:bg-surface-variant/60"}`}><div className="flex items-start justify-between gap-2"><span className="line-clamp-2 text-sm font-bold">{book.title}</span><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-extrabold uppercase ${book.status === "published" ? "bg-emerald-500/10 text-emerald-700" : book.status === "archived" ? "bg-surface-variant text-on-surface-variant" : "bg-amber-500/10 text-amber-800"}`}>{book.status}</span></div><p className="mt-1 text-xs text-on-surface-variant">{book.publication_type.replace("_", " ")} · {book.language.toUpperCase()}</p></button>)}</div>
           </aside>
 
           <section className="min-w-0 space-y-6">
@@ -222,7 +250,7 @@ export default function AdminLibraryPage() {
 
               <section className="rounded-2xl border border-outline/15 bg-surface p-5 sm:p-7"><div className="mb-5 flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-secondary-container text-on-secondary-container"><UploadCloud size={19} /></span><div><h3 className="font-extrabold">Publication assets</h3><p className="text-sm text-on-surface-variant">PDF files are private until a publication is explicitly published.</p></div></div><div className="grid gap-4 md:grid-cols-2"><label className="rounded-xl border border-dashed border-outline/30 p-4"><span className="flex items-center gap-2 text-sm font-bold"><FileText size={17} /> Complete book (PDF)</span><span className="mt-1 block text-xs leading-5 text-on-surface-variant">PDF only · maximum 10 MB per upload</span><input type="file" accept="application/pdf,.pdf" onChange={onFile(setCompleteFile)} className="mt-4 block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-surface-variant file:px-3 file:py-2 file:text-xs file:font-bold" /></label><label className="rounded-xl border border-dashed border-outline/30 p-4"><span className="flex items-center gap-2 text-sm font-bold"><ImagePlus size={17} /> Cover image</span><span className="mt-1 block text-xs leading-5 text-on-surface-variant">JPEG, PNG, or WebP · maximum 10 MB</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={onFile(setCoverFile)} className="mt-4 block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-surface-variant file:px-3 file:py-2 file:text-xs file:font-bold" /></label></div><button type="button" onClick={() => void uploadSelectedFiles()} disabled={uploading || (!completeFile && !coverFile)} className="mt-5 inline-flex items-center gap-2 rounded-xl border border-outline/20 px-4 py-3 text-sm font-bold disabled:opacity-50">{uploading ? <LoaderCircle className="animate-spin" size={16} /> : <UploadCloud size={16} />} Upload selected assets</button></section>
 
-              {selectedBook.publication_type !== "complete_file" && <section className="rounded-2xl border border-outline/15 bg-surface p-5 sm:p-7"><div className="mb-5"><p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Chapter editor</p><h3 className="mt-1 text-lg font-extrabold">Build the book chapter by chapter</h3><p className="mt-1 text-sm text-on-surface-variant">Separate paragraphs with a blank line. Structured text is stored as safe text blocks, not executable HTML.</p></div><form onSubmit={addChapter} className="space-y-4"><label className="block text-sm font-bold">Chapter title<input required maxLength={240} value={chapterTitle} onChange={(event) => setChapterTitle(event.target.value)} className="mt-2 w-full rounded-xl border border-outline/20 bg-background px-3 py-3 font-normal outline-none focus:border-primary" /></label><label className="block text-sm font-bold">Short summary (optional)<input maxLength={2000} value={chapterSummary} onChange={(event) => setChapterSummary(event.target.value)} className="mt-2 w-full rounded-xl border border-outline/20 bg-background px-3 py-3 font-normal outline-none focus:border-primary" /></label><label className="block text-sm font-bold">Chapter text<textarea required rows={8} value={chapterText} onChange={(event) => setChapterText(event.target.value)} placeholder="Write the chapter here. Separate paragraphs with a blank line." className="mt-2 w-full rounded-xl border border-outline/20 bg-background px-3 py-3 font-normal leading-6 outline-none focus:border-primary" /></label><button disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-on-primary disabled:opacity-50">{saving ? <LoaderCircle size={16} className="animate-spin" /> : <Plus size={16} />} Add chapter</button></form><div className="mt-6 border-t border-outline/15 pt-5"><h4 className="mb-3 font-extrabold">Chapters ({chapters.length})</h4>{chapters.length === 0 ? <p className="text-sm text-on-surface-variant">No chapters yet.</p> : <ol className="space-y-2">{chapters.map((chapter, index) => <li key={chapter.id} className="flex items-start gap-3 rounded-xl bg-background p-3"><span className="mt-0.5 text-xs font-bold text-primary">{String(index + 1).padStart(2, "0")}</span><div className="min-w-0 flex-1"><p className="text-sm font-bold">{chapter.title}</p><p className="mt-1 text-xs text-on-surface-variant">{chapter.summary || "No summary"} · {chapter.status}</p></div></li>)}</ol>}</div></section>}
+              {selectedBook.publication_type !== "complete_file" && <section className="rounded-2xl border border-outline/15 bg-surface p-5 sm:p-7"><div className="mb-5"><p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Chapter editor</p><h3 className="mt-1 text-lg font-extrabold">{editingChapterId ? "Edit chapter" : "Build the book chapter by chapter"}</h3><p className="mt-1 text-sm text-on-surface-variant">Separate paragraphs with a blank line. Structured text is stored as safe text blocks, not executable HTML.</p></div><form onSubmit={addChapter} className="space-y-4"><label className="block text-sm font-bold">Chapter title<input required maxLength={240} value={chapterTitle} onChange={(event) => setChapterTitle(event.target.value)} className="mt-2 w-full rounded-xl border border-outline/20 bg-background px-3 py-3 font-normal outline-none focus:border-primary" /></label><label className="block text-sm font-bold">Short summary (optional)<input maxLength={2000} value={chapterSummary} onChange={(event) => setChapterSummary(event.target.value)} className="mt-2 w-full rounded-xl border border-outline/20 bg-background px-3 py-3 font-normal outline-none focus:border-primary" /></label><label className="block text-sm font-bold">Chapter text<textarea required rows={8} value={chapterText} onChange={(event) => setChapterText(event.target.value)} placeholder="Write the chapter here. Separate paragraphs with a blank line." className="mt-2 w-full rounded-xl border border-outline/20 bg-background px-3 py-3 font-normal leading-6 outline-none focus:border-primary" /></label><div className="flex flex-wrap gap-2"><button disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-on-primary disabled:opacity-50">{saving ? <LoaderCircle size={16} className="animate-spin" /> : editingChapterId ? <Save size={16} /> : <Plus size={16} />} {editingChapterId ? "Save chapter" : "Add chapter"}</button>{editingChapterId && <button type="button" onClick={() => { setEditingChapterId(""); setChapterTitle(""); setChapterSummary(""); setChapterText(""); }} className="inline-flex items-center gap-2 rounded-xl border border-outline/20 px-4 py-3 text-sm font-bold"><X size={15} /> Cancel edit</button>}</div></form><div className="mt-6 border-t border-outline/15 pt-5"><h4 className="mb-3 font-extrabold">Chapters ({chapters.length})</h4>{chapters.length === 0 ? <p className="text-sm text-on-surface-variant">No chapters yet.</p> : <ol className="space-y-2">{chapters.map((chapter, index) => <li key={chapter.id} className="flex items-start gap-3 rounded-xl bg-background p-3"><span className="mt-0.5 text-xs font-bold text-primary">{String(index + 1).padStart(2, "0")}</span><div className="min-w-0 flex-1"><p className="text-sm font-bold">{chapter.title}</p><p className="mt-1 text-xs text-on-surface-variant">{chapter.summary || "No summary"} · {chapter.status}</p></div><div className="flex shrink-0 gap-1"><button type="button" aria-label={`Edit ${chapter.title}`} onClick={() => editChapter(chapter)} className="grid h-8 w-8 place-items-center rounded-lg border border-outline/20 hover:bg-surface-variant"><Pencil size={14} /></button><button type="button" aria-label={`Move ${chapter.title} up`} disabled={index === 0 || saving} onClick={() => void moveChapter(index, -1)} className="grid h-8 w-8 place-items-center rounded-lg border border-outline/20 hover:bg-surface-variant disabled:opacity-30"><ArrowUp size={14} /></button><button type="button" aria-label={`Move ${chapter.title} down`} disabled={index === chapters.length - 1 || saving} onClick={() => void moveChapter(index, 1)} className="grid h-8 w-8 place-items-center rounded-lg border border-outline/20 hover:bg-surface-variant disabled:opacity-30"><ArrowDown size={14} /></button></div></li>)}</ol>}</div></section>}
 
               <section className="rounded-2xl border border-outline/15 bg-surface p-5 sm:p-7"><h3 className="font-extrabold">Publication controls</h3><p className="mt-1 text-sm leading-6 text-on-surface-variant">Before publishing, confirm that Finding Astro owns the publication or has permission to distribute it. Published books are visible in the reader library.</p>{selectedBook.status !== "published" && selectedBook.status !== "archived" && <label className="mt-4 flex items-start gap-3 rounded-xl bg-background p-4 text-sm"><input type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} className="mt-1 h-4 w-4 accent-primary" /><span>I confirm that Finding Astro has the necessary rights or permission to publish this content.</span></label>}<div className="mt-5 flex flex-wrap gap-3">{selectedBook.status !== "published" && selectedBook.status !== "archived" && <button type="button" disabled={saving || !rightsConfirmed} onClick={() => void publishBook()} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-on-primary disabled:opacity-45"><Send size={15} /> Publish</button>}{selectedBook.status === "published" && <button type="button" disabled={saving} onClick={() => void changeStatus("draft")} className="rounded-xl border border-outline/20 px-4 py-3 text-sm font-bold disabled:opacity-50">Unpublish</button>}{selectedBook.status !== "archived" && <button type="button" disabled={saving} onClick={() => void changeStatus("archived")} className="rounded-xl border border-outline/20 px-4 py-3 text-sm font-bold text-error disabled:opacity-50">Archive</button>}{selectedBook.status === "published" && <Link href={`/library/${selectedBook.slug}`} target="_blank" className="inline-flex items-center gap-2 rounded-xl border border-outline/20 px-4 py-3 text-sm font-bold">Preview reader ↗</Link>}</div></section>
             </>}
