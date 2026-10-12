@@ -122,6 +122,14 @@ export default function OrgFosterPage() {
     }
   };
 
+  const handleAssignmentStatus = async (assignmentId: string, status: "active" | "completed" | "returned") => {
+    try {
+      const updated = await api.updateOrgFosterAssignment(assignmentId, status);
+      setAssignments((prev) => prev.map((item) => item.id === assignmentId ? updated : item));
+      setHomes(await api.listOrgFosterHomes());
+    } catch (err: any) { alert(err?.message || "Failed to update foster assignment"); }
+  };
+
   const handleAssignSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -209,6 +217,8 @@ export default function OrgFosterPage() {
                     <Badge variant={a.status === "active" ? "success" : a.status === "completed" ? "neutral" : "warning"}>{a.status}</Badge>
                      <span className="text-xs text-on-surface-variant">Started: {formatDateSafe(a.startDate, "TBD")}</span>
                   </div>
+                  {a.status === "pending" && <Button size="sm" variant="outline" onClick={() => handleAssignmentStatus(a.id, "active")}>Activate placement</Button>}
+                  {a.status === "active" && <div className="flex flex-wrap gap-2 mt-2"><Button size="sm" variant="outline" onClick={() => handleAssignmentStatus(a.id, "completed")}>Complete</Button><Button size="sm" variant="outline" onClick={() => handleAssignmentStatus(a.id, "returned")}>Return animal</Button></div>}
                 </div>
               </div>
             </Card>
