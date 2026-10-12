@@ -29,7 +29,6 @@ export default function TransportRequestPage() {
   const [detectingPickup, setDetectingPickup] = useState(false);
   const [destLat, setDestLat] = useState<number | null>(null);
   const [destLng, setDestLng] = useState<number | null>(null);
-  const [detectingDest, setDetectingDest] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -41,18 +40,23 @@ export default function TransportRequestPage() {
   if (!user) return null;
 
   const detectPickup = () => {
+    setError(null);
+    if (!navigator.geolocation) {
+      setError("This browser does not support location detection. Enter the pickup coordinates manually.");
+      return;
+    }
     setDetectingPickup(true);
-    navigator.geolocation?.getCurrentPosition(
-      pos => { setPickupLat(pos.coords.latitude); setPickupLng(pos.coords.longitude); setDetectingPickup(false); },
-      () => setDetectingPickup(false)
-    );
-  };
-
-  const detectDest = () => {
-    setDetectingDest(true);
-    navigator.geolocation?.getCurrentPosition(
-      pos => { setDestLat(pos.coords.latitude); setDestLng(pos.coords.longitude); setDetectingDest(false); },
-      () => setDetectingDest(false)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setPickupLat(pos.coords.latitude);
+        setPickupLng(pos.coords.longitude);
+        setDetectingPickup(false);
+      },
+      () => {
+        setError("Pickup location could not be detected. Allow location permission or enter the coordinates manually.");
+        setDetectingPickup(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
     );
   };
 
@@ -155,8 +159,8 @@ export default function TransportRequestPage() {
             </Label>
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 grid grid-cols-2 gap-2">
-                <Input type="text" placeholder="Latitude" readOnly value={pickupLat !== null ? pickupLat.toFixed(6) : ""} className="rounded-md" />
-                <Input type="text" placeholder="Longitude" readOnly value={pickupLng !== null ? pickupLng.toFixed(6) : ""} className="rounded-md" />
+                <Input type="number" step="any" min="-90" max="90" placeholder="Latitude" value={pickupLat ?? ""} onChange={(e) => setPickupLat(e.target.value.trim() === "" ? null : Number(e.target.value))} className="rounded-md" required />
+                <Input type="number" step="any" min="-180" max="180" placeholder="Longitude" value={pickupLng ?? ""} onChange={(e) => setPickupLng(e.target.value.trim() === "" ? null : Number(e.target.value))} className="rounded-md" required />
               </div>
               <Button type="button" variant="ghost" onClick={detectPickup} disabled={detectingPickup} className="bg-surface-container-high shrink-0">
                 <MapPin className="w-4 h-4" />{detectingPickup ? "Detecting..." : "Detect Location"}
@@ -173,20 +177,38 @@ export default function TransportRequestPage() {
 
           <div className="space-y-2">
             <Label className="mb-0 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" /> Destination
+              <MapPin className="w-3.5 h-3.5" /> Destination Coordinates
             </Label>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 grid grid-cols-2 gap-2">
-                <Input type="text" placeholder="Latitude" readOnly value={destLat !== null ? destLat.toFixed(6) : ""} className="rounded-md" />
-                <Input type="text" placeholder="Longitude" readOnly value={destLng !== null ? destLng.toFixed(6) : ""} className="rounded-md" />
-              </div>
-              <Button type="button" variant="ghost" onClick={detectDest} disabled={detectingDest} className="bg-surface-container-high shrink-0">
-                <MapPin className="w-4 h-4" />{detectingDest ? "Detecting..." : "Detect Location"}
-              </Button>
+            <p className="text-xs text-on-surface-variant">
+              Enter the clinic or hospital coordinates. The current-location button is only for the pickup point.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                type="number"
+                step="any"
+                min="-90"
+                max="90"
+                placeholder="Latitude"
+                value={destLat ?? ""}
+                onChange={(e) => setDestLat(e.target.value.trim() === "" ? null : Number(e.target.value))}
+                className="rounded-md"
+                required
+              />
+              <Input
+                type="number"
+                step="any"
+                min="-180"
+                max="180"
+                placeholder="Longitude"
+                value={destLng ?? ""}
+                onChange={(e) => setDestLng(e.target.value.trim() === "" ? null : Number(e.target.value))}
+                className="rounded-md"
+                required
+              />
             </div>
-            {destLat !== null && destLng !== null && (
+            {destLat !== null && destLng !== null && Number.isFinite(destLat) && Number.isFinite(destLng) && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary">
-                <ShieldCheck className="w-3.5 h-3.5" /> GEO-TAGGED
+                <ShieldCheck className="w-3.5 h-3.5" /> COORDINATES ENTERED
               </span>
             )}
             <Input type="text" value={form.destText} onChange={e => setForm(f => ({ ...f, destText: e.target.value }))}
