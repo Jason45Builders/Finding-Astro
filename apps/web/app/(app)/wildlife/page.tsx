@@ -106,7 +106,7 @@ function WildlifePageInner() {
   if (loading) return <PageSpinner label="Loading wildlife guidance..." />;
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 max-w-2xl mx-auto min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight flex items-center gap-2">
           <Bird className="w-6 h-6 text-primary" /> Wildlife Rescue
@@ -166,7 +166,7 @@ function WildlifePageInner() {
             </p>
             <p className="text-sm font-bold">{selectedSpecies.handlingRisk}</p>
           </div>
-          <Card className="p-5">
+          <Card className="p-3 sm:p-5">
             <h3 className="font-bold text-on-surface mb-2">What to do</h3>
             <p className="text-sm text-on-surface-variant leading-relaxed">{selectedSpecies.publicGuidance}</p>
           </Card>
@@ -174,7 +174,7 @@ function WildlifePageInner() {
             <h3 className="font-bold mb-2 flex items-center gap-1.5"><X className="w-4 h-4" /> Do NOT</h3>
             <p className="text-sm leading-relaxed">{selectedSpecies.doNotDo}</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col min-[420px]:flex-row gap-2 sm:gap-3">
             <Button variant="ghost" className="flex-1 bg-surface-container-high" onClick={() => setStep("select-species")}>Back</Button>
             <Button variant="primary" className="flex-1" onClick={() => setStep("report")}>I understand — File Rescue Report</Button>
           </div>
@@ -182,7 +182,7 @@ function WildlifePageInner() {
       )}
 
       {step === "report" && selectedSpecies && (
-        <Card className="p-6 space-y-5">
+        <Card className="p-4 sm:p-6 space-y-4 sm:space-y-5">
           <h2 className="font-title-md text-title-md text-on-surface">File Wildlife Rescue — {selectedSpecies.displayName}</h2>
           {!user && (
             <div className="bg-secondary-container text-on-secondary-container rounded-md p-4 text-sm font-bold">
@@ -248,7 +248,7 @@ function WildlifePageInner() {
       )}
 
       {step === "success" && (
-        <Card className="p-10 text-center space-y-5">
+        <Card className="p-5 sm:p-10 text-center space-y-4 sm:space-y-5">
           <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
             <CheckCircle className="w-9 h-9 text-green-600" />
           </div>
