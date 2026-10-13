@@ -95,7 +95,7 @@ export default function AdminVerificationsPage() {
   const pending = items.filter(i => i.status === "pending");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Verification Queue</h1>
         <p className="text-sm text-on-surface-variant mt-1">Review and approve organisation and identity verifications.</p>
@@ -117,7 +117,7 @@ export default function AdminVerificationsPage() {
       ) : (
         <div className="space-y-4 animate-stagger">
           {pending.map(item => (
-            <Card key={item.id} className="p-6 space-y-4">
+            <Card key={item.id} className="p-3 sm:p-6 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
                   {tab === "ngo" ? (
