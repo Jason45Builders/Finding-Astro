@@ -65,3 +65,81 @@
   max-width: none !important;
   max-height: none !important;
 }
+
+
+/* Mobile-first guardrails shared by every route. Keep content readable without
+   hiding overflow; wide data regions should scroll within their own containers. */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    min-width: 320px;
+  }
+
+  img, video, canvas, svg {
+    max-width: 100%;
+  }
+
+  input, select, textarea {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  .min-w-0 {
+    min-width: 0;
+  }
+
+  .mobile-scroll-x {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .break-words-safe {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+}
+
+@media (max-width: 639px) {
+  /* Keep long IDs, URLs and imported data from forcing a page wider than the viewport. */
+  pre, code {
+    overflow-wrap: anywhere;
+  }
+
+  pre {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* Native controls remain usable on narrow phones and avoid iOS input zoom. */
+  input, select, textarea {
+    font-size: 16px;
+  }
+
+  /* Tables are common in admin/finance screens; preserve all columns via local scrolling. */
+  .table-scroll, [data-mobile-scroll="table"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
