@@ -13,6 +13,7 @@ Production branch: `ui-refinement` (per user direction; do not deploy this branc
 | UX-02 | Prioritize Rescue Collectives on citizen dashboard | Implemented on branch; preview pending | Moved the existing collective membership and creation cards directly after quick actions, before the activity feed, so users can find them without scrolling through feed content. |
 | UX-03 | Compact mobile dashboard layout | Implemented on branch; verification pending | Reduced mobile padding, spacing, icon and heading sizes across the welcome hero, quick actions, collectives, impact and case panels; shortened mobile activity-feed imagery and card spacing while preserving larger breakpoints. |
 | UX-04 | Single-row mobile quick actions and compact collectives | Implemented on branch; verification pending | Arranged Report SOS, Browse Animals, Find a Vet and My Cases in a four-column mobile row; placed the two Rescue Collective options side by side with smaller headings, icons, padding and mobile descriptions hidden. Desktop sizing is preserved at larger breakpoints. |
+| UX-05 | Compact Community Pulse feed | Implemented on branch; verification pending | Reduced the section header, refresh control, filter chips, card image heights, metadata, text sizes, card padding and CTA size on mobile; feed cards use a compact two-column mobile grid while retaining the larger two-column desktop presentation. |
 | API-01 | Feed data access | Done for MVP | Existing authenticated APIs; bounded requests and existing internal destinations. |
 | UI-01 | Feed states and filters | Implemented; validation pending | Loading, partial error, empty, manual refresh, filters and timestamps. |
 | UI-02 | Visual feed redesign | Implemented on branch; preview pending | Replaced divider rows with responsive media cards, image-backed case/story cards, image fallbacks, urgency/featured labels, location and time metadata, and stronger card hierarchy. |
@@ -32,7 +33,8 @@ Production branch: `ui-refinement` (per user direction; do not deploy this branc
 - Latest feed redesign commit: `9cd6223af329855d31798a637f1f69c020acb196`
 - Rescue Collectives reordered above the activity feed in commit `80bd676db0492b4c5f4105de2b37b579e2f19454`.
 - Mobile dashboard compaction: `7a199e85c7e7d6e760e215245a9fdacedc1b28ff`; mobile activity-feed compaction: `670dcc8b61aa27f9027b747e39cfb51fa7502c1c`.
-- Single-row mobile quick actions and compact side-by-side Rescue Collective cards: commit recorded in the latest dashboard update.
+- Single-row mobile quick actions and compact side-by-side Rescue Collective cards: `827ffe887384b2b4c139ae980705990f8e4f342d`.
+- Community Pulse mobile compaction: `c0d5a74ca89856e2c707d067d1cf997bdbde1fb1`.
 - The latest revisions have not yet been browser-verified. Do not treat a successful deployment as complete UX verification.
 
 ## Working log
@@ -43,3 +45,4 @@ Production branch: `ui-refinement` (per user direction; do not deploy this branc
 - Moved the Rescue Collectives section above the activity feed while preserving membership loading, collective navigation and the create-team CTA.
 - Tightened mobile spacing and sizing across dashboard sections and activity feed; larger screen breakpoints retain more generous spacing. Production deployment and browser verification remain to be confirmed.
 - Arranged the four quick actions in a compact horizontal row on mobile and reduced the two Rescue Collective cards to a compact side-by-side layout.
+- Redesigned Community Pulse for mobile with a tighter header and filters, shorter image cards, denser text and actions, and a two-column card grid.
