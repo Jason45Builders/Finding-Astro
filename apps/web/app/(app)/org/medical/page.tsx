@@ -64,7 +64,7 @@ export default function OrgMedicalPage() {
           <EmptyState icon={Stethoscope} title="No animals found" description="Animals under your organization's care will appear here with their medical records." />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {animals.map((animal) => {
             const records = medicalRecords[animal.id] ?? [];
             const latestRecord = records[0];
