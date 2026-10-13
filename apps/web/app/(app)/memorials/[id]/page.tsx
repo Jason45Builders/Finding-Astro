@@ -77,7 +77,7 @@ export default function MemorialDetailPage() {
             <Badge variant={memorial.category === "natural_death" ? "success" : "danger"} className="border border-white/20 bg-white/90">{memorial.category === "natural_death" ? "In loving memory" : "Suspicious death / cruelty"}</Badge>
             {memorial.isVerified && <Badge variant="info" className="border border-white/20 bg-white/90"><CheckCircle2 className="mr-1 h-3 w-3" /> Reviewed</Badge>}
           </div>
-          <div className="absolute bottom-0 left-0 right-0 p-5 text-white sm:p-8">
+          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-5 text-white sm:p-8">
             <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/70"><Heart className="h-3.5 w-3.5 fill-current" /> Always in our hearts</p>
             <h1 className="mt-2 text-3xl font-black leading-tight sm:text-5xl">{memorial.dogName || "A beloved community dog"}</h1>
             <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/85">
@@ -87,14 +87,14 @@ export default function MemorialDetailPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 p-5 sm:grid-cols-[minmax(0,1fr)_260px] sm:p-8">
+        <div className="grid grid-cols-1 gap-3 sm:gap-6 p-3 sm:grid-cols-[minmax(0,1fr)_260px] sm:p-8">
           <div className="space-y-6">
             <section>
               <h2 className="flex items-center gap-2 text-lg font-black text-on-surface"><Heart className="h-5 w-5 text-primary" /> Their story</h2>
               <p className="mt-3 whitespace-pre-line text-sm leading-7 text-on-surface-variant sm:text-base">{memorial.description}</p>
             </section>
             {memorial.bestMemory && (
-              <section className="rounded-xl border border-primary/15 bg-primary/5 p-5 sm:p-6">
+              <section className="rounded-xl border border-primary/15 bg-primary/5 p-3 sm:p-5 sm:p-6">
                 <Quote className="h-6 w-6 text-primary/70" />
                 <p className="mt-3 whitespace-pre-line text-base italic leading-relaxed text-on-surface sm:text-lg">“{memorial.bestMemory}”</p>
                 <p className="mt-3 text-[10px] font-black uppercase tracking-[0.15em] text-outline">A memory to keep</p>
