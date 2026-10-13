@@ -1,37 +1,37 @@
 # UI Refinement — Implementation Tracker
 
 Branch: `ui-refinement`  
-Production: `Working` (protected by process; do not merge without approval)
+Production: `Working` (do not merge without explicit approval)
 
 | ID | Work item | Status | Completion evidence / next action |
 |---|---|---|---|
-| UX-01 | Research dashboard vs activity hub | Done | Recommendation: evolve the current dashboard; do not replace existing utility. See `docs/ui-refinement-blueprint.md`. |
-| DOC-01 | Create working blueprint | In progress | Commit blueprint to this branch. |
-| DOC-02 | Create implementation tracker | In progress | Commit tracker to this branch; update it as implementation proceeds. |
-| AUD-01 | Audit current dashboard and navigation | Done | Existing dashboard has quick actions, personal cases, collectives, impact and nearby-animal lookup; preserve these. |
-| AUD-02 | Verify feed data sources and visibility | Done for MVP | Cases use the existing role-aware API plus a server-side `publicFeed=true` visibility filter; stories use the published-only stories endpoint. |
-| API-01 | Feed data access | Done for MVP | Existing authenticated APIs; bounded case/story requests; stable source IDs and destinations. |
-| API-02 | Implement feed data access | Done for MVP | Existing source APIs reused; no new aggregate endpoint or database table. |
-| UI-01 | Build Home activity feed states | Implemented; validation pending | Loading, partial-error, empty, refresh, filters, timestamps and focus styling. |
-| UI-02 | Integrate feed without deleting dashboard tools | Implemented; validation pending | Feed placed after quick actions; existing dashboard sections remain. |
-| UI-03 | Mobile and keyboard usability | QA pending | Horizontal filter row, keyboard-operable controls, no auto-refresh/reordering. |
+| UX-01 | Research dashboard vs activity hub | Done | Evolve the current dashboard; preserve existing utility. See `docs/ui-refinement-blueprint.md`. |
+| DOC-01 | Create working blueprint | Done | Blueprint committed to this branch. |
+| DOC-02 | Create implementation tracker | Done | This tracker records implementation and verification status. |
+| AUD-01 | Audit current dashboard and navigation | Done | Existing quick actions, personal cases, collectives, impact and nearby-animal lookup remain in place. |
+| AUD-02 | Verify feed data sources and visibility | Done for MVP | Cases use the role-aware API and server-side `publicFeed=true` visibility filter; stories use the published-only stories endpoint. |
+| API-01 | Feed data access | Done for MVP | Existing authenticated APIs; bounded requests and existing internal destinations. |
+| UI-01 | Feed states and filters | Implemented; validation pending | Loading, partial error, empty, manual refresh, filters and timestamps. |
+| UI-02 | Visual feed redesign | Implemented on branch; preview pending | Replaced divider rows with responsive media cards, image-backed case/story cards, image fallbacks, urgency/featured labels, location and time metadata, and stronger card hierarchy. |
+| UI-03 | Mobile and keyboard usability | QA pending | Responsive one/two-column cards, horizontally scrollable filters, keyboard focus styles; needs browser verification. |
 | TEST-01 | Add/adjust targeted tests | Not started | Cover role visibility, empty results, ordering, errors and malformed filter input. |
-| TEST-02 | Run typecheck/lint/tests/build | Pending | No connected local runtime; no CI run found for the branch commit. Must run before release. |
-| QA-01 | Preview verification | Blocked | Vercel deployment API returned HTTP 402 due to daily deployment quota. Retry after 24 hours or resolve the Vercel plan/quota; no preview has been validated. |
-| RELEASE-01 | Open PR to Working after verification | Not started | Do not merge until the user reviews and explicitly approves. |
+| TEST-02 | Run typecheck/lint/tests/build | Pending | No connected local runtime; must run before release. |
+| QA-01 | Preview verification | Partially available | The prior revision `0fc384a` reached Vercel `READY`; it does not include the latest card redesign. A deployment for the latest commit was rejected by Vercel with HTTP 402 `api-deployments-free-per-day` (retry after 24 hours). |
+| RELEASE-01 | Review and merge to Working | Not started | Keep PR #8 unmerged until checks pass and the user explicitly approves. |
 
 ## Current implementation
 
-- Added `HomeActivityFeed.tsx` using the existing role-aware cases API and published-only community stories API.
-- Added bounded `api.listCommunityStories()` client method and integrated the feed after existing quick actions.
-- Added manual refresh, filters, loading/partial-error/empty states, timestamps and accessible focus styling. The cases API applies a server-side `publicFeed=true` filter so held-for-review records are not returned to unrelated users.
+- `HomeActivityFeed.tsx` combines open/visible cases and published community stories.
+- The visual refresh uses real case evidence images (`evidenceUrls`) and story media (`media_urls`) where available. A designed gradient/icon fallback remains when a record has no usable photo.
+- Cards show source type, grounded urgency/featured state, status, timestamp, location, concise summary and a direct action. Responsive grid and loading skeletons use the existing app design tokens.
+- The server-side case feed filter prevents held-for-review records from being returned to unrelated users.
 - Draft PR: https://github.com/Jason45Builders/Finding-Astro/pull/8
-- Typecheck/build/preview QA remain pending; do not merge until verified. Vercel preview creation returned HTTP 402 (`api-deployments-free-per-day`), so no preview is available; retry after 24 hours or resolve the plan quota.
+- Latest UI change commit: `9cd6223af329855d31798a637f1f69c020acb196`
+- Latest revision has not yet been deployed or visually/browser tested. Do not merge until verified.
 
 ## Working log
 
 ### 2026-10-13
-- Confirmed work branch is `ui-refinement`; production branch remains `Working`.
-- Inspected the existing dashboard, case list API, app navigation and package scripts.
-- Key safety finding: the case API has existing role-aware visibility behavior; a feed must preserve these rules rather than query and expose raw case records.
-- Next: inspect existing community story and notification APIs, then implement the smallest useful feed from confirmed sources.
+- Confirmed `ui-refinement` is the work branch; `Working` remains untouched.
+- Redesigned feed cards with media-first presentation and clearer visual hierarchy.
+- Attempted a preview deployment for the latest commit; Vercel daily deployment API quota returned HTTP 402. The previous commit's preview is READY, but is not a validation of the new UI.
