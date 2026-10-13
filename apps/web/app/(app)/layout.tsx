@@ -270,7 +270,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen md:h-screen md:min-h-0 overflow-y-auto pb-20 md:pb-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen md:h-screen md:min-h-0 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
         {/* Top bar */}
         <header className="bg-surface border-b-2 border-outline-variant min-h-16 flex items-center justify-between gap-2 px-3 sm:px-gutter z-20 shrink-0 sticky top-0">
           <div className="flex items-center gap-3">
