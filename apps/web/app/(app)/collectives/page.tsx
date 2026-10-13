@@ -131,9 +131,9 @@ export default function MyCollectivesPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 min-w-0">
               {memberships.map((membership) => (
-                <Card key={membership.orgId} className="p-4 transition-colors hover:border-primary/50 sm:p-5">
+                <Card key={membership.orgId} className="p-3 sm:p-4 transition-colors hover:border-primary/50 sm:p-5">
                   <div className="flex items-start gap-3">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                       <Building2 className="h-5 w-5" />
@@ -173,7 +173,7 @@ export default function MyCollectivesPage() {
         </div>
       </section>
 
-      <div className="flex items-start gap-3 rounded-xl border border-outline-variant bg-surface-container-low p-4">
+      <div className="flex items-start gap-2 sm:gap-3 rounded-xl border border-outline-variant bg-surface-container-low p-3 sm:p-4">
         <HeartHandshake className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
         <div>
           <p className="text-sm font-bold text-on-surface">One account, separate group workspaces</p>
