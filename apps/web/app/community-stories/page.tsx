@@ -116,7 +116,7 @@ export default function PawprintsMemoriesPage(){
   <header className="border-b border-outline-variant/40 bg-surface">
    <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 md:px-8">
     <div><Link href="/dashboard" className="text-sm font-semibold text-primary hover:underline">← Dashboard</Link><p className="mt-1 text-xs uppercase tracking-[.18em] text-on-surface-variant">Finding Astro community</p></div>
-    <button onClick={()=>setComposerOpen(v=>!v)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-white hover:opacity-90"><Sparkles size={17}/> Share a story</button>
+    <div className="flex items-center gap-2"><Link href="/community-stories/saved" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-outline-variant px-4 py-2 text-sm font-semibold hover:bg-surface-container"><Bookmark size={16}/> Saved</Link><button onClick={()=>setComposerOpen(v=>!v)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-white hover:opacity-90"><Sparkles size={17}/> Share a story</button></div>
    </div>
   </header>
   <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
@@ -157,7 +157,7 @@ export default function PawprintsMemoriesPage(){
        <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{CATEGORY_LABELS[story.category]||"Community story"}</span>{story.is_featured&&<span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900"><Sparkles size={12}/> Community highlight</span>}</div>
        <h3 className="mt-3 text-xl font-extrabold leading-snug">{story.title}</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-on-surface-variant">{story.body.length>280?story.body.slice(0,280)+"…":story.body}</p>
        {(story.animal_name||story.animal_species||story.broad_location)&&<p className="mt-3 text-xs text-on-surface-variant">{[story.animal_name,story.animal_species,story.broad_location].filter(Boolean).join(" · ")}</p>}
-       <div className="mt-4 flex items-center justify-between gap-2 border-t border-outline-variant/60 pt-4 text-xs text-on-surface-variant"><span className="font-semibold">{story.author_name||"Community member"}</span><span>{dateLabel(story.published_at)}</span></div>
+       <div className="mt-4 flex items-center justify-between gap-2 border-t border-outline-variant/60 pt-4 text-xs text-on-surface-variant"><Link href={`/community-stories/people/${story.author_id}`} className="font-semibold hover:text-primary hover:underline">{story.author_name||"Community member"}</Link><span>{dateLabel(story.published_at)}</span></div>
        <div className="mt-4 flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1">{REACTIONS.map(r=><button key={r.value} disabled={busyStory===story.id} onClick={()=>void reactTo(story.id,r.value)} aria-pressed={reactions[story.id]===r.value} className={`rounded-full border px-2.5 py-2 text-xs font-semibold ${reactions[story.id]===r.value?"border-primary bg-primary/10":"border-outline-variant hover:bg-surface-container"}`} title={r.label}>{r.emoji}</button>)}</div>
         <span className="text-xs text-on-surface-variant">{story.reaction_count} reactions</span>
