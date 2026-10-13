@@ -86,11 +86,11 @@ export default function OrgAnimalsPage() {
       </Card>
 
       {filtered.length === 0 ? (
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <EmptyState icon={PawPrint} title="No animals found" description={groupType === "rescue_collective" ? "Animals your rescue collective owns or coordinates will appear here." : "Animals assigned to your organization will appear here."} />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filtered.map((animal) => (
             <Link key={animal.id} href={`/animals/${animal.id}`}>
               <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
