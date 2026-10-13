@@ -98,7 +98,7 @@ export default function FundingCaseDetails() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
         {/* Left: Funding Details */}
-        <Card className="lg:col-span-7 p-4 sm:p-6 sm:p-8 space-y-4 sm:space-y-6">
+        <Card className="lg:col-span-7 p-4 sm:p-8 space-y-4 sm:space-y-6">
           <div>
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-primary-container text-on-primary-container mb-3">
               Medical Fundraiser
