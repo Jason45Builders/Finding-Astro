@@ -83,7 +83,7 @@ export default function OrgFollowupsPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface">Follow-ups</h1>
           <p className="text-sm text-on-surface-variant">Post-adoption and medical follow-up scheduler</p>
