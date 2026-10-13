@@ -1,7 +1,7 @@
 export default function LegalPage() {
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="font-headline-lg text-headline-lg text-on-surface">Legal</h1>
+    <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6 min-w-0">
+      <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface">Legal</h1>
       <p className="text-sm text-on-surface-variant">Operational policies, legal framework, and complaint procedures for Finding Astro.</p>
 
       <section className="space-y-3">
