@@ -73,7 +73,7 @@ export default function PartnersPage() {
   const currentTab = TABS.find((t) => t.key === activeTab)!;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface tracking-tight">
           Partner Network
@@ -116,9 +116,9 @@ export default function PartnersPage() {
       {loading ? (
         <PageSpinner />
       ) : filtered.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-stagger">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 animate-stagger">
           {filtered.map((p) => (
-            <Card key={p.id} interactive className="p-6 flex flex-col justify-between gap-4">
+            <Card key={p.id} interactive className="p-4 sm:p-6 flex flex-col justify-between gap-3 sm:gap-4">
               <div>
                 <StatusBadge token={statusToken.partnerType(p.type)} className="mb-3" />
                 <h3 className="font-bold text-on-surface text-base leading-snug">{p.name}</h3>
