@@ -150,6 +150,15 @@
     width: 100%;
   }
 
+  /* Constrain fixed-width widgets and dialogs to the available phone viewport. */
+  main [class~="w-96"],
+  main [class~="w-80"],
+  main [class~="w-72"],
+  main [class~="w-64"],
+  main [class*="w-["] {
+    max-width: 100%;
+  }
+
   /* Compact oversized card spacing consistently across every routed page. */
   main .p-8 { padding: 1rem; }
   main .p-6 { padding: 1rem; }
