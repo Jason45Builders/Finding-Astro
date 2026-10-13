@@ -58,7 +58,7 @@ export default function AdminBetaFeedbackPage() {
   if (!isLoading && (!user || !["admin", "govt", "ngo", "hospital"].includes(user.role))) {
     return (
       <div className="max-w-2xl mx-auto text-center space-y-6">
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <h1 className="font-headline-lg text-on-surface">Admin Access Required</h1>
           <p className="text-sm text-on-surface-variant mt-2">You do not have permission to view beta feedback.</p>
           <Link href="/dashboard"><Button variant="primary" className="mt-4">Back to dashboard</Button></Link>
@@ -98,7 +98,7 @@ export default function AdminBetaFeedbackPage() {
   if (error) return <div className="text-error text-sm">{error}</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/admin" className="inline-flex items-center gap-1 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors"><ChevronLeft className="w-4 h-4" /> Admin</Link>
