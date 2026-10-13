@@ -82,7 +82,7 @@ export default function OrgSheltersPage() {
           <EmptyState icon={HomeIcon} title="No shelters registered" description="Add your first shelter to track capacity." />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {shelters.map((shelter) => {
             const occupancy = shelter.totalCapacity > 0 ? Math.round((shelter.occupiedCount / shelter.totalCapacity) * 100) : 0;
             return (
