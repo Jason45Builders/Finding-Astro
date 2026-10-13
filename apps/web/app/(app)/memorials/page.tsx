@@ -67,7 +67,7 @@ export default function MemorialsPage() {
       ) : filtered.length === 0 ? (
         <Card className="p-4 sm:p-8"><EmptyState icon={Heart} title="No memorials yet" description="Be the first to honor a community dog who touched your heart." /></Card>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
           {filtered.map((post) => (
             <Link key={post.id} href={"/memorials/" + post.id} className="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
               <Card className="h-full overflow-hidden !p-0 flex flex-col transition-all duration-200 group-hover:-translate-y-1 group-hover:border-primary/50 group-hover:shadow-lg">
