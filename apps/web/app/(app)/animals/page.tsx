@@ -71,7 +71,7 @@ export default function AnimalsDirectory() {
           <p className="text-sm text-on-surface-variant">Trace and register local street dogs, cats, and birds</p>
         </div>
         <Link href="/animals/new" className="w-full sm:w-auto">
-          <Button variant="primary">
+          <Button variant="primary" className="w-full sm:w-auto">
             <Plus className="w-4 h-4" /> Register Animal
           </Button>
         </Link>
