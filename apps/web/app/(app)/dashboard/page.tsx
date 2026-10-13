@@ -276,58 +276,58 @@ export default function UserDashboard() {
       </div>
 
       {/* 2. Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 animate-stagger">
-        <Link href="/cases/new?type=emergency" className="group bg-surface-container-lowest p-2.5 sm:p-4 lg:p-5 rounded-xl border border-outline-variant hover:border-secondary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col justify-between">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-secondary-container text-on-secondary-container group-hover:coral-gradient group-hover:text-white rounded-md flex items-center justify-center transition-all">
-            <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-4 animate-stagger">
+        <Link href="/cases/new?type=emergency" className="group min-w-0 bg-surface-container-lowest p-1.5 sm:p-4 lg:p-5 rounded-lg sm:rounded-xl border border-outline-variant hover:border-secondary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col items-center sm:items-stretch justify-center sm:justify-between text-center sm:text-left">
+          <div className="w-6 h-6 sm:w-10 sm:h-10 bg-secondary-container text-on-secondary-container group-hover:coral-gradient group-hover:text-white rounded-md flex items-center justify-center transition-all">
+            <AlertCircle className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
           </div>
-          <div className="mt-3 sm:mt-4">
-            <h3 className="font-bold text-on-surface text-xs sm:text-base group-hover:text-secondary transition-colors">Report SOS</h3>
+          <div className="mt-1 sm:mt-4 w-full min-w-0">
+            <h3 className="font-bold text-on-surface text-[9px] leading-tight sm:text-base group-hover:text-secondary transition-colors">Report SOS</h3>
             <p className="text-on-surface-variant text-[11px] sm:text-xs mt-0.5 hidden sm:block">Submit emergency street rescue alert</p>
           </div>
         </Link>
 
-        <Link href="/animals" className="group bg-surface-container-lowest p-3 sm:p-4 lg:p-5 rounded-xl border border-outline-variant hover:border-primary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col justify-between">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary-container text-on-primary-container group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all">
-            <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+        <Link href="/animals" className="group min-w-0 bg-surface-container-lowest p-1.5 sm:p-4 lg:p-5 rounded-lg sm:rounded-xl border border-outline-variant hover:border-primary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col items-center sm:items-stretch justify-center sm:justify-between text-center sm:text-left">
+          <div className="w-6 h-6 sm:w-10 sm:h-10 bg-primary-container text-on-primary-container group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all">
+            <Eye className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
           </div>
-          <div className="mt-3 sm:mt-4">
-            <h3 className="font-bold text-on-surface text-xs sm:text-base group-hover:text-primary transition-colors">Browse Animals</h3>
+          <div className="mt-1 sm:mt-4 w-full min-w-0">
+            <h3 className="font-bold text-on-surface text-[9px] leading-tight sm:text-base group-hover:text-primary transition-colors">Browse Animals</h3>
             <p className="text-on-surface-variant text-[11px] sm:text-xs mt-0.5 hidden sm:block">Browse community and lost animals</p>
           </div>
         </Link>
 
-        <Link href="/partners?type=clinic" className="group bg-surface-container-lowest p-3 sm:p-4 lg:p-5 rounded-xl border border-outline-variant hover:border-primary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col justify-between">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-sky-100 text-sky-600 group-hover:bg-sky-600 group-hover:text-white rounded-md flex items-center justify-center transition-all">
-            <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
+        <Link href="/partners?type=clinic" className="group min-w-0 bg-surface-container-lowest p-1.5 sm:p-4 lg:p-5 rounded-lg sm:rounded-xl border border-outline-variant hover:border-primary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col items-center sm:items-stretch justify-center sm:justify-between text-center sm:text-left">
+          <div className="w-6 h-6 sm:w-10 sm:h-10 bg-sky-100 text-sky-600 group-hover:bg-sky-600 group-hover:text-white rounded-md flex items-center justify-center transition-all">
+            <Building2 className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
           </div>
-          <div className="mt-3 sm:mt-4">
-            <h3 className="font-bold text-on-surface text-xs sm:text-base group-hover:text-sky-600 transition-colors">Find a Vet</h3>
+          <div className="mt-1 sm:mt-4 w-full min-w-0">
+            <h3 className="font-bold text-on-surface text-[9px] leading-tight sm:text-base group-hover:text-sky-600 transition-colors">Find a Vet</h3>
             <p className="text-on-surface-variant text-[11px] sm:text-xs mt-0.5 hidden sm:block">Locate veterinary clinics and SPCAs</p>
           </div>
         </Link>
 
-        <Link href="/cases" className="group bg-surface-container-lowest p-3 sm:p-4 lg:p-5 rounded-xl border border-outline-variant hover:border-primary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col justify-between">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-surface-container-high text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all">
-            <FolderHeart className="w-4 h-4 sm:w-5 sm:h-5" />
+        <Link href="/cases" className="group min-w-0 bg-surface-container-lowest p-1.5 sm:p-4 lg:p-5 rounded-lg sm:rounded-xl border border-outline-variant hover:border-primary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col items-center sm:items-stretch justify-center sm:justify-between text-center sm:text-left">
+          <div className="w-6 h-6 sm:w-10 sm:h-10 bg-surface-container-high text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all">
+            <FolderHeart className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
           </div>
-          <div className="mt-3 sm:mt-4">
-            <h3 className="font-bold text-on-surface text-xs sm:text-base group-hover:text-primary transition-colors">My Cases</h3>
+          <div className="mt-1 sm:mt-4 w-full min-w-0">
+            <h3 className="font-bold text-on-surface text-[9px] leading-tight sm:text-base group-hover:text-primary transition-colors">My Cases</h3>
             <p className="text-on-surface-variant text-[11px] sm:text-xs mt-0.5 hidden sm:block">View status of reported cases</p>
           </div>
         </Link>
       </div>
 
       {/* 3. Rescue Collectives */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 sm:gap-5">
-        <Card className="p-3.5 sm:p-6 border-primary/20 bg-primary/5">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
-              <HeartHandshake className="w-4 h-4 sm:w-5 sm:h-5" />
+      <div className="grid grid-cols-2 gap-2 sm:gap-5">
+        <Card className="min-w-0 p-2 sm:p-6 border-primary/20 bg-primary/5">
+          <div className="flex items-center gap-1.5 sm:items-start sm:gap-3">
+            <div className="w-5 h-5 sm:w-10 sm:h-10 rounded-md sm:rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
+              <HeartHandshake className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm sm:font-title-md sm:text-title-md font-bold text-on-surface">Your Rescue Collectives</h2>
-              <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+              <h2 className="text-[9px] leading-tight sm:text-title-md font-bold text-on-surface whitespace-nowrap">Your Rescue Collectives</h2>
+              <p className="hidden sm:block text-sm text-on-surface-variant mt-1">
                 Open any collective you belong to and continue managing local rescue work.
               </p>
             </div>
@@ -336,7 +336,7 @@ export default function UserDashboard() {
           {loadingCollectives ? (
             <div className="mt-4 text-sm text-on-surface-variant">Loading your collectives...</div>
           ) : myCollectives.length > 0 ? (
-            <div className="mt-3 sm:mt-4 space-y-2">
+            <div className="mt-2 sm:mt-4 space-y-1.5 sm:space-y-2">
               {myCollectives.map((membership) => (
                 <button
                   key={membership.orgId}
@@ -345,43 +345,43 @@ export default function UserDashboard() {
                     api.setActiveOrgId(membership.orgId);
                     router.push("/org/dashboard");
                   }}
-                  className="w-full rounded-lg sm:rounded-xl border border-outline-variant bg-surface-container-lowest p-3 sm:p-4 text-left hover:border-primary hover:shadow-sm transition-all group"
+                  className="w-full min-w-0 rounded-md sm:rounded-xl border border-outline-variant bg-surface-container-lowest p-1.5 sm:p-4 text-left hover:border-primary hover:shadow-sm transition-all group"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-bold text-on-surface truncate group-hover:text-primary transition-colors">
+                      <p className="text-[10px] sm:text-base font-bold text-on-surface truncate group-hover:text-primary transition-colors">
                         {membership.orgName ?? "Rescue Collective"}
                       </p>
-                      <p className="text-xs text-on-surface-variant mt-1">
+                      <p className="hidden sm:block text-xs text-on-surface-variant mt-1">
                         {membership.orgType === "rescue_collective" ? "Rescue Collective" : "Welfare Group"} · {membership.orgRole.replaceAll("_", " ")}
                       </p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-outline shrink-0 group-hover:text-primary transition-colors" />
+                    <ChevronRight className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-outline shrink-0 group-hover:text-primary transition-colors" />
                   </div>
                 </button>
               ))}
             </div>
           ) : (
-            <div className="mt-3 sm:mt-4 rounded-lg sm:rounded-xl border border-dashed border-outline-variant p-3 sm:p-4">
-              <p className="text-sm text-on-surface-variant">You do not belong to a rescue collective yet.</p>
+            <div className="mt-2 sm:mt-4 rounded-md sm:rounded-xl border border-dashed border-outline-variant p-2 sm:p-4">
+              <p className="text-[10px] leading-tight sm:text-sm text-on-surface-variant">No rescue collective yet.</p>
             </div>
           )}
         </Card>
 
-        <Card className="p-3.5 sm:p-6 border-primary/20 bg-primary/5 flex flex-col justify-between">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
-              <HeartHandshake className="w-5 h-5" />
+        <Card className="min-w-0 p-2 sm:p-6 border-primary/20 bg-primary/5 flex flex-col justify-between">
+          <div className="flex items-center gap-1.5 sm:items-start sm:gap-3">
+            <div className="w-5 h-5 sm:w-10 sm:h-10 rounded-md sm:rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
+              <HeartHandshake className="w-3 h-3 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <h2 className="text-sm sm:font-title-md sm:text-title-md font-bold text-on-surface">Start a local rescue team</h2>
-              <p className="text-sm text-on-surface-variant mt-1">
+            <div className="min-w-0">
+              <h2 className="text-[9px] leading-tight sm:text-title-md font-bold text-on-surface sm:whitespace-normal whitespace-nowrap">Start a local rescue team</h2>
+              <p className="hidden sm:block text-sm text-on-surface-variant mt-1">
                 Bring rescuers in your area together in a shared Rescue Collective. You can start one as a citizen — no registered NGO is required.
               </p>
             </div>
           </div>
-          <Link href="/community/rescue-collective/create" className="mt-3 sm:mt-5 self-start">
-            <Button size="sm" variant="primary">Start a Rescue Collective</Button>
+          <Link href="/community/rescue-collective/create" className="mt-2 sm:mt-5 w-full sm:w-auto self-start">
+            <Button size="sm" variant="primary" className="w-full text-[9px] sm:text-sm px-1.5 sm:px-3">Start a Rescue Collective</Button>
           </Link>
         </Card>
       </div>
