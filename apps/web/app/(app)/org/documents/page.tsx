@@ -106,7 +106,7 @@ export default function OrgDocumentsPage() {
             <Button variant="primary" onClick={() => setShowOrgForm(true)}><Plus className="w-4 h-4 mr-2" />Add Document</Button>
           </div>
           {orgDocs.length === 0 ? (
-            <Card className="p-8"><EmptyState icon={FileText} title="No documents" description="Add registration certificates, 80G, FCRA, and other org documents." /></Card>
+            <Card className="p-4 sm:p-8"><EmptyState icon={FileText} title="No documents" description="Add registration certificates, 80G, FCRA, and other org documents." /></Card>
           ) : (
             <div className="space-y-3">
               {orgDocs.map((doc) => (
