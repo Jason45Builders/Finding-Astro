@@ -49,9 +49,9 @@ export default function MyCases() {
   const activeCasesList = activeTab === "reported" ? reportedCases : respondingCases;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       {/* Top Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">Case Board</h1>
           <p className="text-sm text-on-surface-variant">Track stray rescues, lost pet reports, and medical operations</p>
@@ -64,14 +64,14 @@ export default function MyCases() {
       </div>
 
       {/* Tabs */}
-      <TabBar>
+      <div className="min-w-0 overflow-x-auto -mx-1 px-1">\n      <TabBar>
         <TabButton active={activeTab === "reported"} onClick={() => setActiveTab("reported")}>
           Reported by Me
         </TabButton>
         <TabButton active={activeTab === "responding"} onClick={() => setActiveTab("responding")}>
           I&apos;m Responding To
         </TabButton>
-      </TabBar>
+      </TabBar>\n      </div>
 
       {/* Cases List */}
       {loading ? (
@@ -79,7 +79,7 @@ export default function MyCases() {
       ) : activeCasesList.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 animate-stagger">
           {activeCasesList.map((c) => (
-            <Card key={c.id} className="p-4 sm:p-6 flex flex-col justify-between">
+            <Card key={c.id} className="p-3.5 sm:p-6 flex flex-col justify-between min-w-0">
               <div>
                 <div className="flex items-center justify-between gap-4">
                   <StatusBadge token={statusToken.caseStatus(c.status)} />
@@ -91,7 +91,7 @@ export default function MyCases() {
                 <p className="text-on-surface-variant text-sm mt-2 line-clamp-2 leading-relaxed">{c.description}</p>
               </div>
 
-              <div className="mt-6 border-t border-outline-variant pt-4 flex items-center justify-between">
+              <div className="mt-4 sm:mt-6 border-t border-outline-variant pt-3 sm:pt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs text-outline flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
