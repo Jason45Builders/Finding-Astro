@@ -113,7 +113,7 @@ export default function CityMapPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] flex-col gap-4 sm:h-[calc(100vh-8rem)]">
+    <div className="flex min-h-0 sm:min-h-[calc(100vh-8rem)] flex-col gap-3 sm:gap-4">
       <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight flex items-center gap-2">
