@@ -83,11 +83,11 @@ export default function PublicDonationPage({ params }: { params: Promise<{ group
     : null;
 
   return (
-    <main className="min-h-screen bg-surface-container-low px-4 py-6 sm:py-10">
+    <main className="min-h-screen bg-surface-container-low px-3 py-4 sm:px-4 sm:py-10">
       <div className="max-w-4xl mx-auto">
         <Card className="overflow-hidden">
-          <header className="bg-primary text-on-primary p-6 sm:p-8">
-            <div className="flex items-start justify-between gap-4">
+          <header className="bg-primary text-on-primary p-4 sm:p-8">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <div>
                 <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-90">
                   <HeartHandshake className="w-4 h-4" /> Finding Astro Rescue Collective
@@ -99,8 +99,8 @@ export default function PublicDonationPage({ params }: { params: Promise<{ group
             </div>
           </header>
 
-          <div className="p-5 sm:p-8">
-            <div className="grid md:grid-cols-[1fr_auto] gap-8 items-center">
+          <div className="p-4 sm:p-8">
+            <div className="grid md:grid-cols-[1fr_auto] gap-4 sm:gap-8 items-center">
               <div>
                 <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wide">Monthly rescue fund</p>
                 <div className="mt-2 flex items-baseline gap-2">
