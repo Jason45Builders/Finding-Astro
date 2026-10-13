@@ -40,7 +40,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     const { data: existing, error: lookupError } = await supabaseAdmin().from("community_stories").select("author_id").eq("id",id).maybeSingle();
     if (lookupError) return serverError("Unable to verify story ownership",lookupError);
     if (!existing) return notFound("Story not found");
-    if (existing.author_id !== auth.user.id && !["admin","govt"].includes(auth.user.role)) return forbidden("You can only edit your own stories");
+    if (existing.author_id !== auth.user.id && !["admin"].includes(auth.user.role)) return forbidden("You can only edit your own stories");
     const d = parsed.data;
     const patch: Record<string,unknown> = {updated_at:new Date().toISOString()};
     if (d.title !== undefined) patch.title=d.title;
@@ -62,7 +62,7 @@ export async function DELETE(req: NextRequest, ctx: Ctx) {
     const {data:existing,error:lookupError}=await supabaseAdmin().from("community_stories").select("author_id").eq("id",id).maybeSingle();
     if(lookupError) return serverError("Unable to verify story ownership",lookupError);
     if(!existing) return notFound("Story not found");
-    if(existing.author_id!==auth.user.id && !["admin","govt"].includes(auth.user.role)) return forbidden("You can only delete your own stories");
+    if(existing.author_id!==auth.user.id && !["admin"].includes(auth.user.role)) return forbidden("You can only delete your own stories");
     const {error}=await supabaseAdmin().from("community_stories").delete().eq("id",id);
     if(error) return serverError("Unable to delete story",error);
     return ok({id},"Story deleted");
