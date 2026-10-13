@@ -118,7 +118,7 @@ export default function CrueltyPage() {
         </div>
       )}
 
-      <Card className="p-6 space-y-5">
+      <Card className="p-4 sm:p-6 space-y-4 sm:space-y-5">
         {error && <div className="bg-error-container text-on-error-container p-4 rounded-md text-sm font-medium">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
