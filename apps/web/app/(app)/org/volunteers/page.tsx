@@ -147,24 +147,24 @@ export default function OrgVolunteersPage() {
   if (loading) return <PageSpinner />;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-6xl mx-auto space-y-3 sm:space-y-6 min-w-0">
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface">Volunteers</h1>
+          <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface break-words">Volunteers</h1>
           <p className="text-sm text-on-surface-variant">Manage volunteer profiles, skills, and availability</p>
         </div>
         <Button variant="primary" onClick={openCreate}><Plus className="w-4 h-4 mr-2" />Add Volunteer</Button>
       </div>
 
       {volunteers.length === 0 ? (
-        <Card className="p-4 sm:p-8">
+        <Card className="p-3.5 sm:p-8">
           <EmptyState icon={Users} title="No volunteers yet" description="Add volunteer profiles to coordinate your team." />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-4">
           {volunteers.map((v) => (
-            <Card key={v.id} className="p-3 sm:p-5">
-              <div className="flex items-start justify-between gap-4">
+            <Card key={v.id} className="p-3.5 sm:p-5">
+              <div className="flex items-start justify-between gap-3 sm:gap-4">
                 <div className="flex-1">
                  <div className="flex items-center gap-2">
                    <p className="font-bold text-on-surface">{v.userName || v.userEmail || "Unknown User"}</p>
