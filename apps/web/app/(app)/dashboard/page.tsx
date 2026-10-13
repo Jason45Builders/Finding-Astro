@@ -218,21 +218,21 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="space-y-3 sm:space-y-5">
+    <div className="space-y-2.5 sm:space-y-5">
       {/* 1. Welcome Hero */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl text-white shadow-lg sm:shadow-xl">
         <div className="absolute inset-0">
           <img src="/Finding Astro_Header_D.png" alt="" className="w-full h-full object-cover object-center" style={{ objectPosition: "center 25%" }} />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-primary/60 to-transparent" />
         </div>
-        <div className="relative p-3.5 sm:p-8 lg:p-10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-8">
+        <div className="relative p-3 sm:p-8 lg:p-10">
+          <div className="flex flex-row items-center justify-between gap-2 sm:gap-8">
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] sm:text-xs font-bold text-white/70 uppercase tracking-widest mb-1">Welcome back</p>
-              <h1 className="text-lg sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
+              <p className="text-[9px] sm:text-xs font-bold text-white/70 uppercase tracking-widest mb-0.5 sm:mb-1">Welcome back</p>
+              <h1 className="text-base sm:text-2xl lg:text-3xl font-black text-white tracking-tight leading-tight">
                 Hi, {user?.fullName || "Citizen"}!
               </h1>
-              <p className="text-[11px] sm:text-sm text-white/75 mt-1.5 sm:mt-2">
+              <p className="text-[10px] sm:text-sm text-white/75 mt-1 sm:mt-2">
                 Your current reputation score is <strong className="text-white font-semibold">{user?.reputationScore ?? 0}</strong>
               </p>
               <p className="text-xs sm:text-sm text-white/60 mt-1 hidden sm:block">
@@ -252,7 +252,7 @@ export default function UserDashboard() {
               )}
             </div>
             <div className="relative shrink-0">
-              <div className="w-14 h-14 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-[3px] border-white/80 shadow-xl overflow-hidden bg-white/20">
+              <div className="w-11 h-11 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-[3px] border-white/80 shadow-xl overflow-hidden bg-white/20">
                 {photoSrc ? (
                   <Photo src={photoSrc} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
@@ -267,7 +267,7 @@ export default function UserDashboard() {
                 )}
               </div>
               <label className="absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 bg-white hover:bg-white/90 rounded-full flex items-center justify-center cursor-pointer shadow-lg border-2 border-primary transition-colors">
-                <Camera className="w-4 h-4 text-primary" />
+                <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                 <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoChange} disabled={uploadingPhoto} />
               </label>
             </div>
@@ -391,31 +391,31 @@ export default function UserDashboard() {
       <HomeActivityFeed />
 
       {/* 4. Impact Summary */}
-      <div className="bg-surface-container-lowest rounded-xl sm:rounded-2xl border border-outline-variant p-3 sm:p-6">
-        <h2 className="font-title-md text-title-md text-on-surface mb-2 sm:mb-4">Your Impact</h2>
-        <div className="grid grid-cols-3 gap-3 sm:gap-6">
+      <div className="bg-surface-container-lowest rounded-lg sm:rounded-2xl border border-outline-variant p-2.5 sm:p-6">
+        <h2 className="text-sm sm:font-title-md sm:text-title-md font-extrabold text-on-surface mb-2 sm:mb-4">Your Impact</h2>
+        <div className="grid grid-cols-3 gap-2 sm:gap-6">
           <div>
-            <p className="text-[10px] sm:text-xs text-outline uppercase tracking-wide">Cases Reported</p>
-            <p className="text-lg sm:text-xl font-bold text-on-surface">{user?.activityCount ?? 0}</p>
+            <p className="text-[8px] leading-tight sm:text-xs text-outline uppercase tracking-wide">Cases Reported</p>
+            <p className="text-base sm:text-xl font-bold text-on-surface">{user?.activityCount ?? 0}</p>
           </div>
           <div>
-            <p className="text-[10px] sm:text-xs text-outline uppercase tracking-wide">Cases Resolved</p>
+            <p className="text-[8px] leading-tight sm:text-xs text-outline uppercase tracking-wide">Cases Resolved</p>
             <p className="text-lg sm:text-xl font-bold text-on-surface">{user?.completedCaseCount ?? 0}</p>
           </div>
           <div>
-            <p className="text-[10px] sm:text-xs text-outline uppercase tracking-wide">Reputation</p>
+            <p className="text-[8px] leading-tight sm:text-xs text-outline uppercase tracking-wide">Reputation</p>
             <p className="text-lg sm:text-xl font-bold text-on-surface">{user?.reputationScore ?? 0}</p>
           </div>
         </div>
       </div>
 
       {/* 5. Main Content: Recent Cases + Strays Nearby */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 sm:gap-6">
         {/* Recent Cases */}
-        <Card className="p-3 sm:p-6 lg:col-span-7">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="font-title-md text-title-md text-on-surface">My Recent Cases</h2>
-            <Link href="/cases" className="text-sm font-bold text-primary hover:underline flex items-center gap-0.5">
+        <Card className="p-2.5 sm:p-6 lg:col-span-7">
+          <div className="flex items-center justify-between gap-2 mb-3 sm:mb-6">
+            <h2 className="text-sm sm:font-title-md sm:text-title-md font-extrabold text-on-surface">My Recent Cases</h2>
+            <Link href="/cases" className="text-[10px] sm:text-sm font-bold text-primary hover:underline flex items-center gap-0.5 shrink-0">
               View all <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -433,49 +433,49 @@ export default function UserDashboard() {
                 <Link
                   key={c.id}
                   href={`/cases/${c.id}`}
-                  className="py-3 sm:py-4 flex items-center justify-between hover:bg-surface-container rounded-md px-2 transition-colors block"
+                  className="py-2 sm:py-4 flex items-center justify-between gap-2 hover:bg-surface-container rounded-md px-1.5 sm:px-2 transition-colors block"
                 >
                   <div className="min-w-0 pr-4">
-                    <p className="font-bold text-on-surface truncate text-sm sm:text-base">{c.title}</p>
-                    <p className="text-[11px] sm:text-xs text-outline mt-0.5 sm:mt-1">Reported {formatDateTime(c.createdAt)}</p>
+                    <p className="font-bold text-on-surface truncate text-xs sm:text-base">{c.title}</p>
+                    <p className="text-[9px] sm:text-xs text-outline mt-0.5 sm:mt-1">Reported {formatDateTime(c.createdAt)}</p>
                   </div>
                   <StatusBadge token={statusToken.caseStatus(c.status)} className="shrink-0" />
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="p-6 sm:p-8 text-center text-outline text-sm bg-surface-container-low rounded-md">
+            <div className="p-3 sm:p-8 text-center text-outline text-[11px] sm:text-sm bg-surface-container-low rounded-md">
               You haven&apos;t reported any cases yet.
             </div>
           )}
         </Card>
 
         {/* Nearby Strays */}
-        <Card className="p-3 sm:p-6 lg:col-span-5">
+        <Card className="p-2.5 sm:p-6 lg:col-span-5">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="font-title-md text-title-md text-on-surface">Strays Nearby</h2>
-            <Button size="sm" variant="secondary" onClick={handleFetchNearby} disabled={loadingNearby} className="rounded-full">
-              <MapPin className="w-3.5 h-3.5" />
+            <h2 className="text-sm sm:font-title-md sm:text-title-md font-extrabold text-on-surface">Strays Nearby</h2>
+            <Button size="sm" variant="secondary" onClick={handleFetchNearby} disabled={loadingNearby} className="rounded-full px-2 py-1 text-[10px] sm:px-3 sm:py-2 sm:text-sm">
+              <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               {loadingNearby ? "Loading..." : "Get Location"}
             </Button>
           </div>
 
           {geoError && (
-            <div className="mb-3 sm:mb-4 bg-error-container text-on-error-container text-xs p-3 rounded-md">
+            <div className="mb-2 sm:mb-4 bg-error-container text-on-error-container text-[10px] sm:text-xs p-2.5 sm:p-3 rounded-md">
               {geoError}
             </div>
           )}
 
           {nearbyAnimals.length > 0 ? (
-            <div className="space-y-2 sm:space-y-3">
+            <div className="space-y-1.5 sm:space-y-3">
               {nearbyAnimals.map((animal) => (
-                <div key={animal.id} className="flex gap-3 p-2.5 sm:p-3 hover:bg-surface-container rounded-md transition-colors">
+                <div key={animal.id} className="flex gap-2 sm:gap-3 p-2 sm:p-3 hover:bg-surface-container rounded-md transition-colors">
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-on-surface truncate text-sm">{animal.name || animal.species}</h4>
-                    <p className="text-[11px] sm:text-xs text-on-surface-variant truncate mt-0.5">{animal.territoryLabel || "Local Area"}</p>
-                    <StatusBadge token={statusToken.animalStatus(animal.status)} className="mt-1.5" />
+                    <h4 className="font-bold text-on-surface truncate text-xs sm:text-sm">{animal.name || animal.species}</h4>
+                    <p className="text-[10px] sm:text-xs text-on-surface-variant truncate mt-0.5">{animal.territoryLabel || "Local Area"}</p>
+                    <StatusBadge token={statusToken.animalStatus(animal.status)} className="mt-1 sm:mt-1.5" />
                   </div>
-                  <Link href={`/animals/${animal.id}`} className="self-center bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-colors">
+                  <Link href={`/animals/${animal.id}`} className="self-center bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant px-2 py-1 sm:px-3 rounded-full text-[10px] sm:text-xs font-bold transition-colors">
                     View
                   </Link>
                 </div>
@@ -491,13 +491,13 @@ export default function UserDashboard() {
 
       {/* 6. Quote + Footer Banner */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl">
-        <img src="/Finding Astro_Footer.png" alt="Community" className="w-full h-48 sm:h-64 lg:h-72 object-cover" />
+        <img src="/Finding Astro_Footer.png" alt="Community" className="w-full h-36 sm:h-64 lg:h-72 object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-        <div className="relative p-5 sm:p-8 lg:p-10 text-center">
-          <p className="text-sm sm:text-base lg:text-lg italic text-white leading-relaxed">
+        <div className="relative p-3.5 sm:p-8 lg:p-10 text-center">
+          <p className="text-xs sm:text-base lg:text-lg italic text-white leading-relaxed">
             “The greatness of a nation and its moral progress can be judged by the way its animals are treated.”
           </p>
-          <p className="text-xs sm:text-sm text-white/70 mt-2 sm:mt-3">— Mahatma Gandhi</p>
+          <p className="text-[10px] sm:text-sm text-white/70 mt-1.5 sm:mt-3">— Mahatma Gandhi</p>
         </div>
       </div>
     </div>
