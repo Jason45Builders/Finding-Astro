@@ -6,7 +6,7 @@ import {ok,badRequest,forbidden,notFound,serverError} from "@/lib/api-response";
 const Patch=z.object({reportId:z.string().uuid(),status:z.enum(["reviewing","resolved","dismissed"]),resolutionNote:z.string().max(1000).optional(),hideStory:z.boolean().optional()});
 export async function GET(req:NextRequest){
  const auth=await authMiddleware(req);if("error" in auth)return auth.error;
- if(!["admin","govt"].includes(auth.user.role))return forbidden("Admin access required");
+ if(!["admin"].includes(auth.user.role))return forbidden("Admin access required");
  try{
   const status=new URL(req.url).searchParams.get("status")||"open";
   const {data,error}=await supabaseAdmin().from("community_story_reports").select("id,story_id,reporter_id,reason,details,status,created_at,community_stories(title,body,author_id,status)").eq("status",status).order("created_at",{ascending:true}).limit(100);
@@ -15,7 +15,7 @@ export async function GET(req:NextRequest){
 }
 export async function PATCH(req:NextRequest){
  const auth=await authMiddleware(req);if("error" in auth)return auth.error;
- if(!["admin","govt"].includes(auth.user.role))return forbidden("Admin access required");
+ if(!["admin"].includes(auth.user.role))return forbidden("Admin access required");
  const parsed=Patch.safeParse(await req.json().catch(()=>null));if(!parsed.success)return badRequest("VALIDATION_ERROR","Invalid moderation decision");
  const d=parsed.data;const db=supabaseAdmin();
  try{
