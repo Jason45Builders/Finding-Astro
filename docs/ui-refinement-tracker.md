@@ -11,6 +11,7 @@ Production: `Working` (do not merge without explicit approval)
 | AUD-01 | Audit current dashboard and navigation | Done | Existing quick actions, personal cases, collectives, impact and nearby-animal lookup remain in place. |
 | AUD-02 | Verify feed data sources and visibility | Done for MVP | Cases use the role-aware API and server-side `publicFeed=true` visibility filter; stories use the published-only stories endpoint. |
 | UX-02 | Prioritize Rescue Collectives on citizen dashboard | Implemented on branch; preview pending | Moved the existing collective membership and creation cards directly after quick actions, before the activity feed, so users can find them without scrolling through feed content. |
+| UX-03 | Compact mobile dashboard layout | Implemented on branch; preview pending | Reduced mobile padding, spacing, icon and heading sizes across the welcome hero, quick actions, collectives, impact and case panels; shortened mobile activity-feed imagery and card spacing while preserving larger breakpoints. |
 | API-01 | Feed data access | Done for MVP | Existing authenticated APIs; bounded requests and existing internal destinations. |
 | UI-01 | Feed states and filters | Implemented; validation pending | Loading, partial error, empty, manual refresh, filters and timestamps. |
 | UI-02 | Visual feed redesign | Implemented on branch; preview pending | Replaced divider rows with responsive media cards, image-backed case/story cards, image fallbacks, urgency/featured labels, location and time metadata, and stronger card hierarchy. |
@@ -29,6 +30,7 @@ Production: `Working` (do not merge without explicit approval)
 - Draft PR: https://github.com/Jason45Builders/Finding-Astro/pull/8
 - Latest feed redesign commit: `9cd6223af329855d31798a637f1f69c020acb196`
 - Rescue Collectives reordered above the activity feed in commit `80bd676db0492b4c5f4105de2b37b579e2f19454`.
+- Mobile dashboard compaction: `7a199e85c7e7d6e760e215245a9fdacedc1b28ff`; mobile activity-feed compaction: `670dcc8b61aa27f9027b747e39cfb51fa7502c1c`.
 - The latest revision has not yet been browser-verified. Do not merge until verified.
 
 ## Working log
@@ -36,4 +38,5 @@ Production: `Working` (do not merge without explicit approval)
 ### 2026-10-13
 - Confirmed `ui-refinement` is the work branch; `Working` remains untouched.
 - Redesigned feed cards with media-first presentation and clearer visual hierarchy.
-- Moved the Rescue Collectives section above the activity feed while preserving membership loading, collective navigation and the create-team CTA. Preview deployment and browser verification remain pending.
+- Moved the Rescue Collectives section above the activity feed while preserving membership loading, collective navigation and the create-team CTA.
+- Tightened mobile spacing and sizing across dashboard sections and activity feed; larger screen breakpoints retain more generous spacing. Preview deployment and browser verification remain pending.
