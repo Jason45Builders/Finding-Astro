@@ -94,7 +94,7 @@ export default function MemorialDetailPage() {
               <p className="mt-3 whitespace-pre-line text-sm leading-7 text-on-surface-variant sm:text-base">{memorial.description}</p>
             </section>
             {memorial.bestMemory && (
-              <section className="rounded-xl border border-primary/15 bg-primary/5 p-3 sm:p-5 sm:p-6">
+              <section className="rounded-xl border border-primary/15 bg-primary/5 p-3 sm:p-6">
                 <Quote className="h-6 w-6 text-primary/70" />
                 <p className="mt-3 whitespace-pre-line text-base italic leading-relaxed text-on-surface sm:text-lg">“{memorial.bestMemory}”</p>
                 <p className="mt-3 text-[10px] font-black uppercase tracking-[0.15em] text-outline">A memory to keep</p>
