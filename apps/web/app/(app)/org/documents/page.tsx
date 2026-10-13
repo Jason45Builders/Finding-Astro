@@ -88,13 +88,13 @@ export default function OrgDocumentsPage() {
   if (loading) return <PageSpinner />;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-2.5 sm:space-y-3 sm:space-y-6 min-w-0">
       <div>
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">Documents</h1>
+        <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface break-words">Documents</h1>
         <p className="text-sm text-on-surface-variant">Manage organization and animal documents</p>
       </div>
 
-      <div className="flex gap-2 border-b border-outline-variant">
+      <div className="flex gap-2 overflow-x-auto overscroll-x-contain border-b border-outline-variant">
         <button onClick={() => setTab("organization")} className={`px-4 py-2 text-sm font-bold border-b-2 ${tab === "organization" ? "border-primary text-primary" : "border-transparent text-on-surface-variant"}`}>Organization</button>
         <button onClick={() => setTab("animals")} className={`px-4 py-2 text-sm font-bold border-b-2 ${tab === "animals" ? "border-primary text-primary" : "border-transparent text-on-surface-variant"}`}>Animals</button>
       </div>
@@ -106,12 +106,12 @@ export default function OrgDocumentsPage() {
             <Button variant="primary" onClick={() => setShowOrgForm(true)}><Plus className="w-4 h-4 mr-2" />Add Document</Button>
           </div>
           {orgDocs.length === 0 ? (
-            <Card className="p-4 sm:p-8"><EmptyState icon={FileText} title="No documents" description="Add registration certificates, 80G, FCRA, and other org documents." /></Card>
+            <Card className="p-3.5 sm:p-8"><EmptyState icon={FileText} title="No documents" description="Add registration certificates, 80G, FCRA, and other org documents." /></Card>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5 sm:space-y-3">
               {orgDocs.map((doc) => (
-                <Card key={doc.id} className="p-4">
-                  <div className="flex items-start justify-between gap-4">
+                <Card key={doc.id} className="p-3 sm:p-4">
+                  <div className="flex items-start justify-between gap-3 sm:p-4">
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-bold text-on-surface capitalize">{doc.documentType.replace("_", " ")}</p>
@@ -137,10 +137,10 @@ export default function OrgDocumentsPage() {
           {animalDocs.length === 0 ? (
             <Card className="p-8"><EmptyState icon={FileText} title="No documents" description="Add medical reports, prescriptions, and other animal documents." /></Card>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5 sm:space-y-3">
               {animalDocs.map((doc) => (
-                <Card key={doc.id} className="p-4">
-                  <div className="flex items-start justify-between gap-4">
+                <Card key={doc.id} className="p-3 sm:p-4">
+                  <div className="flex items-start justify-between gap-3 sm:p-4">
                     <div>
                       <p className="font-bold text-on-surface capitalize">{doc.documentType.replace("_", " ")}</p>
                       <p className="text-xs text-on-surface-variant">Animal: {doc.animalId}</p>
