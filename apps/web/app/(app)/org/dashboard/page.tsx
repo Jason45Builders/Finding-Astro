@@ -87,10 +87,10 @@ export default function OrgDashboardPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-6xl mx-auto space-y-3 sm:space-y-6 min-w-0">
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2"><h1 className="font-headline-lg text-headline-lg text-on-surface">{stats?.orgName ? `${stats.orgName} Dashboard` : `${groupLabel} Dashboard`}</h1><Badge variant="neutral">{groupLabel}</Badge></div>
+          <div className="flex flex-wrap items-center gap-2"><h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface break-words">{stats?.orgName ? `${stats.orgName} Dashboard` : `${groupLabel} Dashboard`}</h1><Badge variant="neutral">{groupLabel}</Badge></div>
           <p className="text-sm text-on-surface-variant">Good morning, {user?.fullName || "Team"}</p><p className="text-xs text-on-surface-variant mt-1">Coordinate animals, rescues, volunteers, foster care and adoptions from one shared workspace.</p>
         </div>
         <Link href="/org/animals"><Button variant="primary"><PawPrint className="w-4 h-4 mr-2" />New Animal</Button></Link>
@@ -104,19 +104,19 @@ export default function OrgDashboardPage() {
             ? formatCurrency(value as number)
             : value;
           return (
-            <Card key={card.key as React.Key} className="p-4 space-y-1">
-              <div className="flex items-center gap-2 text-xs text-on-surface-variant font-bold uppercase tracking-wide">
+            <Card key={card.key as React.Key} className="p-3 sm:p-4 space-y-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant font-bold uppercase tracking-wide">
                 <Icon className={cn("w-4 h-4", card.color)} />
                 {card.label}
               </div>
-              <p className={cn("text-2xl font-bold font-headline-md", card.color)}>{display}</p>
+              <p className={cn("text-xl sm:text-2xl font-bold font-headline-md break-words", card.color)}>{display}</p>
             </Card>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
-        <Card className="p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5 sm:p-6">
+        <Card className="p-3.5 sm:p-6">
           <h2 className="font-headline-md text-headline-md text-on-surface mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-3">
             {ORG_NAV_ITEMS.filter(item => item.href !== "/org/dashboard").map((item) => {
@@ -133,7 +133,7 @@ export default function OrgDashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-3.5 sm:p-6">
           <h2 className="font-headline-md text-headline-md text-on-surface mb-4">Recent Activity</h2>
           <div className="space-y-3">
             <p className="text-sm text-on-surface-variant">Dashboard is live. Use the sidebar to manage animals, tasks, events, expenses, and team members.</p>
