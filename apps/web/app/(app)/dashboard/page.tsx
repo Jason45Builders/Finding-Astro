@@ -218,21 +218,21 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-5">
+    <div className="space-y-3 sm:space-y-5">
       {/* 1. Welcome Hero */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl text-white shadow-lg sm:shadow-xl">
         <div className="absolute inset-0">
           <img src="/Finding Astro_Header_D.png" alt="" className="w-full h-full object-cover object-center" style={{ objectPosition: "center 25%" }} />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-primary/60 to-transparent" />
         </div>
-        <div className="relative p-5 sm:p-8 lg:p-10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 sm:gap-8">
+        <div className="relative p-3.5 sm:p-8 lg:p-10">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-8">
             <div className="flex-1 min-w-0">
               <p className="text-[10px] sm:text-xs font-bold text-white/70 uppercase tracking-widest mb-1">Welcome back</p>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
                 Hi, {user?.fullName || "Citizen"}!
               </h1>
-              <p className="text-xs sm:text-sm text-white/75 mt-2">
+              <p className="text-[11px] sm:text-sm text-white/75 mt-1.5 sm:mt-2">
                 Your current reputation score is <strong className="text-white font-semibold">{user?.reputationScore ?? 0}</strong>
               </p>
               <p className="text-xs sm:text-sm text-white/60 mt-1 hidden sm:block">
@@ -252,11 +252,11 @@ export default function UserDashboard() {
               )}
             </div>
             <div className="relative shrink-0">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-[3px] border-white/80 shadow-xl overflow-hidden bg-white/20">
+              <div className="w-14 h-14 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-[3px] border-white/80 shadow-xl overflow-hidden bg-white/20">
                 {photoSrc ? (
                   <Photo src={photoSrc} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-white/15 text-white text-xl sm:text-2xl font-black">
+                  <div className="w-full h-full flex items-center justify-center bg-white/15 text-white text-base sm:text-2xl font-black">
                     {initials}
                   </div>
                 )}
@@ -266,7 +266,7 @@ export default function UserDashboard() {
                   </div>
                 )}
               </div>
-              <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-white hover:bg-white/90 rounded-full flex items-center justify-center cursor-pointer shadow-lg border-2 border-primary transition-colors">
+              <label className="absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 bg-white hover:bg-white/90 rounded-full flex items-center justify-center cursor-pointer shadow-lg border-2 border-primary transition-colors">
                 <Camera className="w-4 h-4 text-primary" />
                 <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoChange} disabled={uploadingPhoto} />
               </label>
@@ -276,58 +276,58 @@ export default function UserDashboard() {
       </div>
 
       {/* 2. Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 animate-stagger">
-        <Link href="/cases/new?type=emergency" className="group bg-surface-container-lowest p-3 sm:p-4 lg:p-5 rounded-xl border border-outline-variant hover:border-secondary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col justify-between">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 bg-secondary-container text-on-secondary-container group-hover:coral-gradient group-hover:text-white rounded-md flex items-center justify-center transition-all">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 animate-stagger">
+        <Link href="/cases/new?type=emergency" className="group bg-surface-container-lowest p-2.5 sm:p-4 lg:p-5 rounded-xl border border-outline-variant hover:border-secondary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col justify-between">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-secondary-container text-on-secondary-container group-hover:coral-gradient group-hover:text-white rounded-md flex items-center justify-center transition-all">
             <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div className="mt-3 sm:mt-4">
-            <h3 className="font-bold text-on-surface text-sm sm:text-base group-hover:text-secondary transition-colors">Report SOS</h3>
+            <h3 className="font-bold text-on-surface text-xs sm:text-base group-hover:text-secondary transition-colors">Report SOS</h3>
             <p className="text-on-surface-variant text-[11px] sm:text-xs mt-0.5 hidden sm:block">Submit emergency street rescue alert</p>
           </div>
         </Link>
 
         <Link href="/animals" className="group bg-surface-container-lowest p-3 sm:p-4 lg:p-5 rounded-xl border border-outline-variant hover:border-primary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col justify-between">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 bg-primary-container text-on-primary-container group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary-container text-on-primary-container group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all">
             <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div className="mt-3 sm:mt-4">
-            <h3 className="font-bold text-on-surface text-sm sm:text-base group-hover:text-primary transition-colors">Browse Animals</h3>
+            <h3 className="font-bold text-on-surface text-xs sm:text-base group-hover:text-primary transition-colors">Browse Animals</h3>
             <p className="text-on-surface-variant text-[11px] sm:text-xs mt-0.5 hidden sm:block">Browse community and lost animals</p>
           </div>
         </Link>
 
         <Link href="/partners?type=clinic" className="group bg-surface-container-lowest p-3 sm:p-4 lg:p-5 rounded-xl border border-outline-variant hover:border-primary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col justify-between">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 bg-sky-100 text-sky-600 group-hover:bg-sky-600 group-hover:text-white rounded-md flex items-center justify-center transition-all">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-sky-100 text-sky-600 group-hover:bg-sky-600 group-hover:text-white rounded-md flex items-center justify-center transition-all">
             <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div className="mt-3 sm:mt-4">
-            <h3 className="font-bold text-on-surface text-sm sm:text-base group-hover:text-sky-600 transition-colors">Find a Vet</h3>
+            <h3 className="font-bold text-on-surface text-xs sm:text-base group-hover:text-sky-600 transition-colors">Find a Vet</h3>
             <p className="text-on-surface-variant text-[11px] sm:text-xs mt-0.5 hidden sm:block">Locate veterinary clinics and SPCAs</p>
           </div>
         </Link>
 
         <Link href="/cases" className="group bg-surface-container-lowest p-3 sm:p-4 lg:p-5 rounded-xl border border-outline-variant hover:border-primary hover:shadow-md transition-all shadow-sm active:scale-[0.98] flex flex-col justify-between">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 bg-surface-container-high text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-surface-container-high text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary rounded-md flex items-center justify-center transition-all">
             <FolderHeart className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div className="mt-3 sm:mt-4">
-            <h3 className="font-bold text-on-surface text-sm sm:text-base group-hover:text-primary transition-colors">My Cases</h3>
+            <h3 className="font-bold text-on-surface text-xs sm:text-base group-hover:text-primary transition-colors">My Cases</h3>
             <p className="text-on-surface-variant text-[11px] sm:text-xs mt-0.5 hidden sm:block">View status of reported cases</p>
           </div>
         </Link>
       </div>
 
       {/* 3. Rescue Collectives */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-        <Card className="p-5 sm:p-6 border-primary/20 bg-primary/5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 sm:gap-5">
+        <Card className="p-3.5 sm:p-6 border-primary/20 bg-primary/5">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
-              <HeartHandshake className="w-5 h-5" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
+              <HeartHandshake className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0">
-              <h2 className="font-title-md text-title-md text-on-surface">Your Rescue Collectives</h2>
-              <p className="text-sm text-on-surface-variant mt-1">
+              <h2 className="text-sm sm:font-title-md sm:text-title-md font-bold text-on-surface">Your Rescue Collectives</h2>
+              <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
                 Open any collective you belong to and continue managing local rescue work.
               </p>
             </div>
@@ -336,7 +336,7 @@ export default function UserDashboard() {
           {loadingCollectives ? (
             <div className="mt-4 text-sm text-on-surface-variant">Loading your collectives...</div>
           ) : myCollectives.length > 0 ? (
-            <div className="mt-4 space-y-2">
+            <div className="mt-3 sm:mt-4 space-y-2">
               {myCollectives.map((membership) => (
                 <button
                   key={membership.orgId}
@@ -345,7 +345,7 @@ export default function UserDashboard() {
                     api.setActiveOrgId(membership.orgId);
                     router.push("/org/dashboard");
                   }}
-                  className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-4 text-left hover:border-primary hover:shadow-sm transition-all group"
+                  className="w-full rounded-lg sm:rounded-xl border border-outline-variant bg-surface-container-lowest p-3 sm:p-4 text-left hover:border-primary hover:shadow-sm transition-all group"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
@@ -362,26 +362,26 @@ export default function UserDashboard() {
               ))}
             </div>
           ) : (
-            <div className="mt-4 rounded-xl border border-dashed border-outline-variant p-4">
+            <div className="mt-3 sm:mt-4 rounded-lg sm:rounded-xl border border-dashed border-outline-variant p-3 sm:p-4">
               <p className="text-sm text-on-surface-variant">You do not belong to a rescue collective yet.</p>
             </div>
           )}
         </Card>
 
-        <Card className="p-5 sm:p-6 border-primary/20 bg-primary/5 flex flex-col justify-between">
+        <Card className="p-3.5 sm:p-6 border-primary/20 bg-primary/5 flex flex-col justify-between">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
               <HeartHandshake className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-title-md text-title-md text-on-surface">Start a local rescue team</h2>
+              <h2 className="text-sm sm:font-title-md sm:text-title-md font-bold text-on-surface">Start a local rescue team</h2>
               <p className="text-sm text-on-surface-variant mt-1">
                 Bring rescuers in your area together in a shared Rescue Collective. You can start one as a citizen — no registered NGO is required.
               </p>
             </div>
           </div>
-          <Link href="/community/rescue-collective/create" className="mt-5 self-start">
-            <Button variant="primary">Start a Rescue Collective</Button>
+          <Link href="/community/rescue-collective/create" className="mt-3 sm:mt-5 self-start">
+            <Button size="sm" variant="primary">Start a Rescue Collective</Button>
           </Link>
         </Card>
       </div>
@@ -391,8 +391,8 @@ export default function UserDashboard() {
       <HomeActivityFeed />
 
       {/* 4. Impact Summary */}
-      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-4 sm:p-6">
-        <h2 className="font-title-md text-title-md text-on-surface mb-4">Your Impact</h2>
+      <div className="bg-surface-container-lowest rounded-xl sm:rounded-2xl border border-outline-variant p-3 sm:p-6">
+        <h2 className="font-title-md text-title-md text-on-surface mb-2 sm:mb-4">Your Impact</h2>
         <div className="grid grid-cols-3 gap-3 sm:gap-6">
           <div>
             <p className="text-[10px] sm:text-xs text-outline uppercase tracking-wide">Cases Reported</p>
@@ -410,9 +410,9 @@ export default function UserDashboard() {
       </div>
 
       {/* 5. Main Content: Recent Cases + Strays Nearby */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6">
         {/* Recent Cases */}
-        <Card className="p-4 sm:p-6 lg:col-span-7">
+        <Card className="p-3 sm:p-6 lg:col-span-7">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <h2 className="font-title-md text-title-md text-on-surface">My Recent Cases</h2>
             <Link href="/cases" className="text-sm font-bold text-primary hover:underline flex items-center gap-0.5">
@@ -451,7 +451,7 @@ export default function UserDashboard() {
         </Card>
 
         {/* Nearby Strays */}
-        <Card className="p-4 sm:p-6 lg:col-span-5">
+        <Card className="p-3 sm:p-6 lg:col-span-5">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <h2 className="font-title-md text-title-md text-on-surface">Strays Nearby</h2>
             <Button size="sm" variant="secondary" onClick={handleFetchNearby} disabled={loadingNearby} className="rounded-full">
