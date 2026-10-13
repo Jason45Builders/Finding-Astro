@@ -160,7 +160,7 @@ export default function AbcPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Request form */}
-        <Card className="p-6">
+        <Card className="p-4 sm:p-6">
           <h2 className="font-title-md text-title-md text-on-surface mb-4">Request ABC for an Animal</h2>
           {success ? (
             <div className="text-center py-8 space-y-4">
