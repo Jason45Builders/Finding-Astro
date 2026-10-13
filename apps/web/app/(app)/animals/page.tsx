@@ -63,14 +63,14 @@ export default function AnimalsDirectory() {
   });
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] sm:h-[calc(100vh-8rem)] flex flex-col gap-4 sm:gap-6">
+    <div className="min-h-0 sm:min-h-[calc(100vh-8rem)] flex flex-col gap-3 sm:gap-6">
       {/* Top action bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 shrink-0">
         <div>
           <h1 className="font-headline-lg text-headline-lg-mobile sm:text-headline-lg text-on-surface tracking-tight">Animal Records</h1>
           <p className="text-sm text-on-surface-variant">Trace and register local street dogs, cats, and birds</p>
         </div>
-        <Link href="/animals/new" className="self-start">
+        <Link href="/animals/new" className="w-full sm:w-auto">
           <Button variant="primary">
             <Plus className="w-4 h-4" /> Register Animal
           </Button>
@@ -78,7 +78,7 @@ export default function AnimalsDirectory() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4 flex flex-col md:flex-row gap-4 items-center shrink-0">
+      <Card className="p-3 sm:p-4 flex flex-col md:flex-row gap-3 sm:gap-4 items-stretch md:items-center shrink-0">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-3.5 w-4 h-4 text-outline pointer-events-none" />
           <Input
@@ -89,7 +89,7 @@ export default function AnimalsDirectory() {
             className="pl-9 rounded-md"
           />
         </div>
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
           <Select
             value={species}
             onChange={(e) => setSpecies(e.target.value)}
@@ -118,7 +118,7 @@ export default function AnimalsDirectory() {
       {/* Main Split View */}
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: List View */}
-        <Card className="lg:col-span-5 flex flex-col min-h-0 p-6 overflow-hidden">
+        <Card className="lg:col-span-5 flex flex-col min-h-[240px] lg:min-h-0 p-3 sm:p-6 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-title-md text-title-md text-on-surface">Results ({filteredAnimals.length})</h2>
           </div>
@@ -164,7 +164,7 @@ export default function AnimalsDirectory() {
         </Card>
 
         {/* Right: Map View */}
-        <Card className="lg:col-span-7 h-full min-h-[400px] p-2 overflow-hidden relative">
+        <Card className="lg:col-span-7 h-[300px] sm:h-[380px] lg:h-full min-h-[280px] p-1.5 sm:p-2 overflow-hidden relative">
           <AnimalMap animals={filteredAnimals} />
         </Card>
       </div>
