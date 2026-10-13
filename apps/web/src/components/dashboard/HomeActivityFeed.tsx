@@ -48,7 +48,7 @@ export function HomeActivityFeed() {
     else setLoading(true);
 
     const [caseResult, storyResult] = await Promise.allSettled([
-      api.listCases({ limit: 8 }),
+      api.listCases({ limit: 8, publicFeed: true }),
       api.listCommunityStories(6),
     ]);
 
