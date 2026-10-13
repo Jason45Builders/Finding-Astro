@@ -48,7 +48,7 @@ function CommunityPageInner() {
   const totalOpenCases = wards.reduce((s, w) => s + w.openCases, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg text-headline-lg-mobile sm:text-headline-lg text-on-surface tracking-tight flex items-center gap-2">
           <Users className="w-6 h-6 text-primary" /> Community Dashboard
@@ -57,7 +57,7 @@ function CommunityPageInner() {
       </div>
 
       {/* City metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-stagger">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 animate-stagger">
         <KpiStat label="Registered Animals" value={totalAnimals.toLocaleString("en-IN")} icon={Users} accent="primary" />
         <KpiStat label="Avg ABC Coverage" value={`${avgCoverage}%`} icon={Activity} accent="secondary" />
         <KpiStat label="Sterilised" value={totalAbc.toLocaleString("en-IN")} icon={CheckCircle} accent="primary" />
@@ -70,7 +70,7 @@ function CommunityPageInner() {
           <h3 className="font-title-md text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
             <Activity className="w-4 h-4 text-primary" /> Platform Response Times (Last 30 Days)
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
             {[
               { label: "Avg. First Response", value: metrics.avgMinsToFirstClaim ? `${metrics.avgMinsToFirstClaim} min` : "—" },
               { label: "Avg. Pickup Time",    value: metrics.avgMinsToPickup ? `${metrics.avgMinsToPickup} min` : "—" },
@@ -137,7 +137,7 @@ function CommunityPageInner() {
         {loading ? (
           <PageSpinner />
         ) : filteredWards.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-stagger">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 animate-stagger">
             {filteredWards.map(ward => {
               const pct = ward.abcCoveragePct;
               const textColor = pct >= 70 ? "text-green-700" : pct >= 40 ? "text-amber-700" : "text-error";
