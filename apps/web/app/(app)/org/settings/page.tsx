@@ -74,18 +74,18 @@ export default function OrgSettingsPage() {
   if (!settings) return <div className="p-6 text-center text-error">Unable to load settings</div>;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <Settings className="w-8 h-8 text-primary" />
+    <div className="max-w-2xl mx-auto space-y-3 sm:space-y-6 min-w-0">
+      <div className="flex items-start sm:items-center gap-3">
+        <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-primary shrink-0" />
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface">{settings.orgType === "rescue_collective" ? "Rescue Collective Settings" : "Organization Settings"}</h1>
+          <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface break-words">{settings.orgType === "rescue_collective" ? "Rescue Collective Settings" : "Organization Settings"}</h1>
           <p className="text-sm text-on-surface-variant">Manage your welfare group profile and donation settings.</p>
         </div>
       </div>
 
-      <Card className="p-4 sm:p-6 space-y-4 sm:space-y-5">
-        <div className="rounded-lg border border-outline-variant p-4 bg-surface-container-low"><p className="text-xs uppercase tracking-wide font-bold text-on-surface-variant">Welfare Group Type</p><p className="font-bold text-on-surface mt-1">{settings.orgType === "rescue_collective" ? "Rescue Collective" : "NGO"}</p><p className="text-xs text-on-surface-variant mt-1">This type is fixed when the group is created.</p></div>
-        <div className="space-y-4">
+      <Card className="p-4 sm:p-6 space-y-3 sm:space-y-4 sm:space-y-5">
+        <div className="rounded-lg border border-outline-variant p-3 sm:p-4 bg-surface-container-low"><p className="text-xs uppercase tracking-wide font-bold text-on-surface-variant">Welfare Group Type</p><p className="font-bold text-on-surface mt-1">{settings.orgType === "rescue_collective" ? "Rescue Collective" : "NGO"}</p><p className="text-xs text-on-surface-variant mt-1">This type is fixed when the group is created.</p></div>
+        <div className="space-y-3 sm:space-y-4">
           <div>
             <Label>Organization Name</Label>
             <Input value={settings.name} onChange={(e) => setSettings({ ...settings, name: e.target.value })} />
@@ -104,7 +104,7 @@ export default function OrgSettingsPage() {
               <Input value={settings.phone || ""} onChange={(e) => setSettings({ ...settings, phone: e.target.value })} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label>Email</Label>
               <Input type="email" value={settings.email || ""} onChange={(e) => setSettings({ ...settings, email: e.target.value })} />
@@ -116,7 +116,7 @@ export default function OrgSettingsPage() {
           </div>
         </div>
 
-        <div className="border-t border-outline-variant pt-5">
+        <div className="border-t border-outline-variant pt-4 sm:pt-5">
           {settings.orgType === "rescue_collective" ? (
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
               <h3 className="font-headline-md text-headline-md text-on-surface">Monthly Donations</h3>
@@ -124,7 +124,7 @@ export default function OrgSettingsPage() {
               <Link href="/org/donations"><Button className="mt-4" variant="outline">Open Donation Management</Button></Link>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <h3 className="font-headline-md text-headline-md text-on-surface">Donation Settings</h3>
               <div>
                 <Label>UPI ID</Label>
@@ -134,7 +134,7 @@ export default function OrgSettingsPage() {
                 <Label>UPI Name</Label>
                 <Input value={settings.upiName || ""} onChange={(e) => setSettings({ ...settings, upiName: e.target.value })} placeholder="Name as registered with UPI" />
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-start sm:items-center gap-3">
                 <input id="paymentEnabled" type="checkbox" checked={settings.paymentEnabled} onChange={(e) => setSettings({ ...settings, paymentEnabled: e.target.checked })} className="w-4 h-4 rounded border-outline text-primary focus:ring-primary" />
                 <Label htmlFor="paymentEnabled" className="mb-0">Accepting donations</Label>
               </div>
