@@ -158,7 +158,7 @@ export default function RegisterAnimalPage() {
             <div className="bg-error-container text-on-error-container p-4 rounded-md text-sm font-medium">{error}</div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label>Species <span className="text-error">*</span></Label>
               <Select value={species} onChange={(e) => setSpecies(e.target.value)} required>
@@ -172,7 +172,7 @@ export default function RegisterAnimalPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
             <div>
               <Label>Breed</Label>
               <Input type="text" value={breed} onChange={(e) => setBreed(e.target.value)} placeholder="e.g. Indie" />
