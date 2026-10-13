@@ -94,12 +94,12 @@ export default function ConflictReportPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 min-w-0">
       <Link href="/safety" className="inline-flex items-center gap-1 text-sm text-on-surface-variant hover:text-primary font-bold transition-colors duration-150 ease-out">
         <ChevronLeft className="w-4 h-4" /> Back to Safety
       </Link>
 
-      <Card className="p-6 sm:p-8 space-y-6">
+      <Card className="p-4 sm:p-6 sm:p-8 space-y-4 sm:space-y-6">
         <div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-2">
             <AlertTriangle className="w-6 h-6 text-secondary" /> Report a Conflict
@@ -121,7 +121,7 @@ export default function ConflictReportPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <Label>Conflict Type *</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 gap-2">
               {CONFLICT_TYPES.map(type => (
                 <button key={type} type="button" onClick={() => setForm(f => ({ ...f, conflictType: type }))}
                   className={cn(
