@@ -9,7 +9,7 @@ Production: `Working` (protected by process; do not merge without approval)
 | DOC-01 | Create working blueprint | In progress | Commit blueprint to this branch. |
 | DOC-02 | Create implementation tracker | In progress | Commit tracker to this branch; update it as implementation proceeds. |
 | AUD-01 | Audit current dashboard and navigation | Done | Existing dashboard has quick actions, personal cases, collectives, impact and nearby-animal lookup; preserve these. |
-| AUD-02 | Verify feed data sources and visibility | Done for MVP | Cases use the existing role-aware API; stories use the published-only stories endpoint. |
+| AUD-02 | Verify feed data sources and visibility | Done for MVP | Cases use the existing role-aware API plus a server-side `publicFeed=true` visibility filter; stories use the published-only stories endpoint. |
 | API-01 | Feed data access | Done for MVP | Existing authenticated APIs; bounded case/story requests; stable source IDs and destinations. |
 | API-02 | Implement feed data access | Done for MVP | Existing source APIs reused; no new aggregate endpoint or database table. |
 | UI-01 | Build Home activity feed states | Implemented; validation pending | Loading, partial-error, empty, refresh, filters, timestamps and focus styling. |
@@ -26,7 +26,7 @@ Production: `Working` (protected by process; do not merge without approval)
 - Added bounded `api.listCommunityStories()` client method and integrated the feed after existing quick actions.
 - Added manual refresh, filters, loading/partial-error/empty states, timestamps and accessible focus styling. Open cases marked `heldForReview` are excluded from the public feed unless the current user reported or is assigned to them.
 - Draft PR: https://github.com/Jason45Builders/Finding-Astro/pull/8
-- Typecheck/build/preview QA remain pending; do not merge until verified.
+- Typecheck/build/preview QA remain pending; do not merge until verified. Vercel preview creation returned HTTP 402 (`api-deployments-free-per-day`), so no preview is available; retry after 24 hours or resolve the plan quota.
 - Preview deployment attempt was blocked by Vercel API quota (HTTP 402, `api-deployments-free-per-day`; retry after 24 hours). No branch preview was available to inspect.
 
 ## Working log
