@@ -24,6 +24,7 @@ import { StatusBadge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { Photo } from "@/components/ui/Photo";
 import { statusToken } from "@/lib/status";
+import { HomeActivityFeed } from "@/components/dashboard/HomeActivityFeed";
 
 export default function UserDashboard() {
   const { user } = useAuth();
@@ -316,6 +317,9 @@ export default function UserDashboard() {
           </div>
         </Link>
       </div>
+
+      {/* Activity feed: real cases and published community stories */}
+      <HomeActivityFeed />
 
       {/* 3. Rescue Collectives */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
