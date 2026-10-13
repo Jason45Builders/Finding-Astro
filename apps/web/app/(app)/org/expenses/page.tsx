@@ -169,7 +169,7 @@ export default function OrgExpensesPage() {
       </Card>
 
       {expenses.length === 0 ? (
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <EmptyState icon={Receipt} title="No expenses recorded" description="Start tracking your organization's expenses." />
         </Card>
       ) : (
@@ -210,7 +210,7 @@ export default function OrgExpensesPage() {
             <Label>Amount (INR)</Label>
             <Input type="number" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label>Category</Label>
               <Select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as ExpenseForm["category"] })}>
