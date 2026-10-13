@@ -77,7 +77,7 @@ export default async function RootPage() {
   return (
     <div className="bg-background text-on-surface">
       <ScrollHeader>
-        <nav className="flex justify-between items-center min-h-16 md:h-20 py-2 md:py-0 gap-2 px-container-padding-mobile md:px-container-padding-desktop max-w-[1200px] mx-auto">
+        <nav className="flex justify-between items-center min-h-14 md:h-20 py-1.5 md:py-0 gap-2 px-container-padding-mobile md:px-container-padding-desktop max-w-[1200px] mx-auto">
           <div className="min-w-0 shrink font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary flex items-center gap-1.5 md:gap-2">
             <LogoMark className="w-7 h-7 shrink-0" />
             <span className="whitespace-nowrap text-[21px] md:text-inherit">Finding Astro</span>
@@ -98,11 +98,11 @@ export default async function RootPage() {
 
       <main className="pt-20 md:pt-20">
         {/* Hero */}
-        <section className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg md:py-24">
-          <div className="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div className="text-center md:text-left flex flex-col gap-stack-md items-center md:items-start">
-              <h1 className="font-display-lg text-[clamp(2rem,8vw,2.75rem)] md:text-display-lg leading-tight text-primary">Civic Infrastructure for Animal Welfare.</h1>
-              <p className="font-body-lg text-body-lg text-on-surface-variant max-w-lg">
+        <section className="px-container-padding-mobile md:px-container-padding-desktop py-8 md:py-24">
+          <div className="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-6 md:gap-12 items-center">
+            <div className="text-center md:text-left flex flex-col gap-4 md:gap-stack-md items-center md:items-start">
+              <h1 className="font-display-lg text-[clamp(1.85rem,7.2vw,2.4rem)] md:text-display-lg leading-[1.12] text-primary">Civic Infrastructure for Animal Welfare.</h1>
+              <p className="text-sm leading-6 md:font-body-lg md:text-body-lg text-on-surface-variant max-w-lg">
                 A platform connecting citizens, volunteers, and verified clinics to respond to animals in need — with full transparency from the first report to the final outcome.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -121,7 +121,7 @@ export default async function RootPage() {
                 <BookOpen size={17} /> Explore the free animal-welfare library <span aria-hidden="true">→</span>
               </Link>
             </div>
-            <div className="relative aspect-[4/3] sm:aspect-square md:aspect-auto md:h-[440px] rounded-3xl md:rounded-[40px] overflow-hidden bg-primary">
+            <div className="relative aspect-[4/3] sm:aspect-square md:aspect-auto md:h-[440px] rounded-2xl md:rounded-[40px] overflow-hidden bg-primary">
               <Image
                 src="/images/dog-01.jpg"
                 alt="A volunteer gently offering a hand to a stray dog"
@@ -131,10 +131,10 @@ export default async function RootPage() {
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent" />
-              <span className="absolute top-6 left-6 bg-surface/90 text-primary font-label-caps text-label-caps px-3 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-1.5">
+              <span className="absolute top-3 left-3 md:top-6 md:left-6 bg-surface/90 text-primary font-label-caps text-label-caps px-3 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-1.5">
                 <MapPinned className="w-3.5 h-3.5" /> Geo-Tagged Reports
               </span>
-              <span className="absolute bottom-6 right-6 bg-secondary-container text-on-secondary-container font-label-caps text-label-caps px-3 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-1.5">
+              <span className="absolute bottom-3 right-3 md:bottom-6 md:right-6 bg-secondary-container text-on-secondary-container font-label-caps text-label-caps px-3 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5" /> Verified Outcomes
               </span>
             </div>
@@ -142,12 +142,12 @@ export default async function RootPage() {
         </section>
 
         {/* Mission Strip */}
-        <section className="bg-primary text-on-primary py-stack-lg scroll-mt-20" id="mission">
+        <section className="bg-primary text-on-primary py-7 md:py-stack-lg scroll-mt-20" id="mission">
           <div className="max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop flex flex-col md:flex-row items-start gap-6 md:gap-12">
             <ShieldCheck className="w-9 h-9 md:w-12 md:h-12 text-secondary-container shrink-0" />
             <div>
               <span className="font-label-caps text-label-caps text-primary-fixed tracking-widest mb-2 block uppercase">Our Accountability Promise</span>
-              <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg mb-3">Built for trust, wherever you are</h2>
+              <h2 className="font-headline-lg text-xl leading-tight md:text-headline-lg mb-2 md:mb-3">Built for trust, wherever you are</h2>
               <p className="font-body-lg text-body-lg opacity-90 leading-relaxed max-w-2xl">
                 Every report is geo-tagged and timestamped. Cases are tracked from first sighting to verified outcome, and funding is released only after documented proof of treatment — civic infrastructure people can actually rely on.
               </p>
@@ -156,7 +156,7 @@ export default async function RootPage() {
         </section>
 
         {/* How It Works */}
-        <section className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg md:py-24 bg-surface-container-low scroll-mt-20" id="how-it-works">
+        <section className="px-container-padding-mobile md:px-container-padding-desktop py-8 md:py-24 bg-surface-container-low scroll-mt-20" id="how-it-works">
           <div className="max-w-[1200px] mx-auto">
             <div className="text-center md:mb-16 mb-stack-md">
               <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-3">A Transparent Journey</h2>
@@ -187,15 +187,15 @@ export default async function RootPage() {
         </section>
 
         {/* Feature Grid */}
-        <section className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg md:py-24">
+        <section className="px-container-padding-mobile md:px-container-padding-desktop py-8 md:py-24">
           <div className="max-w-[1200px] mx-auto">
-            <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-stack-md md:mb-12">What the Platform Does</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 animate-stagger">
+            <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-5 md:mb-12">What the Platform Does</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-6 animate-stagger">
               {FEATURES.map((f) => (
-                <Card key={f.title} className="p-4 md:p-6 hover:border-primary transition-colors duration-150 ease-out">
-                  <f.icon className="w-7 h-7 md:w-8 md:h-8 text-primary mb-3" />
+                <Card key={f.title} className="p-3 md:p-6 hover:border-primary transition-colors duration-150 ease-out">
+                  <f.icon className="w-6 h-6 md:w-8 md:h-8 text-primary mb-2 md:mb-3" />
                   <h3 className="font-title-md text-sm md:text-base text-on-surface mb-1">{f.title}</h3>
-                  <p className="text-xs md:text-sm text-on-surface-variant">{f.description}</p>
+                  <p className="text-xs leading-5 md:text-sm text-on-surface-variant">{f.description}</p>
                 </Card>
               ))}
             </div>
@@ -203,9 +203,9 @@ export default async function RootPage() {
         </section>
 
         {/* Transparency */}
-        <section className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg md:py-24 bg-surface-container-highest scroll-mt-20" id="transparency">
+        <section className="px-container-padding-mobile md:px-container-padding-desktop py-8 md:py-24 bg-surface-container-highest scroll-mt-20" id="transparency">
           <div className="max-w-[1200px] mx-auto">
-            <Card className="p-6 md:p-12 flex flex-col md:flex-row gap-10 md:gap-16 items-start">
+            <Card className="p-4 md:p-12 flex flex-col md:flex-row gap-6 md:gap-16 items-start">
               <div className="flex-1">
                 <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-4 md:mb-6">Institutional Integrity</h2>
                 <p className="font-body-lg text-body-lg text-on-surface-variant mb-6 md:mb-8">
@@ -239,7 +239,7 @@ export default async function RootPage() {
         </section>
 
         {/* Partners */}
-        <section className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg md:py-24 scroll-mt-20" id="partners">
+        <section className="px-container-padding-mobile md:px-container-padding-desktop py-8 md:py-24 scroll-mt-20" id="partners">
           <div className="max-w-[1200px] mx-auto text-center">
             <HeartHandshake className="w-10 h-10 text-primary mx-auto mb-4" />
             <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-4">Powered by a Verified Network</h2>
@@ -258,10 +258,10 @@ export default async function RootPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg md:py-24 bg-green-700 relative overflow-hidden">
+        <section className="px-container-padding-mobile md:px-container-padding-desktop py-8 md:py-24 bg-green-700 relative overflow-hidden">
           <div className="max-w-[800px] mx-auto text-center relative z-10">
             <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-white mb-4 md:mb-6">Ready to help an animal near you?</h2>
-            <p className="font-body-lg text-green-100 mb-8 md:mb-10">Create an account to report, respond, or track a case from start to finish.</p>
+            <p className="font-body-lg text-sm md:text-base text-green-100 mb-6 md:mb-10">Create an account to report, respond, or track a case from start to finish.</p>
             <Link href="/auth/signup">
               <Button variant="coral" size="lg">Create Your Account</Button>
             </Link>
@@ -271,7 +271,7 @@ export default async function RootPage() {
         </section>
       </main>
 
-      <footer className="bg-surface-container-lowest border-t-2 border-surface-container-high py-stack-lg px-container-padding-mobile md:px-container-padding-desktop">
+      <footer className="bg-surface-container-lowest border-t-2 border-surface-container-high py-8 md:py-stack-lg px-container-padding-mobile md:px-container-padding-desktop">
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-stack-md text-center md:text-left">
           <div className="flex flex-col items-center md:items-start">
             <span className="font-headline-lg text-headline-lg-mobile font-bold text-primary flex items-center gap-2">

@@ -39,14 +39,14 @@ function SignupForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md p-4 sm:p-8 shadow-xl">
-        <div className="text-center mb-8">
-          <LogoMark className="w-12 h-12 mx-auto mb-4" />
+    <div className="min-h-screen flex items-center justify-center bg-background p-3 sm:p-4">
+      <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl">
+        <div className="text-center mb-6 sm:mb-8">
+          <LogoMark className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Create account</h1>
           <p className="text-on-surface-variant text-sm">Join the Finding Astro community</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
           <div>
             <Label>Full Name</Label>
             <div className="relative">
@@ -110,7 +110,7 @@ function SignupForm() {
           </Button>
         </form>
         <p className="text-xs text-on-surface-variant">Use at least 8 characters, including an uppercase letter, a lowercase letter, and a number.</p>
-        <p className="text-center text-sm text-on-surface-variant mt-6">
+        <p className="text-center text-sm text-on-surface-variant mt-5 sm:mt-6">
           Already have an account? <a href={loginHref} className="text-primary font-bold hover:underline">Sign in</a>
         </p>
       </Card>

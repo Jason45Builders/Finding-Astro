@@ -38,14 +38,14 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md p-4 sm:p-8 shadow-xl">
-        <div className="text-center mb-8">
-          <LogoMark className="w-12 h-12 mx-auto mb-4" />
+    <div className="min-h-screen flex items-center justify-center bg-background p-3 sm:p-4">
+      <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl">
+        <div className="text-center mb-6 sm:mb-8">
+          <LogoMark className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Welcome back</h1>
           <p className="text-on-surface-variant text-sm">Sign in to your Finding Astro account</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label>Email</Label>
             <div className="relative">
@@ -91,7 +91,7 @@ function LoginForm() {
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
-        <p className="mt-6 flex flex-col items-center gap-3 text-center text-sm text-on-surface-variant sm:flex-row sm:justify-center sm:gap-2">
+        <p className="mt-5 sm:mt-6 flex flex-col items-center gap-3 text-center text-sm text-on-surface-variant sm:flex-row sm:justify-center sm:gap-2">
           <a href="/auth/forgot-password" className="font-bold text-on-surface-variant hover:text-primary sm:mr-2">Forgot password?</a>
           <span className="hidden text-outline sm:inline">|</span>
           <span className="sm:ml-2">Don&apos;t have an account? <a href={signupHref} className="text-primary font-bold hover:underline">Sign up</a></span>

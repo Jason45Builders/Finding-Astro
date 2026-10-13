@@ -33,7 +33,7 @@ function ForgotPasswordForm() {
 
   if (sent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-3 sm:p-4">
         <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl text-center space-y-4">
           <LogoMark className="w-12 h-12 mx-auto mb-2" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary">Check your email</h1>
@@ -45,14 +45,14 @@ function ForgotPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md p-4 sm:p-8 shadow-xl">
-        <div className="text-center mb-8">
-          <LogoMark className="w-12 h-12 mx-auto mb-4" />
+    <div className="min-h-screen flex items-center justify-center bg-background p-3 sm:p-4">
+      <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl">
+        <div className="text-center mb-6 sm:mb-8">
+          <LogoMark className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Reset password</h1>
           <p className="text-on-surface-variant text-sm">Enter your email and we’ll send a reset link.</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label>Email</Label>
             <div className="relative">
@@ -77,7 +77,7 @@ function ForgotPasswordForm() {
             {loading ? 'Sending...' : 'Send reset link'}
           </Button>
         </form>
-        <p className="text-center text-sm text-on-surface-variant mt-6">
+        <p className="text-center text-sm text-on-surface-variant mt-5 sm:mt-6">
           Remember your password? <a href="/auth/login" className="text-primary font-bold hover:underline">Sign in</a>
         </p>
       </Card>

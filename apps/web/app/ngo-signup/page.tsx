@@ -86,8 +86,8 @@ export default function NgoSignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
-      <Card className="p-6 sm:p-8 max-w-lg w-full space-y-6">
+    <div className="min-h-screen bg-background flex items-center justify-center px-3 py-5 sm:px-4 sm:py-8">
+      <Card className="p-4 sm:p-8 max-w-lg w-full space-y-4 sm:space-y-6">
         <div className="text-center">
           <Building2 className="w-10 h-10 text-primary mx-auto mb-3" />
           <h1 className="font-headline-lg text-headline-lg text-on-surface">Organization Sign-Up</h1>
@@ -98,8 +98,8 @@ export default function NgoSignupPage() {
           <div className="p-3 bg-error/10 border border-error/20 rounded-lg text-sm text-error">{error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="p-4 bg-surface-container-high rounded-lg space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+          <div className="p-3 sm:p-4 bg-surface-container-high rounded-lg space-y-3 sm:space-y-4">
             <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wide">Admin Account</p>
             <div>
               <Label>Full Name</Label>
@@ -118,7 +118,7 @@ export default function NgoSignupPage() {
             </div>
           </div>
 
-          <div className="p-4 bg-surface-container-high rounded-lg space-y-4">
+          <div className="p-3 sm:p-4 bg-surface-container-high rounded-lg space-y-3 sm:space-y-4">
             <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wide">Organization Details</p>
             <div>
               <Label>Organization Name</Label>
@@ -139,7 +139,7 @@ export default function NgoSignupPage() {
               <Label>Address</Label>
               <Textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} rows={2} />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <Label>Phone</Label>
                 <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />

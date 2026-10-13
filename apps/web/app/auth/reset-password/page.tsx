@@ -47,7 +47,7 @@ function ResetPasswordForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-3 sm:p-4">
         <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl text-center space-y-4">
           <CheckCircle className="w-12 h-12 mx-auto text-green-600" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary">Password updated</h1>
@@ -60,7 +60,7 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-3 sm:p-4">
         <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl text-center space-y-4">
           <AlertCircle className="w-12 h-12 mx-auto text-error" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Invalid reset link</h1>
@@ -72,14 +72,14 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md p-4 sm:p-8 shadow-xl">
-        <div className="text-center mb-8">
-          <LogoMark className="w-12 h-12 mx-auto mb-4" />
+    <div className="min-h-screen flex items-center justify-center bg-background p-3 sm:p-4">
+      <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl">
+        <div className="text-center mb-6 sm:mb-8">
+          <LogoMark className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Choose a new password</h1>
           <p className="text-on-surface-variant text-sm">Use at least 8 characters, including upper and lower case letters and a number.</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label>New password</Label>
             <div className="relative">
@@ -96,7 +96,7 @@ function ResetPasswordForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
+                className="absolute right-1 top-1/2 -translate-y-1/2 flex min-h-11 min-w-11 items-center justify-center text-outline sm:right-3 sm:min-h-0 sm:min-w-0 hover:text-on-surface transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
