@@ -104,7 +104,7 @@ function RegularReportForm() {
 
   if (successCase) {
     return (
-      <Card className="max-w-xl mx-auto text-center p-8 space-y-6">
+      <Card className="max-w-xl mx-auto text-center p-4 sm:p-8 space-y-4 sm:space-y-6">
         <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
           <CheckCircle className="w-9 h-9 text-green-600" />
         </div>
