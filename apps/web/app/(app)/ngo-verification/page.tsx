@@ -86,7 +86,7 @@ export default function NgoVerificationPage() {
         <ChevronLeft className="w-4 h-4" /> Back to Dashboard
       </Link>
 
-      <Card className="p-4 sm:p-6 sm:p-8 space-y-4 sm:space-y-6">
+      <Card className="p-4 sm:p-8 space-y-4 sm:space-y-6">
         <div className="flex items-start gap-3">
           <Building2 className="w-8 h-8 text-primary shrink-0" />
           <div>
