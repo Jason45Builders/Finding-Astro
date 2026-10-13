@@ -78,16 +78,16 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-3xl mx-auto space-y-4 sm:space-y-8 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">My Profile</h1>
         <p className="text-sm text-on-surface-variant mt-1">Manage your account details and responder settings</p>
       </div>
 
       {/* Identity Card */}
-      <Card className="p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-          <div className="w-20 h-20 rounded-full border-4 border-primary/20 overflow-hidden bg-surface-container-high shrink-0">
+      <Card className="p-4 sm:p-8">
+        <div className="flex flex-row items-center gap-3 sm:gap-6">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-primary/20 overflow-hidden bg-surface-container-high shrink-0">
             {user.profilePhotoUrl ? (
               <Photo src={user.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
             ) : (
@@ -97,11 +97,11 @@ export default function ProfilePage() {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-black text-on-surface truncate">
+            <h2 className="text-lg sm:text-2xl font-black text-on-surface break-words">
               {user.fullName || "Citizen"}
             </h2>
             <p className="text-on-surface-variant text-sm mt-1">{user.phone}</p>
-            <div className="flex flex-wrap items-center gap-3 mt-3">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 mt-2 sm:mt-3">
               <Badge variant="primary">
                 <Shield className="w-3.5 h-3.5" />
                 {ROLE_LABELS[user.role] ?? user.role}
@@ -233,14 +233,14 @@ export default function ProfilePage() {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 animate-stagger">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5 animate-stagger">
         <KpiStat label="Reputation Score" value={user.reputationScore} icon={Award} />
         <KpiStat label="Active Case Limit" value={user.activeCaseLimit} icon={Radar} accent="secondary" />
         <KpiStat label="Service Radius" value={user.serviceRadiusKm} suffix="km" accent="neutral" />
       </div>
 
       {/* Account */}
-      <Card className="p-6 border-error/30">
+      <Card className="p-4 sm:p-6 border-error/30">
         <h3 className="text-base font-bold text-on-surface mb-4">Account</h3>
         <Button variant="danger" onClick={logout}>
           Sign Out
