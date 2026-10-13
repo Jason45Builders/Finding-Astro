@@ -27,7 +27,7 @@ type FeedFilter = "all" | "emergencies" | "my-cases" | "stories";
 
 const FILTERS: Array<{ value: FeedFilter; label: string }> = [
   { value: "all", label: "All updates" },
-  { value: "emergencies", label: "Emergencies" },
+  { value: "emergencies", label: "Open cases" },
   { value: "my-cases", label: "My cases" },
   { value: "stories", label: "Community stories" },
 ];
@@ -77,7 +77,7 @@ export function HomeActivityFeed() {
 
   const items = useMemo(() => {
     const caseItems = cases
-      .filter((item) => item.status === "open" || item.reporterUserId === user?.id || item.assignedToUserId === user?.id)
+      .filter((item) => (!item.heldForReview || item.reporterUserId === user?.id || item.assignedToUserId === user?.id) && (item.status === "open" || item.reporterUserId === user?.id || item.assignedToUserId === user?.id))
       .map((item) => ({
         id: `case:${item.id}`,
         kind: "case" as const,
@@ -120,7 +120,7 @@ export function HomeActivityFeed() {
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Home feed</p>
           <h2 className="text-lg sm:text-xl font-black text-on-surface">Useful updates for animals</h2>
-          <p className="mt-1 text-xs sm:text-sm text-on-surface-variant">Open rescue cases and published community stories, with direct paths to act.</p>
+          <p className="mt-1 text-xs sm:text-sm text-on-surface-variant">Open animal-welfare cases and published community stories, with direct paths to act.</p>
           {updatedAt && <p className="mt-1 text-[11px] text-outline">Updated {formatDateTime(updatedAt.toISOString())}</p>}
         </div>
         <Button variant="outline" size="sm" onClick={() => void refresh(true)} disabled={loading || refreshing} className="self-start rounded-full">
@@ -163,7 +163,7 @@ export function HomeActivityFeed() {
           <p className="mt-2 text-sm font-bold text-on-surface">No updates in this view yet</p>
           <p className="mt-1 text-xs text-on-surface-variant">Check another filter or use a quick action to report an animal in need.</p>
           <Link href="/respond" className="mt-3 inline-flex items-center text-xs font-bold text-primary hover:underline">
-            View rescue cases <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+            View open cases <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
           </Link>
         </div>
       ) : (
