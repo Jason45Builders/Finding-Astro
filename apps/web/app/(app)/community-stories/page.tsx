@@ -112,13 +112,7 @@ export default function PawprintsMemoriesPage(){
   catch{/* Share sheet was dismissed. */}
  }
 
- return <main className="min-h-screen bg-background text-on-surface">
-  <header className="border-b border-outline-variant/40 bg-surface">
-   <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 md:px-8">
-    <div><Link href="/dashboard" className="text-sm font-semibold text-primary hover:underline">← Dashboard</Link><p className="mt-1 text-xs uppercase tracking-[.18em] text-on-surface-variant">Finding Astro community</p></div>
-    <div className="flex items-center gap-2"><Link href="/community-stories/saved" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-outline-variant px-4 py-2 text-sm font-semibold hover:bg-surface-container"><Bookmark size={16}/> Saved</Link><button onClick={()=>setComposerOpen(v=>!v)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-white hover:opacity-90"><Sparkles size={17}/> Share a story</button></div>
-   </div>
-  </header>
+ return <div className="space-y-4 text-on-surface">
   <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
    <section className="relative overflow-hidden rounded-3xl bg-primary px-6 py-8 text-white md:px-10 md:py-12">
     <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full border-[32px] border-white/10"/>
@@ -129,6 +123,13 @@ export default function PawprintsMemoriesPage(){
      <button onClick={()=>setComposerOpen(true)} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 font-bold text-primary hover:bg-white/90"><PawPrint size={17}/> Tell your story</button>
     </div>
    </section>
+   <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+    <p className="text-sm text-on-surface-variant">Stories of rescue, adoption, and everyday kindness.</p>
+    <div className="flex items-center gap-2">
+     <Link href="/community-stories/saved" className="inline-flex min-h-10 items-center gap-2 rounded-full border border-outline-variant px-4 py-2 text-sm font-semibold hover:bg-surface-container"><Bookmark size={16}/> Saved stories</Link>
+     <button onClick={()=>setComposerOpen(v=>!v)} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-bold text-white hover:opacity-90"><Sparkles size={16}/> Share a story</button>
+    </div>
+   </div>
 
    {notice&&<div role="status" className="mt-5 rounded-xl border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900">{notice}<button className="ml-3 font-bold underline" onClick={()=>setNotice("")}>Dismiss</button></div>}
    {error&&<div role="alert" className="mt-5 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-900">{error}<button className="ml-3 font-bold underline" onClick={()=>setError("")}>Dismiss</button></div>}
@@ -175,5 +176,5 @@ export default function PawprintsMemoriesPage(){
     </div>}
    <p className="mt-10 text-center text-xs leading-5 text-on-surface-variant">Pawprints & Memories is a community space. Please respect privacy, obtain permission before sharing others&apos; photos, and report content that may put people or animals at risk.</p>
   </div>
- </main>;
+ </div>;
 }
