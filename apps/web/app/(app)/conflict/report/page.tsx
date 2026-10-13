@@ -99,7 +99,7 @@ export default function ConflictReportPage() {
         <ChevronLeft className="w-4 h-4" /> Back to Safety
       </Link>
 
-      <Card className="p-4 sm:p-6 sm:p-8 space-y-4 sm:space-y-6">
+      <Card className="p-4 sm:p-8 space-y-4 sm:space-y-6">
         <div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-2">
             <AlertTriangle className="w-6 h-6 text-secondary" /> Report a Conflict
