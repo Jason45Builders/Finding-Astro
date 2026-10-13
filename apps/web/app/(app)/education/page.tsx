@@ -32,7 +32,7 @@ export default function EducationHubPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface tracking-tight flex items-center gap-2">
           <BookOpen className="w-6 h-6 text-primary" /> Education Hub
@@ -68,7 +68,7 @@ export default function EducationHubPage() {
       ) : filtered.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-stagger">
           {filtered.map(item => (
-            <Card key={item.id} interactive className="p-6">
+            <Card key={item.id} interactive className="p-4 sm:p-6">
               <Badge variant="primary" className="mb-3">{item.audience}</Badge>
               <h3 className="font-bold text-on-surface text-sm mb-2">{item.title}</h3>
               <p className="text-xs text-on-surface-variant leading-relaxed mb-4">{item.summary}</p>
