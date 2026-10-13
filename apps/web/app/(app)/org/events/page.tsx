@@ -155,13 +155,13 @@ export default function OrgEventsPage() {
       </Card>
 
       {events.length === 0 ? (
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <EmptyState icon={Calendar} title="No events yet" description="Schedule your first event or camp." />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {events.map((evt) => (
-            <Card key={evt.id} className="p-5">
+            <Card key={evt.id} className="p-3 sm:p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h3 className="font-bold text-on-surface">{evt.title}</h3>
@@ -204,7 +204,7 @@ export default function OrgEventsPage() {
             <Label>Description</Label>
             <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label>Event Type</Label>
               <Input value={form.eventType} onChange={(e) => setForm({ ...form, eventType: e.target.value })} placeholder="e.g. ABC Camp" />
