@@ -97,7 +97,7 @@ export default function OrgMembersPage() {
   const groupLabel = groupType === "rescue_collective" ? "Rescue Collective" : "NGO";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-2.5 sm:space-y-3 sm:space-y-6 min-w-0">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface">Team Members</h1>
@@ -108,14 +108,14 @@ export default function OrgMembersPage() {
       </div>
 
       {members.length === 0 ? (
-        <Card className="p-4 sm:p-8">
+        <Card className="p-3.5 sm:p-8">
           <EmptyState icon={Users} title="No team members yet" description="Add members by their email address." />
         </Card>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2.5 sm:space-y-3">
           {members.map((member) => (
-            <Card key={member.id} className="p-4">
-              <div className="flex items-center justify-between gap-4">
+            <Card key={member.id} className="p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-3 sm:p-4">
                 <div>
                   <p className="font-bold text-on-surface">{member.userName || member.userEmail || "Unknown User"}</p>
                   {member.userEmail && <p className="text-xs text-on-surface-variant">{member.userEmail}</p>}
@@ -124,7 +124,7 @@ export default function OrgMembersPage() {
                     Permissions: {Object.keys(member.permissions).length === 1 && member.permissions["*"] ? "All" : Object.keys(member.permissions).length > 0 ? Object.keys(member.permissions).join(", ") : "default"}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={member.isActive ? "success" : "danger"}>{member.isActive ? "Active" : "Inactive"}</Badge>
                   <Button size="sm" variant="danger" onClick={() => handleRemove(member.id)}><Trash2 className="w-4 h-4" /></Button>
                 </div>
@@ -157,7 +157,7 @@ export default function OrgMembersPage() {
         <Modal open={!!inviteInfo} onClose={() => setInviteInfo(null)} title="Invitation Ready">
           <div className="space-y-4">
             <p className="text-sm text-on-surface-variant">{inviteInfo.message}</p>
-            <div className="bg-surface-container-low rounded-lg p-4 space-y-2">
+            <div className="bg-surface-container-low rounded-lg p-3 sm:p-4 space-y-2">
               <div>
                 <p className="text-xs text-on-surface-variant">Email</p>
                 <p className="font-mono text-sm text-on-surface">{inviteInfo.email}</p>
