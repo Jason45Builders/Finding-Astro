@@ -214,7 +214,7 @@ export default function AnimalProfilePage() {
             </Link>
           </div>
         </div>
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
               <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{animal.name || "Unnamed Animal"}</h1>
@@ -282,7 +282,7 @@ export default function AnimalProfilePage() {
       {tab === "overview" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <Card className="p-5">
+            <Card className="p-3 sm:p-5">
               <h3 className="font-bold text-on-surface mb-4">Health Status</h3>
               <div className="space-y-3">
                 {[
@@ -301,7 +301,7 @@ export default function AnimalProfilePage() {
             </Card>
             <Card className="p-5">
               <h3 className="font-bold text-on-surface mb-3">Quick Facts</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-2 sm:gap-3 text-sm">
                 {[
                   ["Species", animal.species],
                   ["Breed",   animal.breed ?? "Unknown"],
