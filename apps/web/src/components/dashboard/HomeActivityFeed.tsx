@@ -150,42 +150,42 @@ export function HomeActivityFeed() {
   const hasSourceError = caseError || storyError;
 
   return (
-    <section className="space-y-3 sm:space-y-6" aria-labelledby="home-feed-title">
-      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-outline-variant bg-gradient-to-br from-surface-container-lowest via-surface-container-low to-surface-container p-3 sm:p-6">
+    <section className="space-y-2 sm:space-y-6" aria-labelledby="home-feed-title">
+      <div className="relative overflow-hidden rounded-lg sm:rounded-2xl border border-outline-variant bg-gradient-to-br from-surface-container-lowest via-surface-container-low to-surface-container p-2 sm:p-6">
         <div className="pointer-events-none absolute -right-8 -top-12 h-36 w-36 rounded-full bg-primary/10 blur-2xl" />
-        <div className="relative flex flex-col gap-2.5 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+        <div className="relative flex items-center justify-between gap-2 sm:items-end sm:gap-4">
           <div className="min-w-0">
-            <div className="mb-1.5 sm:mb-2 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.16em] text-primary">
-              <PawPrint className="h-3.5 w-3.5" />
+            <div className="mb-1 sm:mb-2 inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.16em] text-primary">
+              <PawPrint className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               The community pulse
             </div>
-            <h2 id="home-feed-title" className="text-lg sm:text-xl font-black tracking-tight text-on-surface sm:text-2xl">
+            <h2 id="home-feed-title" className="text-sm sm:text-xl font-black tracking-tight text-on-surface sm:text-2xl">
               Where animals need us
             </h2>
-            <p className="mt-1 max-w-2xl text-xs sm:text-sm leading-relaxed text-on-surface-variant">
+            <p className="mt-0.5 sm:mt-1 max-w-2xl text-[10px] sm:text-sm leading-snug sm:leading-relaxed text-on-surface-variant">
               Real cases, small acts of kindness, and stories from people making a difference.
             </p>
             {updatedAt && (
-              <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-outline">
+              <p className="hidden sm:inline-flex mt-2 items-center gap-1.5 text-[11px] text-outline">
                 <Clock3 className="h-3 w-3" />
                 Updated {formatDateTime(updatedAt.toISOString())}
               </p>
             )}
           </div>
-          <Button variant="outline" size="sm" onClick={() => void refresh(true)} disabled={loading || refreshing} className="self-start rounded-full bg-surface-container-lowest sm:self-auto">
-            <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+          <Button variant="outline" size="sm" onClick={() => void refresh(true)} disabled={loading || refreshing} className="shrink-0 rounded-full bg-surface-container-lowest px-2 py-1.5 text-[10px] sm:px-3 sm:py-2 sm:text-sm">
+            <RefreshCw className={`mr-1 sm:mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5 ${refreshing ? "animate-spin" : ""}`} />
             {refreshing ? "Refreshing…" : "Refresh"}
           </Button>
         </div>
 
-        <div className="relative mt-3 sm:mt-5 flex gap-1.5 sm:gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter home updates">
+        <div className="relative mt-2 sm:mt-5 flex gap-1 sm:gap-2 overflow-x-auto pb-0.5 sm:pb-1" role="group" aria-label="Filter home updates">
           {FILTERS.map((item) => (
             <button
               key={item.value}
               type="button"
               aria-pressed={filter === item.value}
               onClick={() => setFilter(item.value)}
-              className={`shrink-0 rounded-full border px-3 py-1.5 sm:px-3.5 sm:py-2 text-[11px] sm:text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${filter === item.value ? "border-primary bg-primary text-white shadow-sm" : "border-outline-variant bg-surface-container-lowest/80 text-on-surface-variant hover:border-primary/40 hover:text-on-surface"}`}
+              className={`shrink-0 rounded-full border px-2 py-1 sm:px-3.5 sm:py-2 text-[9px] sm:text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${filter === item.value ? "border-primary bg-primary text-white shadow-sm" : "border-outline-variant bg-surface-container-lowest/80 text-on-surface-variant hover:border-primary/40 hover:text-on-surface"}`}
             >
               {item.label}
             </button>
@@ -204,11 +204,11 @@ export function HomeActivityFeed() {
       )}
 
       {loading ? (
-        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2" aria-label="Loading home updates" aria-live="polite">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4" aria-label="Loading home updates" aria-live="polite">
           {[0, 1, 2, 3].map((item) => (
-            <div key={item} className="overflow-hidden rounded-xl sm:rounded-2xl border border-outline-variant bg-surface-container-lowest">
-              <div className="h-28 animate-pulse bg-surface-container sm:h-44" />
-              <div className="space-y-2.5 p-3 sm:space-y-3 sm:p-4">
+            <div key={item} className="min-w-0 overflow-hidden rounded-lg sm:rounded-2xl border border-outline-variant bg-surface-container-lowest">
+              <div className="h-20 animate-pulse bg-surface-container sm:h-44" />
+              <div className="space-y-1.5 p-2 sm:space-y-3 sm:p-4">
                 <div className="h-3 w-24 animate-pulse rounded bg-surface-container" />
                 <div className="h-5 w-4/5 animate-pulse rounded bg-surface-container" />
                 <div className="h-3 w-full animate-pulse rounded bg-surface-container" />
@@ -229,7 +229,7 @@ export function HomeActivityFeed() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 xl:gap-5" aria-label="Home activity updates">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 xl:gap-5" aria-label="Home activity updates">
           {visibleItems.slice(0, 10).map((item) => {
             const isCase = item.kind === "case";
             const isUrgent = isCase && item.caseItem.status === "open" && item.caseItem.priority === "high";
@@ -238,12 +238,12 @@ export function HomeActivityFeed() {
             return (
               <article
                 key={item.id}
-                className={`group flex min-w-0 flex-col overflow-hidden rounded-xl sm:rounded-2xl border bg-surface-container-lowest shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${isUrgent ? "border-error/40 hover:border-error/70" : "border-outline-variant hover:border-primary/35"}`}
+                className={`group flex min-w-0 flex-col overflow-hidden rounded-lg sm:rounded-2xl border bg-surface-container-lowest shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${isUrgent ? "border-error/40 hover:border-error/70" : "border-outline-variant hover:border-primary/35"}`}
               >
-                <div className={`relative h-28 overflow-hidden sm:h-48 ${isCase ? "bg-gradient-to-br from-rose-100 via-orange-50 to-amber-100" : "bg-gradient-to-br from-emerald-100 via-teal-50 to-sky-100"}`}>
+                <div className={`relative h-20 overflow-hidden sm:h-48 ${isCase ? "bg-gradient-to-br from-rose-100 via-orange-50 to-amber-100" : "bg-gradient-to-br from-emerald-100 via-teal-50 to-sky-100"}`}>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className={`flex h-10 w-10 sm:h-14 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl border border-white/70 bg-white/55 shadow-sm backdrop-blur ${isCase ? "text-rose-700" : "text-emerald-800"}`}>
-                      {isCase ? <ShieldAlert className="h-5 w-5 sm:h-7 sm:w-7" /> : <BookOpen className="h-5 w-5 sm:h-7 sm:w-7" />}
+                    <div className={`flex h-7 w-7 sm:h-14 sm:w-14 items-center justify-center rounded-lg sm:rounded-2xl border border-white/70 bg-white/55 shadow-sm backdrop-blur ${isCase ? "text-rose-700" : "text-emerald-800"}`}>
+                      {isCase ? <ShieldAlert className="h-4 w-4 sm:h-7 sm:w-7" /> : <BookOpen className="h-4 w-4 sm:h-7 sm:w-7" />}
                     </div>
                   </div>
                   {item.imageUrl && (
@@ -255,29 +255,29 @@ export function HomeActivityFeed() {
                     />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-black/15" />
-                  <div className="absolute left-3 top-3 flex max-w-[75%] flex-wrap gap-1.5">
+                  <div className="absolute left-1.5 top-1.5 flex max-w-[90%] flex-wrap gap-1 sm:left-3 sm:top-3 sm:max-w-[75%] sm:gap-1.5">
                     {isCase ? (
                       <>
-                        <span className="rounded-full border border-white/30 bg-black/45 px-2.5 py-1 text-[10px] font-extrabold text-white backdrop-blur-sm">Rescue case</span>
+                        <span className="rounded-full border border-white/30 bg-black/45 px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-extrabold text-white backdrop-blur-sm">Rescue case</span>
                         {isUrgent && <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-extrabold text-white shadow-sm"><ShieldAlert className="h-3 w-3" /> High priority</span>}
                       </>
                     ) : (
                       <>
-                        <span className="rounded-full border border-white/30 bg-black/45 px-2.5 py-1 text-[10px] font-extrabold text-white backdrop-blur-sm">{storyCategoryLabel(item.storyItem.category)}</span>
+                        <span className="rounded-full border border-white/30 bg-black/45 px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-extrabold text-white backdrop-blur-sm">{storyCategoryLabel(item.storyItem.category)}</span>
                         {item.storyItem.is_featured && <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-extrabold text-emerald-900"><Sparkles className="h-3 w-3" /> Featured</span>}
                       </>
                     )}
                   </div>
-                  <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2 text-white">
-                    <p className="min-w-0 truncate text-[11px] font-semibold drop-shadow">{location || (isCase ? "Community report" : "Community story")}</p>
+                  <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-end justify-between gap-1 text-white sm:bottom-3 sm:left-3 sm:right-3 sm:gap-2">
+                    <p className="min-w-0 truncate text-[9px] sm:text-[11px] font-semibold drop-shadow">{location || (isCase ? "Community report" : "Community story")}</p>
                     {isCase && <StatusBadge token={statusToken.caseStatus(item.caseItem.status)} />}
                   </div>
                 </div>
 
-                <div className="flex flex-1 flex-col p-3 sm:p-5">
-                  <div className="flex items-center justify-between gap-2 text-[11px] text-outline">
+                <div className="flex flex-1 flex-col p-2 sm:p-5">
+                  <div className="flex items-center justify-between gap-1 text-[9px] sm:gap-2 sm:text-[11px] text-outline">
                     <span className="inline-flex min-w-0 items-center gap-1.5 truncate">
-                      <Clock3 className="h-3.5 w-3.5 shrink-0" />
+                      <Clock3 className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                       <span className="truncate">{item.timestamp ? formatDateTime(item.timestamp) : "Recently updated"}</span>
                     </span>
                     {isCase && item.caseItem.caseType && (
@@ -287,23 +287,23 @@ export function HomeActivityFeed() {
                       <span className="shrink-0 rounded-md bg-surface-container px-2 py-1 font-bold text-on-surface-variant">Meet {item.storyItem.animal_name}</span>
                     )}
                   </div>
-                  <h3 className="mt-2 sm:mt-3 line-clamp-2 text-sm sm:text-base font-black leading-snug tracking-tight text-on-surface sm:text-lg">{item.title}</h3>
-                  <p className="mt-1.5 sm:mt-2 line-clamp-3 text-xs sm:text-sm leading-relaxed text-on-surface-variant">{item.summary}</p>
+                  <h3 className="mt-1 sm:mt-3 line-clamp-2 text-[11px] sm:text-base font-black leading-snug tracking-tight text-on-surface sm:text-lg">{item.title}</h3>
+                  <p className="mt-1 sm:mt-2 line-clamp-2 sm:line-clamp-3 text-[10px] sm:text-sm leading-snug sm:leading-relaxed text-on-surface-variant">{item.summary}</p>
 
                   {!isCase && item.storyItem.author_name && (
                     <p className="mt-3 text-xs font-semibold text-on-surface-variant">Shared by {item.storyItem.author_name}</p>
                   )}
 
-                  <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:gap-3 sm:pt-5">
-                    <span className="inline-flex min-w-0 items-center gap-1.5 text-[11px] text-outline">
+                  <div className="mt-auto flex items-center justify-between gap-1 pt-2 sm:gap-3 sm:pt-5">
+                    <span className="inline-flex min-w-0 items-center gap-1 text-[9px] sm:gap-1.5 sm:text-[11px] text-outline">
                       {location && <><MapPin className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{location}</span></>}
                     </span>
                     <Link
                       href={item.href}
-                      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-3 py-2 sm:gap-1.5 sm:px-3.5 sm:py-2.5 text-[11px] sm:text-xs font-extrabold text-primary transition-colors hover:bg-primary hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                      className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-primary/10 px-2 py-1 sm:gap-1.5 sm:px-3.5 sm:py-2.5 text-[9px] sm:text-xs font-extrabold text-primary transition-colors hover:bg-primary hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                     >
                       {isCase ? "View case" : "Read story"}
-                      <ArrowUpRight className="h-3.5 w-3.5" />
+                      <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     </Link>
                   </div>
                 </div>
