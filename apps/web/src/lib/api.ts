@@ -761,10 +761,11 @@ class ApiClient {
     }>>(`/community-stories?limit=${safeLimit}`);
   }
 
-  async listCases(params?: { limit?: number; status?: string }): Promise<Case[]> {
+  async listCases(params?: { limit?: number; status?: string; publicFeed?: boolean }): Promise<Case[]> {
     const sp = new URLSearchParams();
     if (params?.limit)  sp.append("limit",  params.limit.toString());
     if (params?.status) sp.append("status", params.status);
+    if (params?.publicFeed) sp.append("publicFeed", "true");
     const qs = sp.toString();
     return this.request<Case[]>(`/cases${qs ? `?${qs}` : ""}`);
   }
