@@ -78,14 +78,14 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-4 sm:space-y-8 min-w-0">
+    <div className="max-w-3xl mx-auto space-y-3 sm:space-y-8 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">My Profile</h1>
         <p className="text-sm text-on-surface-variant mt-1">Manage your account details and responder settings</p>
       </div>
 
       {/* Identity Card */}
-      <Card className="p-4 sm:p-8">
+      <Card className="p-3.5 sm:p-8">
         <div className="flex flex-row items-center gap-3 sm:gap-6">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-primary/20 overflow-hidden bg-surface-container-high shrink-0">
             {user.profilePhotoUrl ? (
@@ -113,7 +113,7 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-        <div className="mt-6 p-4 bg-surface-container-low rounded-xl border border-outline-variant">
+        <div className="mt-4 sm:mt-6 p-3.5 sm:p-4 bg-surface-container-low rounded-xl border border-outline-variant">
           <p className="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Role Access Level</p>
           <p className="text-sm text-on-surface leading-relaxed">
             {ROLE_DESCRIPTIONS[user.role] ?? "Platform member."}
@@ -136,7 +136,7 @@ export default function ProfilePage() {
       )}
 
       {/* Responder Settings */}
-      <Card className="p-6 sm:p-8">
+      <Card className="p-4 sm:p-8">
         <div className="flex items-center gap-3 mb-6">
           <MapPin className="w-5 h-5 text-primary" />
           <h3 className="text-lg font-bold text-on-surface">Responder Settings</h3>
@@ -155,9 +155,9 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <form onSubmit={handleSave} className="space-y-6">
+        <form onSubmit={handleSave} className="space-y-4 sm:space-y-6">
           {/* Availability Toggle */}
-          <div className="flex items-center justify-between p-5 bg-surface-container-low rounded-xl border border-outline-variant">
+          <div className="flex items-center justify-between gap-3 p-3.5 sm:p-5 bg-surface-container-low rounded-xl border border-outline-variant">
             <div>
               <p className="font-bold text-on-surface text-sm">Available for Rescue</p>
               <p className="text-xs text-on-surface-variant mt-0.5">
@@ -167,7 +167,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => setIsAvailable((v) => !v)}
-              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-150 ease-out ${
+              className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-150 ease-out ${
                 isAvailable ? "bg-primary" : "bg-surface-container-highest"
               }`}
             >
