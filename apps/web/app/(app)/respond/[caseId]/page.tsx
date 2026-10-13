@@ -195,7 +195,7 @@ export default function ActiveResponsePage() {
         <hr className="border-outline-variant" />
 
         {/* Transit Status Controls */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6 min-w-0">
           <h3 className="font-bold text-on-surface text-sm flex items-center gap-2">
             <ClipboardList className="w-4 h-4 text-primary" /> Update Mission Progress
           </h3>
