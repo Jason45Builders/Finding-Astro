@@ -37,6 +37,7 @@ const BASE_NAV_ITEMS = [
   { label: "Community",     href: "/community",    icon: Users },
   { label: "My Collectives", href: "/collectives",  icon: HeartHandshake },
   { label: "Memorial Wall", href: "/memorials",    icon: Heart },
+  { label: "Pawprints & Memories", href: "/community-stories", icon: PawPrint },
   { label: "Report Cruelty",href: "/cruelty",      icon: ShieldAlert },
   { label: "Partners",      href: "/partners",     icon: Building },
   { label: "Feedback",       href: "/beta/feedback", icon: MessageSquare },
@@ -62,6 +63,7 @@ const ADMIN_NAV_ITEMS = [
   { label: "Partner Requests",       href: "/admin/partner-requests",   icon: Store },
   { label: "Ambulance Management",   href: "/admin/ambulance",          icon: Ambulance },
   { label: "Memorial Wall",          href: "/admin/memorials",          icon: Heart },
+  { label: "Pawprints & Memories",   href: "/admin/community-stories",  icon: PawPrint },
   { label: "Funding & Donations",    href: "/funding",                  icon: HeartHandshake },
   { label: "Impact & CSR",           href: "/impact",                   icon: TrendingUp },
   { label: "Feedback",               href: "/admin/beta/feedback",      icon: MessageSquare },
@@ -104,14 +106,15 @@ const CITIZEN_NAV_GROUPS = [
   { label: "Your Space", hrefs: ["/dashboard"], collapsible: false },
   { label: "Animal Welfare", hrefs: ["/animals", "/cases", "/respond", "/map", "/adopt", "/foster", "/lost-found", "/wildlife", "/safety", "/abc", "/cruelty"], collapsible: false },
   { label: "Community & Support", hrefs: ["/funding", "/my/donations", "/community", "/collectives", "/partners", "/ambulance"], collapsible: false },
-  { label: "More", hrefs: ["/memorials", "/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
+  { label: "Stories & Remembrance", hrefs: ["/memorials", "/community-stories"], collapsible: false },
+  { label: "More", hrefs: ["/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
 ];
 
 const STAFF_NAV_GROUPS = [
   { label: "Overview", hrefs: ["/dashboard"], collapsible: false },
   { label: "Animal Welfare", hrefs: ["/admin/cases", "/map", "/cruelty", "/respond", "/animals"], collapsible: false },
   { label: "Operations & Reviews", hrefs: ["/dispatch", "/adoption-admin", "/rehome/review", "/admin/verifications", "/admin/reimbursements", "/admin/partner-requests", "/admin/ambulance"], collapsible: false },
-  { label: "Community & Impact", hrefs: ["/admin/memorials", "/funding", "/impact", "/admin/beta/feedback"], collapsible: false },
+  { label: "Community & Impact", hrefs: ["/admin/memorials", "/admin/community-stories", "/funding", "/impact", "/admin/beta/feedback"], collapsible: false },
   { label: "Administration", hrefs: ["/admin/users", "/admin/library"], collapsible: false },
   { label: "Account", hrefs: ["/profile", "/legal", "/privacy", "/terms"], collapsible: true },
 ];

@@ -39,6 +39,7 @@ const FOLDERS: Record<string, string> = {
   ngo_document: "ngo/documents",
   document: "documents",
   welfare_proof: "welfare/proofs",
+  community_story: "community-stories",
 };
 
 const PRIVATE_PURPOSES = new Set([
