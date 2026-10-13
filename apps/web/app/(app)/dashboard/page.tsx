@@ -318,9 +318,6 @@ export default function UserDashboard() {
         </Link>
       </div>
 
-      {/* Activity feed: real cases and published community stories */}
-      <HomeActivityFeed />
-
       {/* 3. Rescue Collectives */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
         <Card className="p-5 sm:p-6 border-primary/20 bg-primary/5">
@@ -388,6 +385,10 @@ export default function UserDashboard() {
           </Link>
         </Card>
       </div>
+
+
+      {/* Activity feed: real cases and published community stories */}
+      <HomeActivityFeed />
 
       {/* 4. Impact Summary */}
       <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-4 sm:p-6">
