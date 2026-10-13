@@ -88,12 +88,12 @@ function SignupForm() {
                 minLength={8}
                 pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,}"
                 title="Use at least 8 characters, including uppercase, lowercase, and a number"
-                className="pl-10 pr-10"
+                className="pl-10 pr-12 sm:pr-10"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
+                className="absolute right-1 top-1/2 -translate-y-1/2 flex min-h-11 min-w-11 items-center justify-center text-outline transition-colors hover:text-on-surface sm:right-3 sm:min-h-0 sm:min-w-0"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>

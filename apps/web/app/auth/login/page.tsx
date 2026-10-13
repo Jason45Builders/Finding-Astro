@@ -70,12 +70,12 @@ function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="pl-10 pr-10"
+                className="pl-10 pr-12 sm:pr-10"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
+                className="absolute right-1 top-1/2 -translate-y-1/2 flex min-h-11 min-w-11 items-center justify-center text-outline transition-colors hover:text-on-surface sm:right-3 sm:min-h-0 sm:min-w-0"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -91,10 +91,10 @@ function LoginForm() {
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
-        <p className="text-center text-sm text-on-surface-variant mt-6">
-          <a href="/auth/forgot-password" className="font-bold text-on-surface-variant hover:text-primary mr-2">Forgot password?</a>
-          <span className="text-outline">|</span>
-          <span className="ml-2">Don&apos;t have an account? <a href={signupHref} className="text-primary font-bold hover:underline">Sign up</a></span>
+        <p className="mt-6 flex flex-col items-center gap-3 text-center text-sm text-on-surface-variant sm:flex-row sm:justify-center sm:gap-2">
+          <a href="/auth/forgot-password" className="font-bold text-on-surface-variant hover:text-primary sm:mr-2">Forgot password?</a>
+          <span className="hidden text-outline sm:inline">|</span>
+          <span className="sm:ml-2">Don&apos;t have an account? <a href={signupHref} className="text-primary font-bold hover:underline">Sign up</a></span>
         </p>
       </Card>
     </div>
