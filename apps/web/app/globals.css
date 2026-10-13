@@ -131,7 +131,9 @@
   }
 
   /* Native controls remain usable on narrow phones and avoid iOS input zoom. */
-  input, select, textarea {
+  main input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  main select,
+  main textarea {
     font-size: 16px;
   }
 
