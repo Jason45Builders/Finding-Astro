@@ -110,7 +110,7 @@ function AdoptPageInner() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg text-headline-lg-mobile sm:text-headline-lg text-on-surface tracking-tight flex items-center gap-2">
           <Heart className="w-6 h-6 text-secondary" /> Adoption Centre
@@ -161,7 +161,7 @@ function AdoptPageInner() {
                       <span className="absolute top-3 right-3 bg-primary text-on-primary text-[9px] font-bold px-2 py-0.5 rounded-full">Sterilized</span>
                     )}
                   </div>
-                  <div className="p-5">
+                  <div className="p-3 sm:p-5">
                     <h3 className="font-headline-lg-mobile text-lg font-extrabold text-on-surface">{animal.name || "Unnamed"}</h3>
                     <p className="text-sm text-on-surface-variant capitalize mt-0.5">{animal.species}{animal.breed ? ` · ${animal.breed}` : ""}</p>
                     {animal.territoryLabel && (
