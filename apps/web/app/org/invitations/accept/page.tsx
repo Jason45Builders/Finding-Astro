@@ -57,7 +57,7 @@ function InvitationForm() {
     return (
       <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl">
         <div className="text-center">
-          <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-success" />
+          <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-success" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Invitation accepted</h1>
           <p className="text-on-surface-variant text-sm">
             Your organization membership is active. Sign in to continue to the NGO workspace.
@@ -78,15 +78,15 @@ function InvitationForm() {
 
   return (
     <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl">
-      <div className="text-center mb-8">
-        <LogoMark className="w-12 h-12 mx-auto mb-4" />
+      <div className="text-center mb-6 sm:mb-8">
+        <LogoMark className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4" />
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Join your NGO team</h1>
         <p className="text-on-surface-variant text-sm">
           You have been invited to join an organization on Finding Astro.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label>Full name</Label>
           <div className="relative">
@@ -126,7 +126,7 @@ function InvitationForm() {
         </Button>
       </form>
 
-      <p className="text-center text-xs text-on-surface-variant mt-6">
+      <p className="text-center text-xs leading-5 text-on-surface-variant mt-5 sm:mt-6">
         This invitation is single-use and expires after 7 days.
       </p>
     </Card>

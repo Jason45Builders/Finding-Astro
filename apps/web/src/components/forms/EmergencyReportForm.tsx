@@ -127,9 +127,9 @@ export function EmergencyReportForm({ homeHref = "/" }: { homeHref?: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       {error && (
-        <div className="bg-error-container text-on-error-container p-4 rounded-md text-sm font-medium">
+        <div className="bg-error-container text-on-error-container p-3 sm:p-4 rounded-md text-sm font-medium">
           {error}
         </div>
       )}
@@ -143,7 +143,7 @@ export function EmergencyReportForm({ homeHref = "/" }: { homeHref?: string }) {
               type="button"
               onClick={() => setSeverity(sev.value)}
               className={cn(
-                "min-h-11 px-2 py-3 rounded-md border-2 font-bold text-[11px] uppercase tracking-wide transition-all duration-150 ease-out active:scale-95 sm:px-4 sm:text-xs sm:tracking-wider",
+                "min-h-11 px-1.5 py-2.5 sm:px-4 sm:py-3 rounded-md border-2 font-bold text-[11px] uppercase tracking-wide transition-all duration-150 ease-out active:scale-95 sm:px-4 sm:text-xs sm:tracking-wider",
                 severity === sev.value
                   ? sev.value === "critical"
                     ? "bg-error text-on-error border-error"
@@ -191,7 +191,7 @@ export function EmergencyReportForm({ homeHref = "/" }: { homeHref?: string }) {
 
       <div>
         <Label>Evidence / Photo Upload</Label>
-        <div className="relative max-w-full cursor-pointer rounded-md border-2 border-dashed border-outline-variant p-4 text-center transition-colors duration-150 ease-out hover:border-primary hover:bg-surface-container sm:p-6">
+        <div className="relative max-w-full cursor-pointer rounded-md border-2 border-dashed border-outline-variant p-3.5 sm:p-6 text-center transition-colors duration-150 ease-out hover:border-primary hover:bg-surface-container sm:p-6">
           <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
           <div className="flex flex-col items-center gap-2">
             <Camera className="w-8 h-8 text-outline" />

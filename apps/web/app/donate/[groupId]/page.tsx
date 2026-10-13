@@ -86,20 +86,20 @@ export default function PublicDonationPage({ params }: { params: Promise<{ group
     <main className="min-h-screen bg-surface-container-low px-3 py-4 sm:px-4 sm:py-10">
       <div className="max-w-4xl mx-auto">
         <Card className="overflow-hidden">
-          <header className="bg-primary text-on-primary p-4 sm:p-8">
+          <header className="bg-primary text-on-primary p-3.5 sm:p-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <div>
                 <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-90">
                   <HeartHandshake className="w-4 h-4" /> Finding Astro Rescue Collective
                 </div>
-                <h1 className="mt-3 text-2xl sm:text-4xl font-black">{collective.name}</h1>
+                <h1 className="mt-2 sm:mt-3 text-xl sm:text-4xl font-black leading-tight">{collective.name}</h1>
                 {collective.city && <p className="mt-2 inline-flex items-center gap-1.5 text-sm opacity-90"><MapPin className="w-4 h-4" />{collective.city}</p>}
               </div>
               {collective.isVerified && <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold"><CheckCircle2 className="w-4 h-4" />Verified</span>}
             </div>
           </header>
 
-          <div className="p-4 sm:p-8">
+          <div className="p-3.5 sm:p-8">
             <div className="grid md:grid-cols-[1fr_auto] gap-4 sm:gap-8 items-center">
               <div>
                 <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wide">Monthly rescue fund</p>
@@ -114,15 +114,15 @@ export default function PublicDonationPage({ params }: { params: Promise<{ group
               </div>
 
               <div className="flex flex-col items-center">
-                {qr ? <img src={qr} alt={`UPI donation QR for ${collective.name}`} className="w-56 h-56 rounded-xl bg-white p-2 shadow-sm" /> : <div className="w-56 h-56 rounded-xl bg-surface-container-high flex items-center justify-center text-sm text-on-surface-variant">QR unavailable</div>}
+                {qr ? <img src={qr} alt={`UPI donation QR for ${collective.name}`} className="w-44 h-44 sm:w-56 sm:h-56 rounded-xl bg-white p-2 shadow-sm" /> : <div className="w-44 h-44 sm:w-56 sm:h-56 rounded-xl bg-surface-container-high flex items-center justify-center text-sm text-on-surface-variant">QR unavailable</div>}
                 {qr && <a href={qr} download={`${collective.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-upi-qr.png`} className="mt-3 text-sm font-bold text-primary hover:underline">Download QR image</a>}
               </div>
             </div>
 
-            <section className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-5">
+            <section className="mt-6 sm:mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-3.5 sm:p-5">
               <p className="text-sm font-bold text-on-surface">Donate directly by UPI</p>
               <p className="text-xs text-on-surface-variant mt-1">No Finding Astro account is required. Scan the QR or open the UPI payment link.</p>
-              <div className="mt-4 flex flex-col sm:flex-row gap-3">
+              <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2.5 sm:gap-3">
                 <Button variant="primary" onClick={() => upiUri && (window.location.href = upiUri)} disabled={!upiUri}><Smartphone className="w-4 h-4 mr-2" />Open UPI app</Button>
                 <Button variant="secondary" onClick={() => copy(donation.upiId, "UPI ID copied.")}><Copy className="w-4 h-4 mr-2" />Copy UPI ID</Button>
                 <Button variant="secondary" onClick={share}><Share2 className="w-4 h-4 mr-2" />Share on WhatsApp</Button>
@@ -133,7 +133,7 @@ export default function PublicDonationPage({ params }: { params: Promise<{ group
               </div>
             </section>
 
-            <div className="mt-6 grid sm:grid-cols-2 gap-3">
+            <div className="mt-5 sm:mt-6 grid sm:grid-cols-2 gap-3">
               <Card className="p-4 bg-surface-container-low">
                 <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">After you pay</p>
                 <p className="mt-1 text-sm text-on-surface">Keep your UPI transaction reference (UTR). The collective admin can reconcile your payment in Finding Astro.</p>
