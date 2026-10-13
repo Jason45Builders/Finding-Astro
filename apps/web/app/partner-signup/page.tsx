@@ -86,22 +86,22 @@ export default function PartnerSignupPage() {
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Business Name *</label>
-            <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base" />
+            <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base sm:text-sm" />
           </div>
 
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Address</label>
-            <textarea value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} rows={2} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base resize-y" />
+            <textarea value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} rows={2} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base resize-y sm:resize-none sm:text-sm" />
           </div>
 
           <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-3">
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Ward</label>
-              <input value={form.wardName} onChange={e => setForm(f => ({ ...f, wardName: e.target.value }))} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base" />
+              <input value={form.wardName} onChange={e => setForm(f => ({ ...f, wardName: e.target.value }))} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base sm:text-sm" />
             </div>
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">City</label>
-              <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base" />
+              <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base sm:text-sm" />
             </div>
           </div>
 
@@ -109,14 +109,14 @@ export default function PartnerSignupPage() {
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Phone</label>
             <div className="relative">
               <Phone className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <input type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className="w-full min-w-0 pl-9 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base" />
+              <input type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className="w-full min-w-0 pl-9 pr-4 py-3 sm:py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base sm:text-sm" />
             </div>
           </div>
 
           {type === "clinic" && (
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Clinic Type</label>
-              <select value={form.clinicType} onChange={e => setForm(f => ({ ...f, clinicType: e.target.value as any }))} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base font-semibold">
+              <select value={form.clinicType} onChange={e => setForm(f => ({ ...f, clinicType: e.target.value as any }))} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base font-semibold sm:text-sm">
                 {CLINIC_TYPES.map(t => <option key={t} value={t}>{t.replace("_", " ").toUpperCase()}</option>)}
               </select>
             </div>
@@ -160,13 +160,13 @@ export default function PartnerSignupPage() {
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Operating Hours</label>
             <div className="relative">
               <Clock className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <input value={form.operatingHours} onChange={e => setForm(f => ({ ...f, operatingHours: e.target.value }))} placeholder="e.g. Mon-Sat 9AM-8PM" className="w-full min-w-0 pl-9 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base" />
+              <input value={form.operatingHours} onChange={e => setForm(f => ({ ...f, operatingHours: e.target.value }))} placeholder="e.g. Mon-Sat 9AM-8PM" className="w-full min-w-0 pl-9 pr-4 py-3 sm:py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base sm:text-sm" />
             </div>
           </div>
 
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Additional Notes</label>
-            <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base resize-y" />
+            <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} className="w-full min-w-0 p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary text-base resize-y sm:resize-none sm:text-sm" />
           </div>
         </div>
 
