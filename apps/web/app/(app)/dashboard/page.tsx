@@ -218,28 +218,28 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="space-y-2.5 sm:space-y-5">
+    <div className="space-y-3 sm:space-y-5">
       {/* 1. Welcome Hero */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl text-white shadow-lg sm:shadow-xl">
         <div className="absolute inset-0">
           <img src="/Finding Astro_Header_D.png" alt="" className="w-full h-full object-cover object-center" style={{ objectPosition: "center 25%" }} />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-primary/60 to-transparent" />
         </div>
-        <div className="relative p-3 sm:p-8 lg:p-10">
-          <div className="flex flex-row items-center justify-between gap-2 sm:gap-8">
+        <div className="relative p-3.5 sm:p-8 lg:p-10">
+          <div className="flex flex-row items-center justify-between gap-3 sm:gap-8">
             <div className="flex-1 min-w-0">
-              <p className="text-[9px] sm:text-xs font-bold text-white/70 uppercase tracking-widest mb-0.5 sm:mb-1">Welcome back</p>
-              <h1 className="text-base sm:text-2xl lg:text-3xl font-black text-white tracking-tight leading-tight">
+              <p className="text-[10px] sm:text-xs font-bold text-white/70 uppercase tracking-widest mb-1">Welcome back</p>
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-black text-white tracking-tight leading-tight break-words">
                 Hi, {user?.fullName || "Citizen"}!
               </h1>
-              <p className="text-[10px] sm:text-sm text-white/75 mt-1 sm:mt-2">
+              <p className="text-xs sm:text-sm text-white/75 mt-1 sm:mt-2">
                 Your current reputation score is <strong className="text-white font-semibold">{user?.reputationScore ?? 0}</strong>
               </p>
               <p className="text-xs sm:text-sm text-white/60 mt-1 hidden sm:block">
                 Thank you for making your community a safer place for animals.
               </p>
               {photoError && (
-                <div className="mt-3 inline-flex items-center gap-2 bg-red-500/20 border border-red-400/40 text-red-100 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                <div className="mt-3 inline-flex items-center gap-2 bg-red-500/20 border border-red-400/40 text-red-100 px-3 py-2 rounded-lg text-xs font-semibold">
                   <span>{photoError}</span>
                 </div>
               )}
