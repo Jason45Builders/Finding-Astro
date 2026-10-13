@@ -48,7 +48,7 @@ function ResetPasswordForm() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md p-8 shadow-xl text-center space-y-4">
+        <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl text-center space-y-4">
           <CheckCircle className="w-12 h-12 mx-auto text-green-600" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary">Password updated</h1>
           <p className="text-sm text-on-surface-variant">You can now sign in with your new password.</p>
@@ -61,7 +61,7 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md p-8 shadow-xl text-center space-y-4">
+        <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl text-center space-y-4">
           <AlertCircle className="w-12 h-12 mx-auto text-error" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Invalid reset link</h1>
           <p className="text-sm text-on-surface-variant">This password reset link is missing or invalid.</p>

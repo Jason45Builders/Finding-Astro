@@ -34,7 +34,7 @@ function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md p-8 shadow-xl text-center space-y-4">
+        <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl text-center space-y-4">
           <LogoMark className="w-12 h-12 mx-auto mb-2" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary">Check your email</h1>
           <p className="text-sm text-on-surface-variant">If an account exists with this email, we sent a password reset link.</p>

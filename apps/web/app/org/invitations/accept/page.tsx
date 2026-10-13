@@ -55,7 +55,7 @@ function InvitationForm() {
 
   if (accepted) {
     return (
-      <Card className="w-full max-w-md p-8 shadow-xl">
+      <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl">
         <div className="text-center">
           <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-success" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Invitation accepted</h1>
@@ -77,7 +77,7 @@ function InvitationForm() {
   }
 
   return (
-    <Card className="w-full max-w-md p-8 shadow-xl">
+    <Card className="w-full max-w-md p-5 sm:p-8 shadow-xl">
       <div className="text-center mb-8">
         <LogoMark className="w-12 h-12 mx-auto mb-4" />
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Join your NGO team</h1>

@@ -77,10 +77,10 @@ export default async function RootPage() {
   return (
     <div className="bg-background text-on-surface">
       <ScrollHeader>
-        <nav className="flex justify-between items-center h-16 md:h-20 px-container-padding-mobile md:px-container-padding-desktop max-w-[1200px] mx-auto">
-          <div className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary flex items-center gap-2">
-            <LogoMark className="w-7 h-7" />
-            <span>Finding Astro</span>
+        <nav className="flex justify-between items-center min-h-16 md:h-20 py-2 md:py-0 gap-2 px-container-padding-mobile md:px-container-padding-desktop max-w-[1200px] mx-auto">
+          <div className="min-w-0 shrink font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary flex items-center gap-1.5 md:gap-2">
+            <LogoMark className="w-7 h-7 shrink-0" />
+            <span className="whitespace-nowrap text-[21px] md:text-inherit">Finding Astro</span>
           </div>
           <div className="hidden md:flex gap-6">
             <a className="font-title-md text-sm text-on-surface-variant hover:text-secondary transition-colors duration-150 ease-out" href="#mission">Mission</a>
@@ -89,9 +89,9 @@ export default async function RootPage() {
             <a className="font-title-md text-sm text-on-surface-variant hover:text-secondary transition-colors duration-150 ease-out" href="#partners">Partners</a>
             <Link className="font-title-md text-sm font-bold text-primary hover:text-secondary transition-colors duration-150 ease-out" href="/library">Library</Link>
           </div>
-          <div className="flex gap-2 md:gap-3">
-            <Link href="/auth/login"><Button variant="outline" size="sm" className="md:h-11 md:px-6 md:text-sm">Sign In</Button></Link>
-            <Link href="/auth/signup"><Button variant="primary" size="sm" className="md:h-11 md:px-6 md:text-sm">Create Account</Button></Link>
+          <div className="flex shrink-0 items-center gap-1.5 md:gap-3">
+            <Link href="/auth/login" className="shrink-0"><Button variant="outline" size="sm" className="min-h-10 whitespace-nowrap px-2.5 text-[11px] md:h-11 md:px-6 md:text-sm">Sign In</Button></Link>
+            <Link href="/auth/signup" className="shrink-0"><Button variant="primary" size="sm" className="min-h-10 whitespace-nowrap px-2.5 text-[11px] md:h-11 md:px-6 md:text-sm"><span className="md:hidden">Join</span><span className="hidden md:inline">Create Account</span></Button></Link>
           </div>
         </nav>
       </ScrollHeader>

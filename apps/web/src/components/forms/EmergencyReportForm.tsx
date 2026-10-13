@@ -99,7 +99,7 @@ export function EmergencyReportForm({ homeHref = "/" }: { homeHref?: string }) {
 
   if (successCase) {
     return (
-      <Card className="max-w-xl mx-auto text-center p-8 space-y-6">
+      <Card className="mx-auto max-w-xl p-5 text-center space-y-5 sm:p-8 sm:space-y-6">
         <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
           <CheckCircle className="w-9 h-9 text-green-600" />
         </div>
@@ -136,14 +136,14 @@ export function EmergencyReportForm({ homeHref = "/" }: { homeHref?: string }) {
 
       <div className="space-y-2">
         <Label className="mb-0">Condition Severity</Label>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {SEVERITY_OPTIONS.map((sev) => (
             <button
               key={sev.value}
               type="button"
               onClick={() => setSeverity(sev.value)}
               className={cn(
-                "py-3 px-4 rounded-md border-2 font-bold text-xs uppercase tracking-wider transition-all duration-150 ease-out active:scale-95",
+                "min-h-11 px-2 py-3 rounded-md border-2 font-bold text-[11px] uppercase tracking-wide transition-all duration-150 ease-out active:scale-95 sm:px-4 sm:text-xs sm:tracking-wider",
                 severity === sev.value
                   ? sev.value === "critical"
                     ? "bg-error text-on-error border-error"
@@ -166,7 +166,7 @@ export function EmergencyReportForm({ homeHref = "/" }: { homeHref?: string }) {
             <Input type="text" placeholder="Latitude" value={latitude !== null ? latitude.toFixed(6) : ""} readOnly className="rounded-md" />
             <Input type="text" placeholder="Longitude" value={longitude !== null ? longitude.toFixed(6) : ""} readOnly className="rounded-md" />
           </div>
-          <Button type="button" variant="ghost" onClick={handleDetectLocation} disabled={detectingLocation} className="bg-surface-container-high shrink-0">
+          <Button type="button" variant="ghost" onClick={handleDetectLocation} disabled={detectingLocation} className="min-h-11 bg-surface-container-high shrink-0">
             <MapPin className="w-4 h-4" />
             {detectingLocation ? "Detecting..." : "Detect Location"}
           </Button>
@@ -191,11 +191,11 @@ export function EmergencyReportForm({ homeHref = "/" }: { homeHref?: string }) {
 
       <div>
         <Label>Evidence / Photo Upload</Label>
-        <div className="border-2 border-dashed border-outline-variant hover:border-primary hover:bg-surface-container rounded-md p-6 text-center transition-colors duration-150 ease-out relative cursor-pointer">
+        <div className="relative max-w-full cursor-pointer rounded-md border-2 border-dashed border-outline-variant p-4 text-center transition-colors duration-150 ease-out hover:border-primary hover:bg-surface-container sm:p-6">
           <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
           <div className="flex flex-col items-center gap-2">
             <Camera className="w-8 h-8 text-outline" />
-            <span className="text-sm font-bold text-on-surface-variant">{file ? file.name : "Click to select a photo"}</span>
+            <span className="max-w-full break-words text-sm font-bold text-on-surface-variant">{file ? file.name : "Click to select a photo"}</span>
             <span className="text-xs text-outline">PNG or JPG formats up to 5MB</span>
           </div>
         </div>

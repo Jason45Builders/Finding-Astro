@@ -69,7 +69,7 @@ export default function PublicDonationPage({ params }: { params: Promise<{ group
 
   if (!data) return (
     <main className="min-h-screen bg-surface-container-low px-4 py-10">
-      <Card className="max-w-xl mx-auto p-8 text-center">
+      <Card className="max-w-xl mx-auto p-5 sm:p-8 text-center">
         <HeartHandshake className="w-10 h-10 mx-auto text-primary" />
         <h1 className="mt-4 font-headline-lg text-headline-lg text-on-surface">Donation page unavailable</h1>
         <p className="mt-2 text-sm text-on-surface-variant">{message || "This Rescue Collective is not accepting donations right now."}</p>

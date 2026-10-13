@@ -71,7 +71,7 @@ export default function NgoSignupPage() {
   if (success) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <Card className="p-8 max-w-md w-full text-center space-y-4">
+        <Card className="p-5 sm:p-8 max-w-md w-full text-center space-y-4">
           <Building2 className="w-12 h-12 text-primary mx-auto" />
           <h1 className="font-headline-lg text-headline-lg text-on-surface">Account Created</h1>
           <p className="text-sm text-on-surface-variant">
