@@ -157,13 +157,13 @@ export default function OrgVolunteersPage() {
       </div>
 
       {volunteers.length === 0 ? (
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <EmptyState icon={Users} title="No volunteers yet" description="Add volunteer profiles to coordinate your team." />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {volunteers.map((v) => (
-            <Card key={v.id} className="p-5">
+            <Card key={v.id} className="p-3 sm:p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                  <div className="flex items-center gap-2">
@@ -210,7 +210,7 @@ export default function OrgVolunteersPage() {
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:gap-4">
             {[
               { id: "canRescue", label: "Can Rescue", checked: form.canRescue, onChange: (v: boolean) => setForm({ ...form, canRescue: v }) },
               { id: "canTransport", label: "Can Transport", checked: form.canTransport, onChange: (v: boolean) => setForm({ ...form, canTransport: v }) },
