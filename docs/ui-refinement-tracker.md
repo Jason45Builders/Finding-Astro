@@ -24,10 +24,9 @@ Production: `Working` (protected by process; do not merge without approval)
 
 - Added `HomeActivityFeed.tsx` using the existing role-aware cases API and published-only community stories API.
 - Added bounded `api.listCommunityStories()` client method and integrated the feed after existing quick actions.
-- Added manual refresh, filters, loading/partial-error/empty states, timestamps and accessible focus styling. Open cases marked `heldForReview` are excluded from the public feed unless the current user reported or is assigned to them.
+- Added manual refresh, filters, loading/partial-error/empty states, timestamps and accessible focus styling. The cases API applies a server-side `publicFeed=true` filter so held-for-review records are not returned to unrelated users.
 - Draft PR: https://github.com/Jason45Builders/Finding-Astro/pull/8
 - Typecheck/build/preview QA remain pending; do not merge until verified. Vercel preview creation returned HTTP 402 (`api-deployments-free-per-day`), so no preview is available; retry after 24 hours or resolve the plan quota.
-- Preview deployment attempt was blocked by Vercel API quota (HTTP 402, `api-deployments-free-per-day`; retry after 24 hours). No branch preview was available to inspect.
 
 ## Working log
 
