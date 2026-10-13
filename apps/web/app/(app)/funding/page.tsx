@@ -42,7 +42,7 @@ export default function FundingListPage() {
   const openCount   = cases.filter(c => c.status === "OPEN" || c.status === "PARTIALLY_FUNDED").length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface tracking-tight flex items-center gap-2">
           <Heart className="w-6 h-6 text-secondary fill-secondary" /> Treatment Funding
@@ -67,7 +67,7 @@ export default function FundingListPage() {
       {/* How it works */}
       <Card className="p-5 bg-primary-container/20">
         <p className="text-sm font-bold text-primary mb-3">How Finding Astro Funding Works</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-on-surface-variant">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-xs text-on-surface-variant">
           {HOW_IT_WORKS.map((step, i) => (
             <div key={i} className="flex items-start gap-2">
               <span className="w-5 h-5 rounded-full bg-primary text-on-primary text-[10px] font-black flex items-center justify-center shrink-0">{i + 1}</span>
@@ -105,7 +105,7 @@ export default function FundingListPage() {
           {filtered.map(fc => {
             const isOpenForDonation = fc.status === "OPEN" || fc.status === "PARTIALLY_FUNDED";
             return (
-              <Card key={fc.id} interactive className="p-6 flex flex-col gap-4">
+              <Card key={fc.id} interactive className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4">
                 <div>
                   <StatusBadge token={statusToken.fundingStatus(fc.status)} className="mb-2" />
                   <p className="font-bold text-on-surface text-sm">{fc.fundingType ?? "Treatment Funding"}</p>
