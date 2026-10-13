@@ -50,7 +50,7 @@ export default function MyDonationsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-3 sm:space-y-6">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface">My Donations</h1>
         <p className="text-sm text-on-surface-variant mt-1">Track your payment claims and their verification status</p>
@@ -63,21 +63,21 @@ export default function MyDonationsPage() {
           <Link href="/partners"><Button variant="primary" className="mt-4">Browse Welfare Groups</Button></Link>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {donations.map((donation) => (
-            <Card key={donation.id} className="p-3 sm:p-5">
-              <div className="flex items-start justify-between gap-4">
+            <Card key={donation.id} className="p-3.5 sm:p-5">
+              <div className="flex items-start justify-between gap-3 sm:gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold text-on-surface text-base">₹{donation.amount.toLocaleString()}</span>
+                    <span className="font-bold text-on-surface text-base tabular-nums">₹{donation.amount.toLocaleString()}</span>
                       <Badge variant={donation.status === "VERIFIED" ? "success" : donation.status === "REJECTED" ? "danger" : "warning"}>
                         {donation.status}
                       </Badge>
                   </div>
-                  <p className="text-xs text-on-surface-variant">Receipt: {donation.receiptNumber}</p>
-                  <p className="text-xs text-on-surface-variant">UTR: {donation.utr}</p>
-                  <p className="text-xs text-on-surface-variant">Date: {donation.paymentDate}</p>
-                  {donation.purpose && <p className="text-xs text-on-surface-variant">Purpose: {donation.purpose}</p>}
+                  <p className="text-xs text-on-surface-variant break-words">Receipt: {donation.receiptNumber}</p>
+                  <p className="text-xs text-on-surface-variant break-words">UTR: {donation.utr}</p>
+                  <p className="text-xs text-on-surface-variant break-words">Date: {donation.paymentDate}</p>
+                  {donation.purpose && <p className="text-xs text-on-surface-variant break-words">Purpose: {donation.purpose}</p>}
                   {donation.rejectionReason && <p className="text-xs text-error mt-1">Reason: {donation.rejectionReason}</p>}
                 </div>
               </div>
