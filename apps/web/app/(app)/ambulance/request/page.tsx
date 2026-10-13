@@ -121,7 +121,7 @@ export default function AmbulanceRequestPage() {
 
   if (successId) {
     return (
-      <div className="max-w-xl mx-auto">
+      <div className="max-w-xl mx-auto min-w-0">
         <Card className="p-6 sm:p-8 text-center space-y-4">
           <CheckCircle className="w-12 h-12 text-green-600 mx-auto" />
           <h1 className="font-headline-lg text-on-surface">Ambulance requested</h1>
@@ -141,7 +141,7 @@ export default function AmbulanceRequestPage() {
 
   return (
     <div className="max-w-xl mx-auto">
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <Link href="/ambulance" className="inline-flex items-center gap-1 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors">
           <Ambulance className="w-4 h-4" /> Back to Ambulance
         </Link>
@@ -149,7 +149,7 @@ export default function AmbulanceRequestPage() {
         <p className="text-sm text-on-surface-variant mt-1">Provide pickup and destination details to request an animal ambulance.</p>
       </div>
 
-      <Card className="p-5 sm:p-6 space-y-5">
+      <Card className="p-3.5 sm:p-6 space-y-4 sm:space-y-5">
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
             <div className="flex items-center gap-2 text-error text-sm bg-error-container p-3 rounded-md">
