@@ -56,10 +56,10 @@ export default function PartnerSignupPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 min-w-0">
       <div className="text-center">
         <LogoMark className="w-10 h-10 mx-auto mb-3" />
-        <h1 className="text-3xl font-black text-slate-800 tracking-tight">Partner Sign-Up</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">Partner Sign-Up</h1>
         <p className="text-sm text-slate-500 mt-2">Join the Finding Astro partner network. Your listing will be reviewed by our team before going live.</p>
       </div>
 
@@ -73,8 +73,8 @@ export default function PartnerSignupPage() {
         <div className="bg-red-50 text-red-700 border border-red-200 p-4 rounded-xl text-sm">{error}</div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="flex gap-2">
+      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm space-y-4 sm:space-y-6">
+        <div className="flex flex-col min-[420px]:flex-row gap-2">
           <button type="button" onClick={() => setType("clinic")} className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${type === "clinic" ? "bg-primary text-white border-primary" : "bg-white text-slate-600 border-slate-200 hover:border-primary"}`}>
             <Building2 className="w-4 h-4" /> Clinic / Hospital
           </button>
