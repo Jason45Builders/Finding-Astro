@@ -56,22 +56,24 @@ export default function MyCases() {
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">Case Board</h1>
           <p className="text-sm text-on-surface-variant">Track stray rescues, lost pet reports, and medical operations</p>
         </div>
-        <Link href="/cases/new">
-          <Button variant="primary">
+        <Link href="/cases/new" className="w-full sm:w-auto">
+          <Button variant="primary" className="w-full sm:w-auto">
             <Plus className="w-4 h-4" /> File New Report
           </Button>
         </Link>
       </div>
 
       {/* Tabs */}
-      <div className="min-w-0 overflow-x-auto -mx-1 px-1">\n      <TabBar>
+      <div className="min-w-0 overflow-x-auto -mx-1 px-1">
+      <TabBar>
         <TabButton active={activeTab === "reported"} onClick={() => setActiveTab("reported")}>
           Reported by Me
         </TabButton>
         <TabButton active={activeTab === "responding"} onClick={() => setActiveTab("responding")}>
           I&apos;m Responding To
         </TabButton>
-      </TabBar>\n      </div>
+      </TabBar>
+      </div>
 
       {/* Cases List */}
       {loading ? (
