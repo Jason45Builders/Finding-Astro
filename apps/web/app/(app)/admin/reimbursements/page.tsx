@@ -95,7 +95,7 @@ export default function AdminReimbursementsPage() {
   const allPassed = (g: Gates) => g.proof && g.hospitalVerified && g.surgeryDone;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-2">
           <DollarSign className="w-6 h-6 text-secondary" /> Reimbursement Approvals
@@ -124,7 +124,7 @@ export default function AdminReimbursementsPage() {
                   <Badge variant={passed ? "success" : "warning"}>{passed ? "Ready for payout" : "Gates pending"}</Badge>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-2 sm:gap-3">
                   <div className={cn("p-3 rounded-md border", gates.proof ? "bg-green-50 border-green-200" : "bg-error-container/40 border-error/30")}>
                     <div className="flex items-center gap-2 mb-1">
                       <FileText className="w-4 h-4 shrink-0" />
