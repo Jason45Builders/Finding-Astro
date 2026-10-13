@@ -99,9 +99,9 @@ export default async function RootPage() {
       <main className="pt-20 md:pt-20">
         {/* Hero */}
         <section className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg md:py-24">
-          <div className="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <div className="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className="text-center md:text-left flex flex-col gap-stack-md items-center md:items-start">
-              <h1 className="font-display-lg text-[40px] md:text-display-lg leading-tight text-primary">Civic Infrastructure for Animal Welfare.</h1>
+              <h1 className="font-display-lg text-[clamp(2rem,8vw,2.75rem)] md:text-display-lg leading-tight text-primary">Civic Infrastructure for Animal Welfare.</h1>
               <p className="font-body-lg text-body-lg text-on-surface-variant max-w-lg">
                 A platform connecting citizens, volunteers, and verified clinics to respond to animals in need — with full transparency from the first report to the final outcome.
               </p>
@@ -121,7 +121,7 @@ export default async function RootPage() {
                 <BookOpen size={17} /> Explore the free animal-welfare library <span aria-hidden="true">→</span>
               </Link>
             </div>
-            <div className="relative aspect-square md:aspect-auto md:h-[440px] rounded-[40px] overflow-hidden bg-primary">
+            <div className="relative aspect-[4/3] sm:aspect-square md:aspect-auto md:h-[440px] rounded-3xl md:rounded-[40px] overflow-hidden bg-primary">
               <Image
                 src="/images/dog-01.jpg"
                 alt="A volunteer gently offering a hand to a stray dog"
