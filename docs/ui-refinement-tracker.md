@@ -16,8 +16,8 @@ Production: `Working` (protected by process; do not merge without approval)
 | UI-02 | Integrate feed without deleting dashboard tools | Implemented; validation pending | Feed placed after quick actions; existing dashboard sections remain. |
 | UI-03 | Mobile and keyboard usability | QA pending | Horizontal filter row, keyboard-operable controls, no auto-refresh/reordering. |
 | TEST-01 | Add/adjust targeted tests | Not started | Cover role visibility, empty results, ordering, errors and malformed filter input. |
-| TEST-02 | Run typecheck/lint/tests/build | Not started | Record exact commands and outcomes; do not claim tests passed without running them. |
-| QA-01 | Preview verification | Not started | Verify the branch deployment and core user flows. |
+| TEST-02 | Run typecheck/lint/tests/build | Pending | No connected local runtime; no CI run found for the branch commit. Must run before release. |
+| QA-01 | Preview verification | Blocked | Vercel deployment API returned HTTP 402 due to daily deployment quota. Retry after 24 hours or resolve the Vercel plan/quota; no preview has been validated. |
 | RELEASE-01 | Open PR to Working after verification | Not started | Do not merge until the user reviews and explicitly approves. |
 
 ## Current implementation
@@ -27,6 +27,7 @@ Production: `Working` (protected by process; do not merge without approval)
 - Added manual refresh, filters, loading/partial-error/empty states, timestamps and accessible focus styling. Open cases marked `heldForReview` are excluded from the public feed unless the current user reported or is assigned to them.
 - Draft PR: https://github.com/Jason45Builders/Finding-Astro/pull/8
 - Typecheck/build/preview QA remain pending; do not merge until verified.
+- Preview deployment attempt was blocked by Vercel API quota (HTTP 402, `api-deployments-free-per-day`; retry after 24 hours). No branch preview was available to inspect.
 
 ## Working log
 
