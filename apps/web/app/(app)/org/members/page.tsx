@@ -98,7 +98,7 @@ export default function OrgMembersPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface">Team Members</h1>
           <Badge variant="neutral">{groupLabel}</Badge>
@@ -108,7 +108,7 @@ export default function OrgMembersPage() {
       </div>
 
       {members.length === 0 ? (
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <EmptyState icon={Users} title="No team members yet" description="Add members by their email address." />
         </Card>
       ) : (
