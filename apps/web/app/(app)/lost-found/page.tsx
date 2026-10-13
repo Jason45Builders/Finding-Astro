@@ -152,7 +152,7 @@ export default function LostFoundPage() {
           {loading ? (
             <PageSpinner />
           ) : filtered.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-stagger">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 animate-stagger">
               {filtered.map(animal => (
                 <Link key={animal.id} href={`/animals/${animal.id}`}>
                   <Card interactive className="p-3 sm:p-5">

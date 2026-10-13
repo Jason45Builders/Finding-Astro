@@ -125,7 +125,7 @@ export default function RegisterAnimalPage() {
 
   if (success) {
     return (
-      <Card className="max-w-xl mx-auto text-center p-8 space-y-6">
+      <Card className="max-w-xl mx-auto text-center p-4 sm:p-8 space-y-4 sm:space-y-6">
         <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
           <CheckCircle className="w-9 h-9 text-green-600" />
         </div>
@@ -152,7 +152,7 @@ export default function RegisterAnimalPage() {
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mt-2">Register Community Animal</h1>
       </div>
 
-      <Card className="p-6 sm:p-8 space-y-6">
+      <Card className="p-4 sm:p-8 space-y-4 sm:space-y-6">
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
             <div className="bg-error-container text-on-error-container p-4 rounded-md text-sm font-medium">{error}</div>
@@ -190,7 +190,7 @@ export default function RegisterAnimalPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label>Approx Age (months)</Label>
               <Input type="number" value={approxAgeMonths} onChange={(e) => setApproxAgeMonths(e.target.value)} placeholder="e.g. 24" min="0" />

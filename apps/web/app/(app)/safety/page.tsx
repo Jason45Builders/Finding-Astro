@@ -228,7 +228,7 @@ export default function SafetyPage() {
                 <div className="space-y-2">
                   <Label className="mb-0">Your GPS Location</Label>
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="flex-1 grid grid-cols-2 gap-2">
+                    <div className="flex-1 grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
                       <Input type="text" placeholder="Latitude" readOnly value={latitude !== null ? latitude.toFixed(6) : ""} className="rounded-md" />
                       <Input type="text" placeholder="Longitude" readOnly value={longitude !== null ? longitude.toFixed(6) : ""} className="rounded-md" />
                     </div>

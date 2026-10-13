@@ -150,7 +150,7 @@ export default function ConflictReportPage() {
           <div className="space-y-2">
             <Label className="mb-0">Location Coordinates</Label>
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 grid grid-cols-2 gap-2">
+              <div className="flex-1 grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
                 <Input type="text" placeholder="Latitude" value={latitude !== null ? latitude.toFixed(6) : ""} readOnly className="rounded-md" />
                 <Input type="text" placeholder="Longitude" value={longitude !== null ? longitude.toFixed(6) : ""} readOnly className="rounded-md" />
               </div>

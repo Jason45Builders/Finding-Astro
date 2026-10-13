@@ -149,7 +149,7 @@ function AdoptPageInner() {
           {loading ? (
             <PageSpinner />
           ) : filtered.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-stagger">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 animate-stagger">
               {filtered.map(animal => (
                 <Card key={animal.id} interactive className="overflow-hidden p-0">
                   <div className="h-48 bg-surface-container-high relative flex items-center justify-center">

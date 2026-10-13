@@ -257,7 +257,7 @@ export default function FosterPage() {
                   <Input type="number" min={0} value={form.totalRaised} onChange={e => setForm(p => ({ ...p, totalRaised: Number(e.target.value) }))} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label>Start Date *</Label>
                   <Input type="date" value={form.startDate} onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))} required />
@@ -275,7 +275,7 @@ export default function FosterPage() {
                   <option value="cancelled">Cancelled</option>
                 </Select>
               </div>
-              <div className="flex gap-3 justify-end">
+              <div className="flex flex-col min-[420px]:flex-row gap-2 sm:gap-3 justify-end">
                 <Button variant="outline" type="button" onClick={() => setShowForm(false)} disabled={submitting}>Cancel</Button>
                 <Button variant="primary" type="submit" disabled={submitting}>{submitting ? "Saving..." : "Create Record"}</Button>
               </div>

@@ -84,7 +84,7 @@ export default function CrueltyPage() {
             <p className="text-xs text-on-surface-variant leading-relaxed">Your report has been assigned a case ID and forwarded to our NGO partners for immediate review. If the incident involves imminent harm, we will escalate to animal welfare authorities.</p>
             <p className="font-mono text-xs text-on-surface bg-surface-container-lowest border border-outline-variant px-3 py-2 rounded-md">Case ID: {success.caseId}</p>
           </div>
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-col min-[420px]:flex-row gap-2 sm:gap-3 justify-center">
             <Button variant="ghost" className="bg-surface-container-high" onClick={() => { setSuccess(null); setCrueltyType(""); setDescription(""); setFiles([]); }}>Report Another</Button>
             <a href={`/cases/${success.caseId}`}>
               <Button variant="primary">Track Case</Button>
@@ -123,7 +123,7 @@ export default function CrueltyPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <Label>Type of Cruelty</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 gap-2">
               {CRUELTY_TYPES.map(ct => (
                 <button key={ct.value} type="button" onClick={() => setCrueltyType(ct.value)}
                   className={cn(

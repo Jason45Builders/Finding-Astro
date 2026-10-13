@@ -60,3 +60,10 @@ Production branch: `ui-refinement` (per user direction; do not deploy this branc
 - Tightened the standalone login and signup cards on mobile.
 - Route families reviewed from navigation include animal records, cases and case details, SOS response, maps, adoption/foster, lost-and-found, wildlife, safety, ABC, funding/donations, community/collectives, memorials/stories, cruelty, partners, feedback, ambulance/dispatch, profile, legal pages, admin case/review/verification/reimbursement/user/library flows, organization workspace pages, public landing/library, authentication and report/register forms.
 - Verification status: source-level inspection only. Build, typecheck, automated tests, and device/browser checks have not been run; the latest changes are committed to `ui-refinement` but not confirmed live.
+
+
+#### Final route-specific pass
+- Reworked the mobile behavior of animal records, case board/details, emergency map, SOS response, adoption/foster listings, lost/found reports, wildlife/safety/ABC/cruelty/conflict forms, profile, funding/donations, memorials, community feeds, admin review screens, organization workspaces, library/landing/auth flows and other routed screens.
+- Form coordinate pairs now stack below 420px where two fields would otherwise become too narrow; form action rows stack on very narrow devices; card grids use narrower breakpoints where suitable.
+- No manual Vercel deployment was requested. Git-based auto-deploys may be triggered by commits to the production-linked branch; final production deployment should be held until responsive QA and build verification are complete.
+- Build/typecheck and device/browser verification are still pending because no authorized build sandbox or CI workflow is available through the connected tools.

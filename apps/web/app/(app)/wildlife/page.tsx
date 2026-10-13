@@ -216,7 +216,7 @@ function WildlifePageInner() {
             <div className="space-y-2">
               <Label className="mb-0">Your GPS location</Label>
               <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1 grid grid-cols-2 gap-2">
+                <div className="flex-1 grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
                   <Input type="text" placeholder="Latitude" readOnly value={latitude !== null ? latitude.toFixed(6) : ""} className="rounded-md" />
                   <Input type="text" placeholder="Longitude" readOnly value={longitude !== null ? longitude.toFixed(6) : ""} className="rounded-md" />
                 </div>
@@ -236,7 +236,7 @@ function WildlifePageInner() {
                 </div>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col min-[420px]:flex-row gap-2 sm:gap-3">
               <Button type="button" variant="ghost" className="flex-1 bg-surface-container-high" onClick={() => setStep("guidance")}>Back</Button>
               <Button type="submit" variant="coral" className="flex-1" disabled={submitting || !user}>
                 {submitting ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Bird className="w-4 h-4" />}
@@ -260,7 +260,7 @@ function WildlifePageInner() {
               <p className="text-sm text-on-surface-variant">{resultGuidance.publicGuidance}</p>
             </div>
           )}
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-col min-[420px]:flex-row gap-2 sm:gap-3 justify-center">
             <Button variant="ghost" className="bg-surface-container-high" onClick={() => { setStep("select-species"); setCondition(""); setDescription(""); setFile(null); }}>Report Another</Button>
             {resultCaseId && (
               <a href={`/cases/${resultCaseId}`}>
