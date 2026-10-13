@@ -185,7 +185,7 @@ export default function SafetyPage() {
               <Button variant="primary" onClick={() => { setSuccess(null); setSituationType(""); setDescription(""); }}>Done</Button>
             </Card>
           ) : (
-            <Card className="p-6 space-y-5">
+            <Card className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               <h2 className="font-title-md text-title-md text-on-surface">Report a Safety Concern</h2>
               <p className="text-sm text-on-surface-variant">This is not &quot;report the dog&quot; — it is &quot;report the situation.&quot; Welfare volunteers will follow up.</p>
               {!user && (
