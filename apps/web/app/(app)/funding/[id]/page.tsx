@@ -88,7 +88,7 @@ export default function FundingCaseDetails() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 min-w-0">
       {/* Back link */}
       <div>
         <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors duration-150 ease-out">
@@ -96,9 +96,9 @@ export default function FundingCaseDetails() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
         {/* Left: Funding Details */}
-        <Card className="lg:col-span-7 p-6 sm:p-8 space-y-6">
+        <Card className="lg:col-span-7 p-4 sm:p-6 sm:p-8 space-y-4 sm:space-y-6">
           <div>
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-primary-container text-on-primary-container mb-3">
               Medical Fundraiser
