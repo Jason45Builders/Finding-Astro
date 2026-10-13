@@ -136,7 +136,7 @@ function InvitationForm() {
 export default function InvitationPage() {
   return (
     <Suspense fallback={<PageSpinner />}>
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-3 sm:p-4">
         <InvitationForm />
       </div>
     </Suspense>
