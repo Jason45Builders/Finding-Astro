@@ -106,7 +106,8 @@ const CITIZEN_NAV_GROUPS = [
   { label: "Your Space", hrefs: ["/dashboard"], collapsible: false },
   { label: "Animal Welfare", hrefs: ["/animals", "/cases", "/respond", "/map", "/adopt", "/foster", "/lost-found", "/wildlife", "/safety", "/abc", "/cruelty"], collapsible: false },
   { label: "Community & Support", hrefs: ["/funding", "/my/donations", "/community", "/collectives", "/partners", "/ambulance"], collapsible: false },
-  { label: "More", hrefs: ["/memorials", "/community-stories", "/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
+  { label: "Stories & Remembrance", hrefs: ["/memorials", "/community-stories"], collapsible: false },
+  { label: "More", hrefs: ["/beta/feedback", "/profile", "/legal", "/privacy", "/terms"], collapsible: true },
 ];
 
 const STAFF_NAV_GROUPS = [
