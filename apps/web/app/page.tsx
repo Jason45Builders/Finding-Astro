@@ -74,7 +74,7 @@ export default async function RootPage() {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Link href="/auth/login" className="hidden sm:block"><Button variant="outline" size="sm" className="md:h-10 md:px-4">Sign in</Button></Link>
-            <Link href="/emergency"><Button variant="coral" size="sm" className="md:h-10 md:px-4"><span className="inline-flex items-center gap-1.5"><Siren className="h-4 w-4" /><span className="hidden sm:inline">Report SOS</span><span className="sm:hidden">SOS</span></span></Button></Link>
+            <Link href="/auth/signup"><Button variant="coral" size="sm" className="whitespace-nowrap md:h-10 md:px-4">Sign up and join</Button></Link>
           </div>
         </nav>
       </ScrollHeader>
@@ -88,7 +88,7 @@ export default async function RootPage() {
               <p className="mt-5 max-w-[540px] text-base leading-7 text-on-surface-variant md:mt-6 md:text-lg md:leading-8">Finding Astro connects people, responders and animal-welfare organizations — from urgent rescue and treatment to adoption, prevention and long-term community care.</p>
               <div className="mt-7 flex w-full flex-col gap-3 sm:w-auto sm:flex-row md:mt-8">
                 <Link href="/emergency" className="w-full sm:w-auto"><Button variant="coral" size="lg" className="w-full justify-center gap-2 sm:w-auto"><Siren className="h-4 w-4" />Report an emergency</Button></Link>
-                <Link href="/auth/signup" className="w-full sm:w-auto"><Button variant="outline" size="lg" className="w-full justify-center gap-2 sm:w-auto">Explore the platform <ArrowRight className="h-4 w-4" /></Button></Link>
+                <Link href="/library" className="w-full sm:w-auto"><Button variant="outline" size="lg" className="w-full justify-center gap-2 whitespace-nowrap sm:w-auto"><BookOpen className="h-4 w-4 shrink-0" />Animal Welfare Library <ArrowRight className="h-4 w-4 shrink-0" /></Button></Link>
               </div>
               <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-on-surface-variant sm:text-sm">
                 <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" />Emergency reporting without an account</span>
@@ -106,8 +106,10 @@ export default async function RootPage() {
                   <div className="mt-4 flex flex-wrap gap-2"><span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/20 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm"><MapPinned className="h-3.5 w-3.5" />Location-aware</span><span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/20 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm"><ShieldCheck className="h-3.5 w-3.5" />Evidence-led</span></div>
                 </div>
               </div>
-              <div className="absolute -left-2 top-5 hidden items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 shadow-lg sm:flex md:-left-5 md:top-8"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-container text-on-secondary-container"><Heart className="h-4 w-4" /></span><span className="text-xs font-bold text-primary">Care that continues</span></div>
-              <div className="absolute -right-2 bottom-24 hidden items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 shadow-lg sm:flex md:-right-5 md:bottom-28"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-container text-on-primary-container"><ShieldCheck className="h-4 w-4" /></span><span className="text-xs font-bold text-primary">Accountability at every step</span></div>
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+                <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-outline-variant bg-surface-container-lowest p-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary-container text-on-secondary-container"><Heart className="h-4 w-4" /></span><span className="text-xs font-bold leading-snug text-primary sm:text-sm">Care that continues</span></div>
+                <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-outline-variant bg-surface-container-lowest p-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-container text-on-primary-container"><ShieldCheck className="h-4 w-4" /></span><span className="text-xs font-bold leading-snug text-primary sm:text-sm">Accountability at every step</span></div>
+              </div>
             </div>
           </div>
         </section>
