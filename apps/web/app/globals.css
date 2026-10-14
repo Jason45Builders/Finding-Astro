@@ -160,3 +160,90 @@
   }
 
 }
+
+
+/* Responsive refinements for welfare, community, and organization workspaces.
+   Scope changes to narrow viewports so desktop layouts remain unchanged. */
+@media (max-width: 639px) {
+  /* Page headings and action rows should wrap instead of squeezing controls. */
+  main h1, main h2, main h3 {
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+
+  main h1 {
+    font-size: clamp(1.4rem, 5.2vw, 1.875rem);
+    line-height: 1.2;
+  }
+
+  main h2 {
+    line-height: 1.25;
+  }
+
+  main [class*="justify-between"] {
+    flex-wrap: wrap;
+    row-gap: 0.75rem;
+  }
+
+  /* Common workspace cards/forms use generous desktop padding. */
+  main [class~="p-8"], main [class~="px-8"] {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  main [class~="p-8"], main [class~="py-8"] {
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
+  main [class~="p-6"] {
+    padding: 1rem;
+  }
+
+  /* Dense metric grids stay legible without horizontal page overflow. */
+  main [class*="grid-cols-4"],
+  main [class*="grid-cols-3"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Let long descriptions, email addresses, IDs and labels wrap naturally. */
+  main [class*="truncate"],
+  main [class*="whitespace-nowrap"] {
+    overflow-wrap: anywhere;
+  }
+
+  main [class*="whitespace-nowrap"] {
+    white-space: normal;
+  }
+
+  /* Keep touch targets comfortable and stop long button labels from clipping. */
+  main button, main a[class*="rounded"] {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  main button {
+    white-space: normal;
+  }
+
+  /* Review/action controls and filter groups may wrap on narrow screens. */
+  main [class*="gap-"]:is(.flex) {
+    min-width: 0;
+  }
+
+  /* Preserve wide data tables through local scrolling rather than page overflow. */
+  main table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  main th, main td {
+    overflow-wrap: anywhere;
+  }
+
+  /* Media previews should never exceed the card or form width. */
+  main img, main video, main iframe {
+    max-width: 100%;
+  }
+}
