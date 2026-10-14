@@ -71,14 +71,20 @@ export default function MemorialsPage() {
             return (
               <article key={post.id} className="min-w-0">
                 <Card className={`h-full overflow-hidden !p-0 flex flex-col transition-all duration-200 ${expanded ? "border-primary/60 shadow-lg" : "hover:border-primary/40 hover:shadow-md"}`}>
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     aria-expanded={expanded}
                     aria-controls={`memory-details-${post.id}`}
-                    onClick={() => setExpandedId(expanded ? null : post.id)}
-                    className="group block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-                  >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[#263b35] via-[#3c5147] to-[#78675a]">
+                    onClick={() => setExpandedId((current) => current === post.id ? null : post.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setExpandedId((current) => current === post.id ? null : post.id);
+                      }
+                    }}
+                    className="group block w-full cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                  >                    <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[#263b35] via-[#3c5147] to-[#78675a]">
                       {photos[0] ? (
                         <Photo
                           src={photos[0]}
@@ -115,7 +121,7 @@ export default function MemorialsPage() {
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-all group-hover:bg-primary group-hover:text-on-primary">{expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</span>
                       </span>
                     </div>
-                  </button>
+                  </div>
                   {expanded && (
                     <div id={`memory-details-${post.id}`} className="border-t border-outline-variant p-4 sm:p-5">
                       <h3 className="text-sm font-black text-on-surface">Their story</h3>
