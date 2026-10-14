@@ -95,9 +95,9 @@ export default function AdminVerificationsPage() {
   const pending = items.filter(i => i.status === "pending");
 
   return (
-    <div className="space-y-4 sm:space-y-6 min-w-0">
+    <div className="space-y-3 sm:space-y-6 min-w-0">
       <div>
-        <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Verification Queue</h1>
+        <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface break-words">Verification Queue</h1>
         <p className="text-sm text-on-surface-variant mt-1">Review and approve organisation and identity verifications.</p>
       </div>
 
@@ -117,9 +117,9 @@ export default function AdminVerificationsPage() {
       ) : (
         <div className="space-y-4 animate-stagger">
           {pending.map(item => (
-            <Card key={item.id} className="p-3 sm:p-6 space-y-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
+            <Card key={item.id} className="p-3.5 sm:p-6 space-y-3 sm:space-y-4">
+              <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-start justify-between gap-3 sm:gap-4">
+                <div className="flex items-start sm:items-center gap-3">
                   {tab === "ngo" ? (
                     <Building2 className="w-5 h-5 text-primary shrink-0" />
                   ) : (

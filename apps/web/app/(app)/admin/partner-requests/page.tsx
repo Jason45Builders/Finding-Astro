@@ -61,7 +61,7 @@ export default function AdminPartnerRequestsPage() {
   if (!isLoading && (!user || !["admin", "govt"].includes(user.role))) {
     return (
       <div className="max-w-2xl mx-auto text-center space-y-6">
-        <Card className="p-4 sm:p-8">
+        <Card className="p-3 sm:p-4 sm:p-8">
           <h1 className="font-headline-lg text-on-surface">Admin Access Required</h1>
           <p className="text-on-surface-variant text-sm mt-2">You do not have permission to view partner requests.</p>
         </Card>
@@ -101,14 +101,14 @@ export default function AdminPartnerRequestsPage() {
   if (isLoading) return <PageSpinner />;
 
   return (
-    <div className="space-y-4 sm:space-y-6 min-w-0">
+    <div className="space-y-3 sm:space-y-6 min-w-0">
       <div>
-        <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Partner Requests</h1>
+        <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface break-words">Partner Requests</h1>
         <p className="text-sm text-on-surface-variant mt-1">Review clinics and stores requesting to join the partner network.</p>
       </div>
 
       {error && (
-        <div className="bg-error-container text-on-error-container p-4 rounded-md text-sm font-medium">{error}</div>
+        <div className="bg-error-container text-on-error-container p-3 sm:p-4 rounded-md text-sm font-medium">{error}</div>
       )}
 
       {loading ? (
@@ -117,31 +117,31 @@ export default function AdminPartnerRequestsPage() {
         <EmptyState icon={Building2} title="No pending partner requests" />
       ) : (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overscroll-x-contain">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-surface-container-low border-b border-outline-variant">
-                  <th className="p-4 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Name</th>
-                  <th className="p-4 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Type</th>
-                  <th className="p-4 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">City</th>
-                  <th className="p-4 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Phone</th>
-                  <th className="p-4 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Submitted</th>
-                  <th className="p-4 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+                  <th className="px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Name</th>
+                  <th className="px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Type</th>
+                  <th className="px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">City</th>
+                  <th className="px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Phone</th>
+                  <th className="px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Submitted</th>
+                  <th className="px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/50">
                 {requests.map((req) => (
                   <tr key={req.id} className="hover:bg-surface-container transition-colors duration-150 ease-out">
-                    <td className="p-4 font-semibold text-on-surface">{req.name}</td>
-                    <td className="p-4">
+                    <td className="px-3 sm:px-4 py-3 font-semibold text-on-surface">{req.name}</td>
+                    <td className="p-3 sm:p-4">
                       <Badge variant={statusToken.partnerType(req.type).variant} className="inline-flex items-center gap-1.5">
                         {req.type === "clinic" ? <Building2 className="w-3.5 h-3.5" /> : <Store className="w-3.5 h-3.5" />} {req.type}
                       </Badge>
                     </td>
-                    <td className="p-4 text-on-surface-variant">{req.city || "—"}</td>
-                    <td className="p-4 text-on-surface-variant">{req.phone || "—"}</td>
-                    <td className="p-4 text-outline">{new Date(req.created_at).toLocaleDateString()}</td>
-                    <td className="p-4 text-right">
+                    <td className="p-3 sm:p-4 text-on-surface-variant">{req.city || "—"}</td>
+                    <td className="p-3 sm:p-4 text-on-surface-variant">{req.phone || "—"}</td>
+                    <td className="p-3 sm:p-4 text-outline">{new Date(req.created_at).toLocaleDateString()}</td>
+                    <td className="p-3 sm:p-4 text-right">
                       <div className="flex gap-1.5 justify-end">
                         <Button size="sm" variant="ghost" className="p-2" onClick={() => setSelected(req)}>
                           <Eye className="w-4 h-4" />

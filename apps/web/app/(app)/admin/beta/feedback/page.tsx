@@ -58,7 +58,7 @@ export default function AdminBetaFeedbackPage() {
   if (!isLoading && (!user || !["admin", "govt", "ngo", "hospital"].includes(user.role))) {
     return (
       <div className="max-w-2xl mx-auto text-center space-y-6">
-        <Card className="p-4 sm:p-8">
+        <Card className="p-4 sm:p-5 sm:p-8">
           <h1 className="font-headline-lg text-on-surface">Admin Access Required</h1>
           <p className="text-sm text-on-surface-variant mt-2">You do not have permission to view beta feedback.</p>
           <Link href="/dashboard"><Button variant="primary" className="mt-4">Back to dashboard</Button></Link>
@@ -98,17 +98,17 @@ export default function AdminBetaFeedbackPage() {
   if (error) return <div className="text-error text-sm">{error}</div>;
 
   return (
-    <div className="space-y-4 sm:space-y-6 min-w-0">
+    <div className="space-y-3 sm:space-y-6 min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/admin" className="inline-flex items-center gap-1 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors"><ChevronLeft className="w-4 h-4" /> Admin</Link>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface mt-2">Feedback</h1>
+          <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface mt-1 sm:mt-2 break-words">Feedback</h1>
           <p className="text-sm text-on-surface-variant mt-1">Review suggestions, bug reports, and recommendations from testers.</p>
         </div>
         <Button variant="ghost" onClick={load} className="bg-surface-container-high">Refresh</Button>
       </div>
 
-      <Card className="p-4 sm:p-5">
+      <Card className="p-3.5 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-outline" />
@@ -133,11 +133,11 @@ export default function AdminBetaFeedbackPage() {
       </Card>
 
       {filtered.length === 0 ? (
-        <Card className="p-8"><EmptyState icon={MessageSquare} title="No feedback found" description="Adjust filters or wait for new beta submissions." /></Card>
+        <Card className="p-5 sm:p-8"><EmptyState icon={MessageSquare} title="No feedback found" description="Adjust filters or wait for new beta submissions." /></Card>
       ) : (
         <div className="space-y-3">
           {filtered.map((item) => (
-            <Card key={item.id} className="p-4 sm:p-5 space-y-3">
+            <Card key={item.id} className="p-3.5 sm:p-5 space-y-3">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">

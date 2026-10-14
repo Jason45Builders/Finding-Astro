@@ -78,13 +78,13 @@ export default function AdminCasesPage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 min-w-0">
+    <div className="space-y-3 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Case Oversight</h1>
         <p className="text-sm text-on-surface-variant mt-1">Full case list with status override capability.</p>
       </div>
 
-      <Card className="p-4 flex flex-col sm:flex-row gap-3">
+      <Card className="p-3 sm:p-4 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3.5 w-4 h-4 text-outline" />
           <Input type="text" value={filters.ward} onChange={e => setFilters(f => ({ ...f, ward: e.target.value }))} placeholder="Search by ward or ID..." className="pl-9 rounded-md" />
@@ -108,31 +108,31 @@ export default function AdminCasesPage() {
         <EmptyState icon={ClipboardList} title="No cases found" description="Try adjusting your filters." />
       ) : (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto -mx-1 sm:mx-0">
+          <div className="overflow-x-auto overscroll-x-contain -mx-1 sm:mx-0">
             <table className="w-full text-sm">
               <thead className="bg-surface-container-low border-b border-outline-variant">
                 <tr>
-                  <th className="text-left px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">ID</th>
-                  <th className="text-left px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Title</th>
-                  <th className="text-left px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Type</th>
-                  <th className="text-left px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Status</th>
-                  <th className="text-left px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Priority</th>
-                  <th className="text-left px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Created</th>
-                  <th className="text-right px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Action</th>
+                  <th className="text-left px-3 sm:px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">ID</th>
+                  <th className="text-left px-3 sm:px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Title</th>
+                  <th className="text-left px-3 sm:px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Type</th>
+                  <th className="text-left px-3 sm:px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Status</th>
+                  <th className="text-left px-3 sm:px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Priority</th>
+                  <th className="text-left px-3 sm:px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Created</th>
+                  <th className="text-right px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/50">
                 {cases.map(c => (
                   <tr key={c.id} className="hover:bg-surface-container transition-colors duration-150 ease-out">
-                    <td className="px-4 py-3 text-xs font-mono text-on-surface-variant">{c.id.slice(0, 8)}</td>
-                    <td className="px-4 py-3 font-semibold text-on-surface text-xs">{c.title}</td>
-                    <td className="px-4 py-3 text-xs text-on-surface-variant capitalize">{c.caseType}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-3 text-xs font-mono text-on-surface-variant">{c.id.slice(0, 8)}</td>
+                    <td className="px-3 sm:px-4 py-3 font-semibold text-on-surface text-xs">{c.title}</td>
+                    <td className="px-3 sm:px-4 py-3 text-xs text-on-surface-variant capitalize">{c.caseType}</td>
+                    <td className="px-3 sm:px-4 py-3">
                       <StatusBadge token={statusToken.caseStatus(c.status)} />
                     </td>
-                    <td className="px-4 py-3 text-xs text-on-surface-variant capitalize">{c.priority}</td>
-                    <td className="px-4 py-3 text-[10px] text-outline">{new Date(c.createdAt).toLocaleDateString()}</td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-3 sm:px-4 py-3 text-xs text-on-surface-variant capitalize">{c.priority}</td>
+                    <td className="px-3 sm:px-4 py-3 text-[10px] text-outline">{new Date(c.createdAt).toLocaleDateString()}</td>
+                    <td className="px-3 sm:px-4 py-3 text-right">
                       <Button size="sm" variant="ghost" className="p-1.5" onClick={() => { setSelectedCase(c); setNewStatus(c.status); }}>
                         <Eye className="w-4 h-4" />
                       </Button>

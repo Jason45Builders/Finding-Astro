@@ -92,7 +92,7 @@ export default function AdminUsersPage() {
   const filtered = users.filter(u => u.email.toLowerCase().includes(search.toLowerCase()) || u.fullName?.toLowerCase().includes(search.toLowerCase()) || u.id.includes(search));
 
   return (
-    <div className="space-y-4 sm:space-y-6 min-w-0">
+    <div className="space-y-3 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">User Management</h1>
         <p className="text-sm text-on-surface-variant mt-1">Ban/unban, change roles, view identity tiers.</p>
@@ -111,39 +111,39 @@ export default function AdminUsersPage() {
         <EmptyState icon={UsersIcon} title="No users found" />
       ) : (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto -mx-1 sm:mx-0">
+          <div className="overflow-x-auto overscroll-x-contain -mx-1 sm:mx-0">
             <table className="w-full text-sm">
               <thead className="bg-surface-container-low border-b border-outline-variant">
                 <tr>
-                  <th className="text-left px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">User</th>
-                  <th className="text-left px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Role</th>
-                  <th className="text-left px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Tier</th>
-                  <th className="text-left px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Status</th>
-                  <th className="text-right px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Actions</th>
+                  <th className="text-left px-3 sm:px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">User</th>
+                  <th className="text-left px-3 sm:px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Role</th>
+                  <th className="text-left px-3 sm:px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Tier</th>
+                  <th className="text-left px-3 sm:px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Status</th>
+                  <th className="text-right px-3 sm:px-3 sm:px-4 py-3 text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/50">
                 {filtered.map(u => (
                   <tr key={u.id} className={cn("hover:bg-surface-container transition-colors duration-150 ease-out", u.isBanned && "bg-error-container/20")}>
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-3">
                       <p className="font-semibold text-on-surface text-xs">{u.fullName || "No name"}</p>
                       <p className="text-[10px] text-on-surface-variant">{u.email}</p>
                       <p className="text-[10px] text-outline font-mono">{u.id.slice(0, 8)}</p>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-3">
                       <Select value={u.role} onChange={e => handleRoleChange(u, e.target.value)} disabled={submitting === u.id} className="w-auto text-xs py-1.5 px-2">
                         {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                       </Select>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-3">
                       <Select value={u.identityTier} onChange={e => handleTierChange(u, parseInt(e.target.value))} disabled={submitting === u.id} className="w-20 text-xs py-1.5 px-2">
                         {[0, 1, 2, 3, 4, 5].map(t => <option key={t} value={t}>Tier {t}</option>)}
                       </Select>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-3">
                       {u.isBanned ? <Badge variant="danger">Banned</Badge> : <Badge variant="success">Active</Badge>}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-3 sm:px-4 py-3 text-right">
                       <Button
                         size="sm"
                         variant="ghost"

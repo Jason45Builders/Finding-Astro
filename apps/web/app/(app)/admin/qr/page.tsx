@@ -74,8 +74,8 @@ export default function AdminQrPage() {
   const filtered = codes.filter(c => c.code.toLowerCase().includes(search.toLowerCase()) || c.displayLabel?.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="space-y-4 sm:space-y-6 min-w-0">
-      <div className="flex items-center justify-between gap-4">
+    <div className="space-y-3 sm:space-y-6 min-w-0">
+      <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight flex items-center gap-2">
             <QrCodeIcon className="w-6 h-6 text-primary" /> QR Codes
@@ -88,11 +88,11 @@ export default function AdminQrPage() {
       </div>
 
       {showForm && (
-        <Card className="p-6 space-y-5">
+        <Card className="p-3.5 sm:p-6 space-y-4 sm:space-y-5">
           <h3 className="font-bold text-on-surface">Create QR Code</h3>
           {error && <div className="bg-error-container text-on-error-container p-4 rounded-xl text-sm">{error}</div>}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <Label>Code *</Label>
                 <Input required value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value }))} placeholder="e.g. ANIMAL-001" className="rounded-md" />
@@ -104,7 +104,7 @@ export default function AdminQrPage() {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <div>
                 <Label>Linked Animal ID</Label>
                 <Input value={form.linkedAnimalId} onChange={e => setForm(f => ({ ...f, linkedAnimalId: e.target.value }))} className="rounded-md text-xs" />
@@ -122,7 +122,7 @@ export default function AdminQrPage() {
               <Label>Display Label</Label>
               <Input value={form.displayLabel} onChange={e => setForm(f => ({ ...f, displayLabel: e.target.value }))} placeholder="Human-readable label" className="rounded-md" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <div>
                 <Label>Latitude</Label>
                 <Input type="number" step="any" value={form.latitude} onChange={e => setForm(f => ({ ...f, latitude: parseFloat(e.target.value) || 0 }))} className="rounded-md" />
@@ -158,7 +158,7 @@ export default function AdminQrPage() {
         ) : filtered.length > 0 ? (
           <div className="divide-y divide-outline-variant/50 animate-stagger">
             {filtered.map(qr => (
-              <div key={qr.id} className="p-4 flex items-center justify-between gap-4 hover:bg-surface-container transition-colors duration-150 ease-out">
+              <div key={qr.id} className="p-4 flex items-start sm:items-center justify-between gap-3 sm:gap-4 hover:bg-surface-container transition-colors duration-150 ease-out">
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-on-surface text-sm">{qr.displayLabel || qr.code}</p>
                   <p className="text-xs text-on-surface-variant mt-0.5 capitalize">{qr.qrType} · {qr.code}</p>

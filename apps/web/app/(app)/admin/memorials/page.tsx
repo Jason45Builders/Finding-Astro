@@ -59,11 +59,11 @@ export default function AdminMemorialsPage() {
   if (loading) return <div className="flex justify-center py-20"><PageSpinner label="Loading memorials..." /></div>;
 
   return (
-    <div className="space-y-4 sm:space-y-6 min-w-0">
+    <div className="space-y-3 sm:space-y-6 min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/admin" className="inline-flex items-center gap-1 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors"><Heart className="w-4 h-4" /> Admin</Link>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface mt-2">Memorial Wall</h1>
+          <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface mt-1 sm:mt-2 break-words">Memorial Wall</h1>
           <p className="text-sm text-on-surface-variant mt-1">Review suspicious death submissions. Natural deaths are published automatically.</p>
         </div>
         <Button variant="ghost" onClick={load} className="bg-surface-container-high">Refresh</Button>
@@ -72,12 +72,12 @@ export default function AdminMemorialsPage() {
       <section className="space-y-3">
         <h2 className="font-title-md text-title-md text-on-surface flex items-center gap-2"><ShieldAlert className="w-5 h-5 text-error" /> Suspicious Deaths — Pending Review ({pending.filter((p) => p.category === "suspicious_death").length})</h2>
         {pending.filter((p) => p.category === "suspicious_death").length === 0 ? (
-          <Card className="p-3 sm:p-6"><p className="text-sm text-on-surface-variant">No suspicious death submissions pending review.</p></Card>
+          <Card className="p-3 sm:p-4 sm:p-6"><p className="text-sm text-on-surface-variant">No suspicious death submissions pending review.</p></Card>
         ) : (
           <div className="space-y-3">
             {pending.filter((p) => p.category === "suspicious_death").map((post) => (
-              <Card key={post.id} className="p-4 sm:p-5 space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
+              <Card key={post.id} className="p-3.5 sm:p-5 space-y-2.5 sm:space-y-3">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <h3 className="font-bold text-on-surface text-sm">{post.dogName || "Unknown community dog"}</h3>
                   <Badge variant="danger" className="capitalize">{post.category.replace("_", " ")}</Badge>
                 </div>
@@ -85,7 +85,7 @@ export default function AdminMemorialsPage() {
                 <p className="text-xs text-on-surface-variant line-clamp-3">{post.description}</p>
                 {post.evidenceUrls.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
-                    {post.evidenceUrls.slice(0, 4).map((url, i) => <Photo key={i} src={url} alt="" className="w-16 h-16 rounded-md object-cover border border-outline-variant" />)}
+                    {post.evidenceUrls.slice(0, 4).map((url, i) => <Photo key={i} src={url} alt="" className="w-14 h-14 sm:w-16 sm:h-16 rounded-md object-cover border border-outline-variant shrink-0" />)}
                   </div>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">

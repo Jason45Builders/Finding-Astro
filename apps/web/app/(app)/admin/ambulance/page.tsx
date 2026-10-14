@@ -181,11 +181,11 @@ export default function AdminAmbulancePage() {
   if (loadingServices || loadingRequests) return <PageSpinner label="Loading ambulance data..." />;
 
   return (
-    <div className="space-y-4 sm:space-y-6 min-w-0">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-3 sm:space-y-6 min-w-0">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/admin" className="inline-flex items-center gap-1 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors"><Ambulance className="w-4 h-4" /> Admin</Link>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface mt-2">Ambulance Management</h1>
+          <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface mt-1 sm:mt-2 break-words">Ambulance Management</h1>
           <p className="text-sm text-on-surface-variant mt-1">Manage ambulance services and incoming requests.</p>
         </div>
         <div className="flex gap-2">
@@ -195,10 +195,10 @@ export default function AdminAmbulancePage() {
       </div>
 
       {showForm && (
-        <Card className="p-5 sm:p-6">
+        <Card className="p-3.5 sm:p-6">
           <h2 className="font-title-md text-title-md text-on-surface mb-4">Onboard Ambulance Service</h2>
-          <form onSubmit={handleCreateService} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleCreateService} className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label className="mb-0">Service Name <span className="text-error">*</span></Label>
                 <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
@@ -287,7 +287,7 @@ export default function AdminAmbulancePage() {
       </section>
 
       <section className="space-y-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="font-title-md text-title-md text-on-surface">Incoming Requests</h2>
           <div className="flex gap-2">
             <div className="relative">

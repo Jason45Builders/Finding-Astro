@@ -95,9 +95,9 @@ export default function AdminReimbursementsPage() {
   const allPassed = (g: Gates) => g.proof && g.hospitalVerified && g.surgeryDone;
 
   return (
-    <div className="space-y-4 sm:space-y-6 min-w-0">
+    <div className="space-y-3 sm:space-y-6 min-w-0">
       <div>
-        <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-2">
+        <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface flex items-center gap-2 break-words">
           <DollarSign className="w-6 h-6 text-secondary" /> Reimbursement Approvals
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">3-gate approval flow: proof documents, hospital verification, surgery completion.</p>
@@ -108,13 +108,13 @@ export default function AdminReimbursementsPage() {
       ) : items.length === 0 ? (
         <EmptyState icon={DollarSign} title="No reimbursement requests" />
       ) : (
-        <div className="space-y-4 animate-stagger">
+        <div className="space-y-3 sm:space-y-4 animate-stagger">
           {items.map(item => {
             const gates = allGates(item);
             const passed = allPassed(gates);
             return (
               <Card key={item.id} className={cn("p-6 space-y-4", passed && "border-primary ring-1 ring-primary/30")}>
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-start justify-between gap-3 sm:gap-4">
                   <div>
                     <h3 className="font-bold text-on-surface font-mono">Case {item.case_id.slice(0, 8)}</h3>
                     <p className="text-xs text-on-surface-variant mt-0.5 font-mono">Volunteer: {item.volunteer_id.slice(0, 8)} · Hospital: {item.hospital_id.slice(0, 8)}</p>
