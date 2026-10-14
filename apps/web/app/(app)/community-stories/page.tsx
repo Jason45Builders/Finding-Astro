@@ -2,7 +2,8 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Heart, MessageCircle, Bookmark, Share2, PawPrint, ImagePlus, Send, LoaderCircle, Sparkles, Flag } from "lucide-react";
+import { Heart, MessageCircle, Bookmark, Share2, PawPrint, ImagePlus, Send, LoaderCircle, Sparkles, Flag, ChevronDown, ChevronUp } from "lucide-react";
+import { Photo } from "@/components/ui/Photo";
 
 type Story = {
   id:string; author_id:string; author_name:string; title:string; body:string; category:string;
@@ -33,6 +34,7 @@ function dateLabel(value:string){return new Date(value).toLocaleDateString(undef
 
 export default function PawprintsMemoriesPage(){
  const [stories,setStories]=useState<Story[]>([]);
+ const [expandedStories,setExpandedStories]=useState<Record<string,boolean>>({});
  const [category,setCategory]=useState("all");
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState("");
@@ -153,10 +155,10 @@ export default function PawprintsMemoriesPage(){
    {loading?<div className="flex items-center justify-center gap-2 py-16 text-on-surface-variant"><LoaderCircle className="animate-spin"/> Loading stories…</div>:stories.length===0?<div className="mt-6 rounded-2xl border border-dashed border-outline-variant bg-surface p-10 text-center"><PawPrint size={32} className="mx-auto text-primary"/><h3 className="mt-3 text-lg font-bold">A story starts with you</h3><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-on-surface-variant">No stories in this collection yet. Share a moment that deserves to be remembered.</p><button onClick={()=>setComposerOpen(true)} className="mt-4 rounded-full bg-primary px-5 py-2.5 font-bold text-white">Share the first story</button></div>:
     <div className="mt-4 sm:mt-6 grid gap-3 sm:gap-5 md:grid-cols-2">
      {stories.map(story=><article key={story.id} className="overflow-hidden rounded-2xl border border-outline-variant bg-surface shadow-sm">
-      {story.media_urls?.[0]&&<img src={story.media_urls[0]} alt={`Photo for ${story.title}`} loading="lazy" className="h-56 w-full object-cover"/>}
+      {story.media_urls?.[0]&&<Photo src={story.media_urls[0]} alt={`Photo for ${story.title}`} loading="lazy" className="h-56 w-full object-cover" /> }
       <div className="p-3 sm:p-5 md:p-6">
        <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{CATEGORY_LABELS[story.category]||"Community story"}</span>{story.is_featured&&<span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900"><Sparkles size={12}/> Community highlight</span>}</div>
-       <h3 className="mt-3 text-xl font-extrabold leading-snug">{story.title}</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-on-surface-variant">{story.body.length>280?story.body.slice(0,280)+"…":story.body}</p>
+       <button type="button" onClick={()=>setExpandedStories(p=>({...p,[story.id]:!p[story.id]}))} aria-expanded={!!expandedStories[story.id]} className="mt-3 block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"><h3 className="text-xl font-extrabold leading-snug">{story.title}</h3><p className="mt-2 whitespace-pre-line break-words text-sm leading-6 text-on-surface-variant">{expandedStories[story.id]?story.body:(story.body.length>280?story.body.slice(0,280)+"…":story.body)}</p><span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">{expandedStories[story.id]?"Show less":"Read full story"} {expandedStories[story.id]?<ChevronUp size={14}/>:<ChevronDown size={14}/>}</span></button>
        {(story.animal_name||story.animal_species||story.broad_location)&&<p className="mt-3 text-xs text-on-surface-variant">{[story.animal_name,story.animal_species,story.broad_location].filter(Boolean).join(" · ")}</p>}
        <div className="mt-4 flex items-center justify-between gap-2 border-t border-outline-variant/60 pt-4 text-xs text-on-surface-variant"><Link href={`/community-stories/people/${story.author_id}`} className="font-semibold hover:text-primary hover:underline">{story.author_name||"Community member"}</Link><span>{dateLabel(story.published_at)}</span></div>
        <div className="mt-4 flex flex-wrap items-center gap-2">
