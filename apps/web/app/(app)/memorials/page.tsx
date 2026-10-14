@@ -83,7 +83,6 @@ export default function MemorialsPage() {
                         <Photo
                           src={photos[0]}
                           alt={`Portrait of ${post.dogName || "a beloved community dog"}`}
-                          fallbackSrc="/images/animal-placeholder.png"
                           loading="lazy"
                           className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
                         />
