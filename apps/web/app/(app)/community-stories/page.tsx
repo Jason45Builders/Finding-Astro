@@ -116,13 +116,16 @@ export default function PawprintsMemoriesPage(){
 
  return <div className="text-sm text-on-surface">
   <div className="mx-auto max-w-3xl px-3 py-3 sm:px-5 sm:py-6">
-   <header className="flex items-center justify-between gap-3 border-b border-outline-variant/70 pb-4">
-    <div className="min-w-0">
-     <div className="flex items-center gap-2 text-primary"><PawPrint size={18}/><span className="text-[11px] font-bold uppercase tracking-[0.16em]">Finding Astro community</span></div>
-     <h1 className="mt-1 text-2xl font-extrabold leading-tight sm:text-3xl">Pawprints & Memories</h1>
-     <p className="mt-1 text-sm text-on-surface-variant">Small acts. Big hearts. Stories that stay.</p>
+   <header className="relative isolate overflow-hidden rounded-2xl bg-primary px-4 py-4 text-white shadow-sm sm:rounded-3xl sm:px-6 sm:py-5">
+    <div className="pointer-events-none absolute -right-8 -top-10 -z-10 h-32 w-32 rounded-full border-[18px] border-white/10 sm:-right-10 sm:-top-14 sm:h-44 sm:w-44 sm:border-[24px]"/>
+    <div className="flex items-center justify-between gap-3">
+     <div className="min-w-0">
+      <div className="flex items-center gap-1.5 text-white/80"><PawPrint size={15}/><span className="text-[10px] font-bold uppercase tracking-[0.15em]">Finding Astro community</span></div>
+      <h1 className="mt-1 text-xl font-extrabold leading-tight sm:text-2xl">Pawprints & Memories</h1>
+      <p className="mt-1 text-xs text-white/85 sm:text-sm">Small acts. Big hearts. Stories that stay.</p>
+     </div>
+     <Link href="/community-stories/saved" aria-label="Saved stories" title="Saved stories" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 hover:bg-white/20"><Bookmark size={18}/></Link>
     </div>
-    <Link href="/community-stories/saved" aria-label="Saved stories" title="Saved stories" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-outline-variant hover:bg-surface-container"><Bookmark size={18}/></Link>
    </header>
    <button onClick={()=>setComposerOpen(v=>!v)} className="mt-4 flex w-full items-center gap-3 rounded-2xl border border-outline-variant bg-surface p-3 text-left shadow-sm transition hover:border-primary/50 sm:p-4">
     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><PawPrint size={19}/></span>
