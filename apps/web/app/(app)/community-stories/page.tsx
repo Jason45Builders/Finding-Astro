@@ -114,22 +114,22 @@ export default function PawprintsMemoriesPage(){
   catch{/* Share sheet was dismissed. */}
  }
 
- return <div className="space-y-4 text-on-surface">
-  <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
-   <section className="relative overflow-hidden rounded-3xl bg-primary px-6 py-8 text-white md:px-10 md:py-12">
-    <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full border-[32px] border-white/10"/>
+ return <div className="space-y-3 text-sm text-on-surface sm:space-y-4">
+  <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6 md:px-8 md:py-10">
+   <section className="relative overflow-hidden rounded-2xl bg-primary px-4 py-5 text-white sm:rounded-3xl sm:px-7 sm:py-8 md:px-10 md:py-10">
+    <div className="pointer-events-none absolute -right-10 -top-14 h-44 w-44 rounded-full border-[22px] sm:-right-12 sm:-top-20 sm:h-64 sm:w-64 sm:border-[32px] border-white/10"/>
     <div className="relative max-w-3xl">
-     <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold"><PawPrint size={14}/> PAWPRINTS & MEMORIES</div>
-     <h1 className="text-3xl font-extrabold leading-tight md:text-5xl">Every act of kindness leaves a pawprint.</h1>
-     <p className="mt-4 max-w-2xl text-base leading-7 text-white/85 md:text-lg">A place for rescue journeys, adoption milestones, small acts of kindness, and the animal memories you want to keep and share.</p>
-     <button onClick={()=>setComposerOpen(true)} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 font-bold text-primary hover:bg-white/90"><PawPrint size={17}/> Tell your story</button>
+     <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[10px] sm:mb-3 sm:gap-2 sm:px-3 sm:text-xs font-semibold"><PawPrint size={12}/> PAWPRINTS & MEMORIES</div>
+     <h1 className="text-2xl font-extrabold leading-tight sm:text-3xl md:text-5xl">Every act of kindness leaves a pawprint.</h1>
+     <p className="mt-2 max-w-2xl text-sm leading-6 text-white/85 sm:mt-4 sm:text-base sm:leading-7 md:text-lg">A place for rescue journeys, adoption milestones, small acts of kindness, and the animal memories you want to keep and share.</p>
+     <button onClick={()=>setComposerOpen(true)} className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-bold sm:mt-6 sm:min-h-11 sm:px-5 sm:py-3 sm:text-base text-primary hover:bg-white/90"><PawPrint size={15}/> Tell your story</button>
     </div>
    </section>
-   <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+   <div className="mt-4 flex flex-wrap items-center justify-between gap-2 sm:mt-6 sm:gap-3">
     <p className="text-sm text-on-surface-variant">Stories of rescue, adoption, and everyday kindness.</p>
     <div className="flex items-center gap-2">
      <Link href="/community-stories/saved" className="inline-flex min-h-10 items-center gap-2 rounded-full border border-outline-variant px-4 py-2 text-sm font-semibold hover:bg-surface-container"><Bookmark size={16}/> Saved stories</Link>
-     <button onClick={()=>setComposerOpen(v=>!v)} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-bold text-white hover:opacity-90"><Sparkles size={16}/> Share a story</button>
+     <button onClick={()=>setComposerOpen(v=>!v)} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-primary px-3 py-2 text-xs font-bold sm:min-h-10 sm:gap-2 sm:px-4 sm:text-sm text-white hover:opacity-90"><Sparkles size={16}/> Share a story</button>
     </div>
    </div>
 
@@ -150,19 +150,19 @@ export default function PawprintsMemoriesPage(){
     </form>
    </section>}
 
-   <div className="mt-8 flex gap-2 overflow-x-auto pb-2" aria-label="Filter stories">{CATEGORIES.map(c=><button key={c.value} onClick={()=>setCategory(c.value)} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${category===c.value?"border-primary bg-primary text-white":"border-outline-variant bg-surface hover:bg-surface-container"}`}>{c.label}</button>)}</div>
-   <div className="mt-6 flex items-end justify-between gap-3"><div><h2 className="text-2xl font-extrabold">Stories from our community</h2><p className="mt-1 text-sm text-on-surface-variant">Real moments. Everyday heroes. Lives changed.</p></div><span className="text-sm text-on-surface-variant">{stories.length} shown</span></div>
+   <div className="mt-5 flex gap-1.5 overflow-x-auto pb-2 sm:mt-8 sm:gap-2" aria-label="Filter stories">{CATEGORIES.map(c=><button key={c.value} onClick={()=>setCategory(c.value)} className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition sm:px-4 sm:py-2 sm:text-sm ${category===c.value?"border-primary bg-primary text-white":"border-outline-variant bg-surface hover:bg-surface-container"}`}>{c.label}</button>)}</div>
+   <div className="mt-4 flex items-end justify-between gap-2 sm:mt-6 sm:gap-3"><div><h2 className="text-xl font-extrabold sm:text-2xl">Stories from our community</h2><p className="mt-1 text-sm text-on-surface-variant">Real moments. Everyday heroes. Lives changed.</p></div><span className="text-sm text-on-surface-variant">{stories.length} shown</span></div>
    {loading?<div className="flex items-center justify-center gap-2 py-16 text-on-surface-variant"><LoaderCircle className="animate-spin"/> Loading stories…</div>:stories.length===0?<div className="mt-6 rounded-2xl border border-dashed border-outline-variant bg-surface p-10 text-center"><PawPrint size={32} className="mx-auto text-primary"/><h3 className="mt-3 text-lg font-bold">A story starts with you</h3><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-on-surface-variant">No stories in this collection yet. Share a moment that deserves to be remembered.</p><button onClick={()=>setComposerOpen(true)} className="mt-4 rounded-full bg-primary px-5 py-2.5 font-bold text-white">Share the first story</button></div>:
-    <div className="mt-4 sm:mt-6 grid gap-3 sm:gap-5 md:grid-cols-2">
-     {stories.map(story=><article key={story.id} className="overflow-hidden rounded-2xl border border-outline-variant bg-surface shadow-sm">
-      {story.media_urls?.[0]&&<Photo src={story.media_urls[0]} alt={`Photo for ${story.title}`} loading="lazy" className="h-56 w-full object-cover" /> }
-      <div className="p-3 sm:p-5 md:p-6">
+    <div className="mt-3 grid gap-3 sm:mt-6 sm:gap-4 md:grid-cols-2">
+     {stories.map(story=><article key={story.id} className="overflow-hidden rounded-xl border border-outline-variant bg-surface shadow-sm sm:rounded-2xl">
+      {story.media_urls?.[0]&&<Photo src={story.media_urls[0]} alt={`Photo for ${story.title}`} loading="lazy" className="h-40 w-full object-cover sm:h-48 md:h-56" /> }
+      <div className="p-3 sm:p-4 md:p-6">
        <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{CATEGORY_LABELS[story.category]||"Community story"}</span>{story.is_featured&&<span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900"><Sparkles size={12}/> Community highlight</span>}</div>
-       <button type="button" onClick={()=>setExpandedStories(p=>({...p,[story.id]:!p[story.id]}))} aria-expanded={!!expandedStories[story.id]} className="mt-3 block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"><h3 className="text-xl font-extrabold leading-snug">{story.title}</h3><p className="mt-2 whitespace-pre-line break-words text-sm leading-6 text-on-surface-variant">{expandedStories[story.id]?story.body:(story.body.length>280?story.body.slice(0,280)+"…":story.body)}</p><span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">{expandedStories[story.id]?"Show less":"Read full story"} {expandedStories[story.id]?<ChevronUp size={14}/>:<ChevronDown size={14}/>}</span></button>
+       <button type="button" onClick={()=>setExpandedStories(p=>({...p,[story.id]:!p[story.id]}))} aria-expanded={!!expandedStories[story.id]} className="mt-3 block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"><h3 className="text-base font-extrabold leading-snug sm:text-lg md:text-xl">{story.title}</h3><p className="mt-1.5 whitespace-pre-line break-words text-xs leading-5 text-on-surface-variant sm:mt-2 sm:text-sm sm:leading-6">{expandedStories[story.id]?story.body:(story.body.length>280?story.body.slice(0,280)+"…":story.body)}</p><span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">{expandedStories[story.id]?"Show less":"Read full story"} {expandedStories[story.id]?<ChevronUp size={14}/>:<ChevronDown size={14}/>}</span></button>
        {(story.animal_name||story.animal_species||story.broad_location)&&<p className="mt-3 text-xs text-on-surface-variant">{[story.animal_name,story.animal_species,story.broad_location].filter(Boolean).join(" · ")}</p>}
-       <div className="mt-4 flex items-center justify-between gap-2 border-t border-outline-variant/60 pt-4 text-xs text-on-surface-variant"><Link href={`/community-stories/people/${story.author_id}`} className="font-semibold hover:text-primary hover:underline">{story.author_name||"Community member"}</Link><span>{dateLabel(story.published_at)}</span></div>
-       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap gap-1">{REACTIONS.map(r=><button key={r.value} disabled={busyStory===story.id} onClick={()=>void reactTo(story.id,r.value)} aria-pressed={reactions[story.id]===r.value} className={`rounded-full border px-2.5 py-2 text-xs font-semibold ${reactions[story.id]===r.value?"border-primary bg-primary/10":"border-outline-variant hover:bg-surface-container"}`} title={r.label}>{r.emoji}</button>)}</div>
+       <div className="mt-3 flex items-center justify-between gap-2 border-t border-outline-variant/60 pt-3 text-[11px] sm:mt-4 sm:pt-4 sm:text-xs text-on-surface-variant"><Link href={`/community-stories/people/${story.author_id}`} className="font-semibold hover:text-primary hover:underline">{story.author_name||"Community member"}</Link><span>{dateLabel(story.published_at)}</span></div>
+       <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:mt-4 sm:gap-2">
+        <div className="flex flex-wrap gap-1">{REACTIONS.map(r=><button key={r.value} disabled={busyStory===story.id} onClick={()=>void reactTo(story.id,r.value)} aria-pressed={reactions[story.id]===r.value} className={`rounded-full border px-2 py-1.5 text-[11px] font-semibold sm:px-2.5 sm:py-2 sm:text-xs ${reactions[story.id]===r.value?"border-primary bg-primary/10":"border-outline-variant hover:bg-surface-container"}`} title={r.label}>{r.emoji}</button>)}</div>
         <span className="text-xs text-on-surface-variant">{story.reaction_count} reactions</span>
         <button onClick={()=>void toggleComments(story.id)} className="ml-auto inline-flex items-center gap-1 rounded-full px-2.5 py-2 text-xs font-semibold hover:bg-surface-container"><MessageCircle size={15}/>{story.comment_count}</button>
         <button onClick={()=>void toggleBookmark(story.id)} aria-label="Save story" className={`rounded-full p-2 hover:bg-surface-container ${bookmarks[story.id]?"text-primary":"text-on-surface-variant"}`}><Bookmark size={16} fill={bookmarks[story.id]?"currentColor":"none"}/></button>
@@ -176,7 +176,7 @@ export default function PawprintsMemoriesPage(){
       </div>
      </article>)}
     </div>}
-   <p className="mt-10 text-center text-xs leading-5 text-on-surface-variant">Pawprints & Memories is a community space. Please respect privacy, obtain permission before sharing others&apos; photos, and report content that may put people or animals at risk.</p>
+   <p className="mt-7 text-center text-[11px] leading-5 sm:mt-10 sm:text-xs text-on-surface-variant">Pawprints & Memories is a community space. Please respect privacy, obtain permission before sharing others&apos; photos, and report content that may put people or animals at risk.</p>
   </div>
  </div>;
 }
