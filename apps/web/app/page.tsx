@@ -74,7 +74,7 @@ export default async function RootPage() {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Link href="/auth/login" className="hidden sm:block"><Button variant="outline" size="sm" className="md:h-10 md:px-4">Sign in</Button></Link>
-            <Link href="/emergency"><Button variant="coral" size="sm" className="md:h-10 md:px-4"><span className="inline-flex items-center gap-1.5"><Siren className="h-4 w-4" /><span className="hidden xs:inline">Report SOS</span><span className="xs:hidden">SOS</span></span></Button></Link>
+            <Link href="/emergency"><Button variant="coral" size="sm" className="md:h-10 md:px-4"><span className="inline-flex items-center gap-1.5"><Siren className="h-4 w-4" /><span className="hidden sm:inline">Report SOS</span><span className="sm:hidden">SOS</span></span></Button></Link>
           </div>
         </nav>
       </ScrollHeader>
