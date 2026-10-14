@@ -74,7 +74,7 @@ export default async function RootPage() {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Link href="/auth/login" className="hidden sm:block"><Button variant="outline" size="sm" className="md:h-10 md:px-4">Sign in</Button></Link>
-            <Link href="/auth/signup"><Button variant="coral" size="sm" className="whitespace-nowrap md:h-10 md:px-4">Sign up and join</Button></Link>
+            <Link href="/auth/signup" aria-label="Sign up and join"><Button variant="coral" size="sm" className="whitespace-nowrap px-3 md:h-10 md:px-4"><span className="sm:hidden">Signup</span><span className="hidden sm:inline">Join</span></Button></Link>
           </div>
         </nav>
       </ScrollHeader>
@@ -92,7 +92,6 @@ export default async function RootPage() {
               </div>
               <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-on-surface-variant sm:text-sm">
                 <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" />Emergency reporting without an account</span>
-                <Link href="/library" className="inline-flex min-h-9 items-center gap-1 text-primary underline-offset-4 hover:underline"><BookOpen className="h-4 w-4" />Free animal-welfare library <ArrowRight className="h-3.5 w-3.5" /></Link>
               </div>
             </div>
             <div className="relative mx-auto w-full max-w-[620px] md:max-w-none">
