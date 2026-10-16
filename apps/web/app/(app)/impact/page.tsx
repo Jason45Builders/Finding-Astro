@@ -28,14 +28,14 @@ export default function ImpactPage() {
         <p className="text-sm text-on-surface-variant mt-1">Complete financial and welfare transparency for all stakeholders</p>
       </div>
 
-      <div className="bg-primary-container/20 border border-primary-container rounded-xl p-6">
+      <div className="bg-primary-container/20 border border-primary-container rounded-xl p-4 sm:p-6">
         <p className="text-primary font-title-md text-title-md mb-2">Every rupee, every dog, every ward — accounted for.</p>
         <p className="text-sm text-on-surface-variant leading-relaxed">Finding Astro records every treatment, sterilisation, donation, and outcome. CSR sponsors can see exactly where their money goes. Citizens can see what is happening in their ward. Government departments can plan using real data.</p>
       </div>
 
       {report && (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-stagger">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 animate-stagger">
             <KpiStat label="Total Committed" value={`₹${(report.totalCommittedInr / 100000).toFixed(1)}L`} icon={IndianRupee} accent="primary" />
             <KpiStat label="Disbursed" value={`₹${(report.totalDisbursedInr / 100000).toFixed(1)}L`} icon={CheckCircle} accent="primary" />
             <KpiStat label="Active Sponsors" value={report.activeSponsorCount.toString()} icon={Building2} accent="secondary" />

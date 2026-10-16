@@ -114,11 +114,11 @@ export default function AdoptionAdminPage() {
   };
 
   if (!isStaff) {
-    return <div className="p-6 text-center text-outline">You do not have permission to view this page.</div>;
+    return <div className="p-4 sm:p-6 text-center text-outline">You do not have permission to view this page.</div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg text-headline-lg-mobile sm:text-headline-lg text-on-surface tracking-tight flex items-center gap-2">
           <Heart className="w-6 h-6 text-secondary" /> Adoption Review
@@ -161,7 +161,7 @@ export default function AdoptionAdminPage() {
             const animal = animals[app.animalId];
             const token = statusToken.adoptionStatus(app.status);
             return (
-              <Card key={app.id} className="p-5">
+              <Card key={app.id} className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">

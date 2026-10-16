@@ -110,7 +110,7 @@ export default function AmbulanceResponderPage() {
         <h1 className="font-headline-lg text-headline-lg text-on-surface flex items-center gap-2">
           <Ambulance className="w-6 h-6 text-primary" /> Responder Portal
         </h1>
-        <Card className="p-6">
+        <Card className="p-4 sm:p-6">
           <p className="text-sm text-on-surface-variant">Your account is not linked to an ambulance service. Please contact your administrator to assign you to a service.</p>
           <Link href="/dashboard"><Button variant="primary" className="mt-4">Back to Dashboard</Button></Link>
         </Card>
@@ -121,7 +121,7 @@ export default function AmbulanceResponderPage() {
   if (loading) return <PageSpinner label="Loading responder data..." />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface flex items-center gap-2">

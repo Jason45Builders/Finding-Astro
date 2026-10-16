@@ -1,7 +1,7 @@
 export default function PrivacyPolicyPage() {
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="font-headline-lg text-headline-lg text-on-surface">Privacy Policy</h1>
+    <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6 min-w-0">
+      <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface">Privacy Policy</h1>
       <p className="text-sm text-on-surface-variant">Last updated: September 2026. This policy explains how Finding Astro collects, uses, stores, and protects your information.</p>
 
       <section className="space-y-3">

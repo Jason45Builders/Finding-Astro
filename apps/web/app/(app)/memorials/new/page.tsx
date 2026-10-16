@@ -109,7 +109,7 @@ export default function NewMemorialPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 min-w-0">
       <Link href="/memorials" className="inline-flex items-center gap-1 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors"><ChevronLeft className="w-4 h-4" /> Memorial Wall</Link>
 
       <Card className="p-6 sm:p-8 space-y-6">

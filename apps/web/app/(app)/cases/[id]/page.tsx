@@ -125,7 +125,7 @@ export default function CaseDetailPage() {
       </Link>
 
       {/* Header */}
-      <Card className="p-6 space-y-4">
+      <Card className="p-4 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -177,7 +177,7 @@ export default function CaseDetailPage() {
 
       {/* Active Response */}
       {response && (
-        <Card className="p-5">
+        <Card className="p-3 sm:p-5">
           <h3 className="font-bold text-on-surface mb-4 flex items-center gap-2">
             <Activity className="w-4 h-4 text-primary" /> Active Response
           </h3>

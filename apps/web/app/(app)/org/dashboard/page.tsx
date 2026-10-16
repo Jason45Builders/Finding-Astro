@@ -78,7 +78,7 @@ export default function OrgDashboardPage() {
   if (error || !stats) {
     return (
       <div className="max-w-2xl mx-auto py-12">
-        <Card className="p-8 text-center">
+        <Card className="p-4 sm:p-8 text-center">
           <p className="text-error">{error || "Unable to load dashboard"}</p>
           <p className="text-sm text-on-surface-variant mt-2">Make sure you are an active member of the selected welfare group.</p>
         </Card>
@@ -96,7 +96,7 @@ export default function OrgDashboardPage() {
         <Link href="/org/animals"><Button variant="primary"><PawPrint className="w-4 h-4 mr-2" />New Animal</Button></Link>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
         {STAT_CARDS.map((card) => {
           const Icon = card.icon;
           const value = stats[card.key];
@@ -115,7 +115,7 @@ export default function OrgDashboardPage() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
         <Card className="p-6">
           <h2 className="font-headline-md text-headline-md text-on-surface mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-3">

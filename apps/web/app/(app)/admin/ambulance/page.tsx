@@ -111,7 +111,7 @@ export default function AdminAmbulancePage() {
   if (!isLoading && (!user || !["admin", "govt", "ngo", "hospital"].includes(user.role))) {
     return (
       <div className="max-w-2xl mx-auto text-center space-y-6">
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <h1 className="font-headline-lg text-on-surface">Admin Access Required</h1>
           <p className="text-sm text-on-surface-variant mt-2">You do not have permission to manage ambulance services.</p>
           <Link href="/dashboard"><Button variant="primary" className="mt-4">Back to dashboard</Button></Link>
@@ -181,7 +181,7 @@ export default function AdminAmbulancePage() {
   if (loadingServices || loadingRequests) return <PageSpinner label="Loading ambulance data..." />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/admin" className="inline-flex items-center gap-1 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors"><Ambulance className="w-4 h-4" /> Admin</Link>
@@ -240,7 +240,7 @@ export default function AdminAmbulancePage() {
             <div className="space-y-2">
               <Label className="mb-0">Location Coordinates</Label>
               <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1 grid grid-cols-2 gap-2">
+                <div className="flex-1 grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
                   <Input type="text" placeholder="Latitude" value={lat !== null ? lat.toFixed(6) : ""} readOnly className="rounded-md" />
                   <Input type="text" placeholder="Longitude" value={lng !== null ? lng.toFixed(6) : ""} readOnly className="rounded-md" />
                 </div>
@@ -265,7 +265,7 @@ export default function AdminAmbulancePage() {
       <section className="space-y-3">
         <h2 className="font-title-md text-title-md text-on-surface">Ambulance Services</h2>
         {services.length === 0 ? (
-          <Card className="p-5"><p className="text-sm text-on-surface-variant">No ambulance services configured.</p></Card>
+          <Card className="p-3 sm:p-5"><p className="text-sm text-on-surface-variant">No ambulance services configured.</p></Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {services.map((s) => (

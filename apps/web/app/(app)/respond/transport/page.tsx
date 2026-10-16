@@ -90,12 +90,12 @@ export default function TransportRequestPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 min-w-0">
       <Link href="/respond" className="inline-flex items-center gap-1 text-sm text-on-surface-variant hover:text-primary font-bold transition-colors duration-150 ease-out">
         <ChevronLeft className="w-4 h-4" /> Back to Respond
       </Link>
 
-      <Card className="p-6 sm:p-8 space-y-6">
+      <Card className="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
         <div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-2">
             <Truck className="w-6 h-6 text-secondary" /> Request Transport
@@ -127,7 +127,7 @@ export default function TransportRequestPage() {
 
           <div>
             <Label>Vehicle Type *</Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {VEHICLE_TYPES.map(v => (
                 <button key={v} type="button" onClick={() => setForm(f => ({ ...f, vehicleTypeRequired: v }))}
                   className={cn(

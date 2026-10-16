@@ -270,19 +270,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto pb-20 md:pb-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen md:h-screen md:min-h-0 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
         {/* Top bar */}
-        <header className="bg-surface border-b-2 border-outline-variant h-16 flex items-center justify-between px-4 sm:px-gutter z-20 shrink-0 sticky top-0">
+        <header className="bg-surface border-b-2 border-outline-variant min-h-16 flex items-center justify-between gap-2 px-3 sm:px-gutter z-20 shrink-0 sticky top-0">
           <div className="flex items-center gap-3">
             <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-2 rounded-md text-on-surface-variant hover:bg-surface-container-high transition-colors">
               <MenuIcon className="w-5 h-5" />
             </button>
             <span className="flex items-center gap-2 md:hidden">
               <LogoMark className="w-6 h-6" />
-              <span className="font-headline-lg-mobile text-headline-lg-mobile text-primary">Finding Astro</span>
+              <span className="font-headline-lg-mobile text-headline-lg-mobile text-primary truncate">Finding Astro</span>
             </span>
           </div>
-          <div className="flex items-center gap-3 relative">
+          <div className="flex items-center gap-1 sm:gap-3 relative shrink-0">
             <button onClick={() => setShowNotifications(!showNotifications)}
               className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 ease-out active:scale-95 relative">
               <BellIcon className="w-5 h-5" />
@@ -293,7 +293,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               )}
             </button>
             {showNotifications && (
-              <div className="absolute right-0 top-12 w-80 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-xl overflow-hidden z-50 origin-top-right animate-fade-up">
+              <div className="absolute right-0 top-12 w-80 max-w-[calc(100vw-1rem)] bg-surface-container-lowest rounded-xl border border-outline-variant shadow-xl overflow-hidden z-50 origin-top-right animate-fade-up">
                 <div className="p-4 border-b border-outline-variant flex items-center justify-between">
                   <h3 className="font-title-md text-sm text-on-surface">Notifications</h3>
                   <button onClick={() => setShowNotifications(false)} className="p-1 rounded hover:bg-surface-container-high">
@@ -317,18 +317,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 p-3 sm:p-gutter">{children}</main>
+        <main className="flex-1 min-w-0 p-2.5 sm:p-gutter">{children}</main>
       </div>
 
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center px-2 py-2.5 bg-surface border-t border-outline-variant shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center gap-1 px-1.5 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] bg-surface border-t border-outline-variant shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
         {mobilePrimaryItems.map(item => {
           const active = isActive(item.href);
           const Icon = item.icon;
           return (
             <Link key={item.href} href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 rounded-full px-4 py-1 transition-transform duration-150 ease-out active:scale-90",
+                "flex flex-1 min-w-0 flex-col items-center justify-center gap-0.5 rounded-full px-1.5 py-1.5 transition-transform duration-150 ease-out active:scale-90",
                 active ? "bg-primary-container text-on-primary-container" : "text-on-surface-variant"
               )}
             >
@@ -339,7 +339,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         })}
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="flex flex-col items-center justify-center gap-0.5 rounded-full px-4 py-1 text-on-surface-variant transition-transform duration-150 ease-out active:scale-90"
+          className="flex flex-1 min-w-0 flex-col items-center justify-center gap-0.5 rounded-full px-1.5 py-1.5 text-on-surface-variant transition-transform duration-150 ease-out active:scale-90"
         >
           <MoreHorizontal className="w-5 h-5" />
           <span className="font-label-caps text-[10px]">More</span>
@@ -350,8 +350,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm transition-opacity duration-200 ease-out" onClick={() => setMobileMenuOpen(false)} />
-          <div className="relative flex flex-col w-72 bg-surface-container-lowest h-full shadow-2xl transition-transform duration-200 ease-out">
-            <div className="flex items-center justify-between p-5 border-b border-outline-variant">
+          <div className="relative flex flex-col w-[min(18rem,calc(100vw-2.5rem))] max-w-[calc(100vw-2.5rem)] bg-surface-container-lowest h-full shadow-2xl transition-transform duration-200 ease-out">
+            <div className="flex items-center justify-between gap-2 p-4 sm:p-5 border-b border-outline-variant">
               <span className="flex items-center gap-2">
                 <LogoMark className="w-7 h-7" />
                 <span className="font-headline-lg-mobile text-headline-lg-mobile text-primary">Finding Astro</span>

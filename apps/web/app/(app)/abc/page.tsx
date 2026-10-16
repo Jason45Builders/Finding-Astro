@@ -160,7 +160,7 @@ export default function AbcPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Request form */}
-        <Card className="p-6">
+        <Card className="p-4 sm:p-6">
           <h2 className="font-title-md text-title-md text-on-surface mb-4">Request ABC for an Animal</h2>
           {success ? (
             <div className="text-center py-8 space-y-4">
@@ -212,7 +212,7 @@ export default function AbcPage() {
                 <div className="space-y-2">
                   <Label className="mb-0">Your Location</Label>
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="flex-1 grid grid-cols-2 gap-2">
+                    <div className="flex-1 grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
                       <Input type="text" placeholder="Latitude" readOnly value={latitude !== null ? latitude.toFixed(6) : ""} className="rounded-md" />
                       <Input type="text" placeholder="Longitude" readOnly value={longitude !== null ? longitude.toFixed(6) : ""} className="rounded-md" />
                     </div>

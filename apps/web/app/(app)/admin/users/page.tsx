@@ -92,7 +92,7 @@ export default function AdminUsersPage() {
   const filtered = users.filter(u => u.email.toLowerCase().includes(search.toLowerCase()) || u.fullName?.toLowerCase().includes(search.toLowerCase()) || u.id.includes(search));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">User Management</h1>
         <p className="text-sm text-on-surface-variant mt-1">Ban/unban, change roles, view identity tiers.</p>
@@ -111,7 +111,7 @@ export default function AdminUsersPage() {
         <EmptyState icon={UsersIcon} title="No users found" />
       ) : (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto -mx-1 sm:mx-0">
             <table className="w-full text-sm">
               <thead className="bg-surface-container-low border-b border-outline-variant">
                 <tr>

@@ -59,7 +59,7 @@ export default function DispatchPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">Responder Dispatch</h1>
         <p className="text-sm text-on-surface-variant mt-1">Assign open cases to available responders</p>
@@ -74,7 +74,7 @@ export default function DispatchPage() {
           {openCases.length > 0 ? (
             <div className="space-y-4 animate-stagger">
               {openCases.map((c) => (
-                <Card key={c.id} className="p-5">
+                <Card key={c.id} className="p-3 sm:p-5">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <Badge variant={c.priority === 'high' ? 'danger' : 'neutral'} className="mb-1">
@@ -136,7 +136,7 @@ export default function DispatchPage() {
                 ))}
               </div>
             ) : (
-              <div className="p-8 text-center text-outline text-sm">No available responders.</div>
+              <div className="p-4 sm:p-8 text-center text-outline text-sm">No available responders.</div>
             )}
           </Card>
         </div>

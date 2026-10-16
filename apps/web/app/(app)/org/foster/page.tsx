@@ -182,7 +182,7 @@ export default function OrgFosterPage() {
         homes.length === 0 ? (
           <Card className="p-8"><EmptyState icon={HomeIcon} title="No foster homes" description="Register your first foster home." /></Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             {homes.map((home) => (
               <Card key={home.id} className="p-5">
                 <div className="flex items-start justify-between gap-4">

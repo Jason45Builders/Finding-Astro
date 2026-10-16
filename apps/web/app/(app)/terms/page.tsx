@@ -1,7 +1,7 @@
 export default function TermsPage() {
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="font-headline-lg text-headline-lg text-on-surface">Terms of Service</h1>
+    <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6 min-w-0">
+      <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface">Terms of Service</h1>
       <p className="text-sm text-on-surface-variant">Last updated: September 2026. By using Finding Astro, you agree to the following terms.</p>
 
       <section className="space-y-3">

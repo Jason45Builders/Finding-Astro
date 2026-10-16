@@ -61,7 +61,7 @@ export default function AdminPartnerRequestsPage() {
   if (!isLoading && (!user || !["admin", "govt"].includes(user.role))) {
     return (
       <div className="max-w-2xl mx-auto text-center space-y-6">
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <h1 className="font-headline-lg text-on-surface">Admin Access Required</h1>
           <p className="text-on-surface-variant text-sm mt-2">You do not have permission to view partner requests.</p>
         </Card>
@@ -101,7 +101,7 @@ export default function AdminPartnerRequestsPage() {
   if (isLoading) return <PageSpinner />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Partner Requests</h1>
         <p className="text-sm text-on-surface-variant mt-1">Review clinics and stores requesting to join the partner network.</p>

@@ -74,7 +74,7 @@ export default function AdminQrPage() {
   const filtered = codes.filter(c => c.code.toLowerCase().includes(search.toLowerCase()) || c.displayLabel?.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight flex items-center gap-2">

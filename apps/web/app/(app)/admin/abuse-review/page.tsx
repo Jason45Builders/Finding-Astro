@@ -56,8 +56,8 @@ export default function AdminAbuseReviewPage() {
   if (!data) return <EmptyState icon={Activity} title="No review data available" />;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/admin" className="inline-flex items-center gap-1 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors"><ChevronLeft className="w-4 h-4" /> Admin</Link>
           <h1 className="font-headline-lg text-headline-lg text-on-surface mt-2">Abuse Review</h1>

@@ -250,7 +250,7 @@ function WelfareGroupSettings({ group, onUpdate }: { group: WelfareGroup; onUpda
   };
 
   return (
-    <Card className="p-6 space-y-5">
+    <Card className="p-4 sm:p-6 space-y-4 sm:space-y-5">
       <h3 className="font-headline-md text-headline-md text-on-surface">Payment Settings</h3>
       <p className="text-sm text-on-surface-variant">
         Configure the UPI account where donors should send payments. This UPI ID will be displayed to donors along with a QR code.

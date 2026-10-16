@@ -139,7 +139,7 @@ export default function NgoSignupPage() {
               <Label>Address</Label>
               <Textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} rows={2} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <Label>Phone</Label>
                 <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />

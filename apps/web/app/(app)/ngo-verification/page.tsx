@@ -64,7 +64,7 @@ export default function NgoVerificationPage() {
   if (success) {
     return (
       <div className="max-w-xl mx-auto py-8">
-        <Card className="p-8 text-center space-y-5">
+        <Card className="p-4 sm:p-8 text-center space-y-4 sm:space-y-5">
           <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-9 h-9 text-green-600" />
           </div>
@@ -86,7 +86,7 @@ export default function NgoVerificationPage() {
         <ChevronLeft className="w-4 h-4" /> Back to Dashboard
       </Link>
 
-      <Card className="p-6 sm:p-8 space-y-6">
+      <Card className="p-4 sm:p-8 space-y-4 sm:space-y-6">
         <div className="flex items-start gap-3">
           <Building2 className="w-8 h-8 text-primary shrink-0" />
           <div>

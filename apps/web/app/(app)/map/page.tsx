@@ -113,7 +113,7 @@ export default function CityMapPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] flex-col gap-4 sm:h-[calc(100vh-8rem)]">
+    <div className="flex min-h-0 sm:min-h-[calc(100vh-8rem)] flex-col gap-3 sm:gap-4">
       <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight flex items-center gap-2">
@@ -124,7 +124,7 @@ export default function CityMapPage() {
             Explore animals, active cases, vet clinics and ABC centres on one map.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={detectLocation}
@@ -193,7 +193,7 @@ export default function CityMapPage() {
         </div>
       </Card>
 
-      <Card className="relative flex-1 min-h-[420px] overflow-hidden p-2">
+      <Card className="relative flex-1 min-h-[300px] sm:min-h-[420px] overflow-hidden p-1.5 sm:p-2">
         {loading ? (
           <div className="flex h-full min-h-[420px] w-full items-center justify-center rounded-md bg-surface-container-low">
             <div className="flex flex-col items-center gap-3 text-on-surface-variant">

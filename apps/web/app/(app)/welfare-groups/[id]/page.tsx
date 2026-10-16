@@ -140,9 +140,9 @@ export default function WelfareGroupProfilePage({ params }: { params: Promise<{ 
   const canDonate = user && group.paymentEnabled && group.upiId;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <Card className="p-6 sm:p-8">
-        <div className="flex items-start justify-between gap-4">
+    <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6 min-w-0">
+      <Card className="p-4 sm:p-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface">{group.name}</h1>

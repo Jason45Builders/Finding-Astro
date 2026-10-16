@@ -130,7 +130,7 @@ export default function FosterPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg text-headline-lg-mobile sm:text-headline-lg text-on-surface tracking-tight flex items-center gap-2">
           <Heart className="w-6 h-6 text-secondary" /> Foster & Recovery
@@ -173,7 +173,7 @@ export default function FosterPage() {
             const animal = record.animalId ? animals[record.animalId] : null;
             const providerToken = providerTypeToken(record.providerType);
             return (
-              <Card key={record.id} className="p-5">
+              <Card key={record.id} className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -247,7 +247,7 @@ export default function FosterPage() {
                   <option value="clinic">Clinic</option>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label>Daily Cost (INR) *</Label>
                   <Input type="number" min={0} value={form.dailyCostInr} onChange={e => setForm(p => ({ ...p, dailyCostInr: Number(e.target.value) }))} required />
@@ -257,7 +257,7 @@ export default function FosterPage() {
                   <Input type="number" min={0} value={form.totalRaised} onChange={e => setForm(p => ({ ...p, totalRaised: Number(e.target.value) }))} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label>Start Date *</Label>
                   <Input type="date" value={form.startDate} onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))} required />
@@ -275,7 +275,7 @@ export default function FosterPage() {
                   <option value="cancelled">Cancelled</option>
                 </Select>
               </div>
-              <div className="flex gap-3 justify-end">
+              <div className="flex flex-col min-[420px]:flex-row gap-2 sm:gap-3 justify-end">
                 <Button variant="outline" type="button" onClick={() => setShowForm(false)} disabled={submitting}>Cancel</Button>
                 <Button variant="primary" type="submit" disabled={submitting}>{submitting ? "Saving..." : "Create Record"}</Button>
               </div>

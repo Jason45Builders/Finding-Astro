@@ -98,7 +98,7 @@ export default function CreateRescueCollectivePage() {
 
               {error && <div className="rounded-lg bg-error/10 p-3 text-sm text-error">{error}</div>}
 
-              <div className="rounded-xl bg-surface-container-low p-4 flex gap-3">
+              <div className="rounded-xl bg-surface-container-low p-3 sm:p-4 flex gap-2 sm:gap-3">
                 <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
                 <div className="text-sm text-on-surface-variant">
                   <p className="font-bold text-on-surface">What happens next</p>

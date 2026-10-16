@@ -98,7 +98,7 @@ export default function OrgCampaignsPage() {
       </Card>
 
       {campaigns.length === 0 ? (
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <EmptyState icon={Activity} title="No campaigns yet" description="Schedule your first ABC campaign." />
         </Card>
       ) : (

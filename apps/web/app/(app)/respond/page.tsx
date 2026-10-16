@@ -162,7 +162,7 @@ export default function RespondersDispatch() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[1600px] space-y-5 sm:space-y-6">
+    <div className="mx-auto w-full max-w-[1600px] space-y-4 sm:space-y-6 min-w-0">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-error/20 bg-error-container/60 px-3 py-1 text-xs font-bold text-on-error-container">
@@ -174,7 +174,7 @@ export default function RespondersDispatch() {
             Review unclaimed animal emergencies, prioritize urgent cases, and claim a response with one action.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col min-[420px]:flex-row flex-wrap items-stretch min-[420px]:items-center gap-2">
           <Button variant="ghost" onClick={() => void fetchOpenCases(true)} disabled={refreshing || loading} className="bg-surface-container-high">
             <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
             {refreshing ? "Refreshing…" : "Refresh alerts"}
@@ -305,7 +305,7 @@ export default function RespondersDispatch() {
               </div>
               <Badge variant="neutral">{filteredCases.filter((c) => Boolean(c.location)).length} mapped</Badge>
             </div>
-            <div className="h-[340px] overflow-hidden rounded-xl sm:h-[440px] xl:h-[min(62vh,680px)]">
+            <div className="h-[300px] overflow-hidden rounded-xl sm:h-[440px] xl:h-[min(62vh,680px)]">
               <OpenCasesMap cases={filteredCases.filter((c) => !!c.location).map((c) => ({ id: c.id, title: c.title, location: c.location!, locationText: c.locationText ?? undefined, priority: c.priority })) as any} />
             </div>
             <p className="px-1 pt-3 text-xs leading-relaxed text-on-surface-variant">

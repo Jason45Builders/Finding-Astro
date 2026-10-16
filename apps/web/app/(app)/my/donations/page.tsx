@@ -40,7 +40,7 @@ export default function MyDonationsPage() {
   if (!user) {
     return (
       <div className="max-w-3xl mx-auto text-center space-y-6">
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <h1 className="font-headline-lg text-on-surface">Sign in required</h1>
           <p className="text-on-surface-variant text-sm mt-2">Please sign in to view your donations.</p>
           <Link href="/auth/login"><Button variant="primary" className="mt-4">Sign In</Button></Link>
@@ -57,7 +57,7 @@ export default function MyDonationsPage() {
       </div>
 
       {donations.length === 0 ? (
-        <Card className="p-8 text-center">
+        <Card className="p-4 sm:p-8 text-center">
           <Heart className="w-12 h-12 text-outline mx-auto mb-3" />
           <p className="text-on-surface-variant">You haven&apos;t made any donations yet.</p>
           <Link href="/partners"><Button variant="primary" className="mt-4">Browse Welfare Groups</Button></Link>
@@ -65,7 +65,7 @@ export default function MyDonationsPage() {
       ) : (
         <div className="space-y-4">
           {donations.map((donation) => (
-            <Card key={donation.id} className="p-5">
+            <Card key={donation.id} className="p-3 sm:p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">

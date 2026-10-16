@@ -154,7 +154,7 @@ export default function OrgTasksPage() {
       </Card>
 
       {tasks.length === 0 ? (
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <EmptyState icon={ClipboardList} title="No tasks yet" description="Create tasks to coordinate your team's work." />
         </Card>
       ) : (
@@ -194,7 +194,7 @@ export default function OrgTasksPage() {
             <Label>Description</Label>
             <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label>Priority</Label>
               <Select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as TaskForm["priority"] })}>

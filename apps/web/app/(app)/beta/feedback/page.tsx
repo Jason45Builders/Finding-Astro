@@ -102,7 +102,7 @@ export default function BetaFeedbackPage() {
 
           <div className="space-y-2">
             <Label className="mb-0">Category <span className="text-error">*</span></Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
               {CATEGORIES.map((item) => (
                 <button
                   key={item.value}

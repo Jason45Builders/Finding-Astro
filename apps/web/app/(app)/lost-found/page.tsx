@@ -121,7 +121,7 @@ export default function LostFoundPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg text-on-surface tracking-tight flex items-center gap-2">
           <Search className="w-6 h-6 text-primary" /> Lost &amp; Found
@@ -152,10 +152,10 @@ export default function LostFoundPage() {
           {loading ? (
             <PageSpinner />
           ) : filtered.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-stagger">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 animate-stagger">
               {filtered.map(animal => (
                 <Link key={animal.id} href={`/animals/${animal.id}`}>
-                  <Card interactive className="p-5">
+                  <Card interactive className="p-3 sm:p-5">
                     <div className="h-40 bg-surface-container-high rounded-md mb-4 flex items-center justify-center overflow-hidden">
                       {animal.primaryPhotoUrl
                         ? <Photo src={animal.primaryPhotoUrl} alt={animal.name ?? "Animal"} className="w-full h-full object-cover rounded-md" />
@@ -186,7 +186,7 @@ export default function LostFoundPage() {
       {(tab === "report-lost" || tab === "report-found") && (
         <div className="max-w-xl">
           {success ? (
-            <Card className="p-10 text-center space-y-4">
+            <Card className="p-5 sm:p-10 text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
                 <CheckCircle className="w-9 h-9 text-green-600" />
               </div>
@@ -201,7 +201,7 @@ export default function LostFoundPage() {
               </Button>
             </Card>
           ) : (
-            <Card className="p-6 space-y-5">
+            <Card className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               <h2 className="font-title-md text-title-md text-on-surface">
                 {tab === "report-lost" ? "Report a Lost Pet" : "Report a Found Animal"}
               </h2>
@@ -209,7 +209,7 @@ export default function LostFoundPage() {
                 <div className="bg-error-container text-on-error-container p-3 rounded-md text-sm font-medium">{error}</div>
               )}
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label>Species</Label>
                     <Select value={form.species} onChange={e => setForm(p => ({ ...p, species: e.target.value }))}>

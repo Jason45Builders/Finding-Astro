@@ -59,7 +59,7 @@ export default function AdminMemorialsPage() {
   if (loading) return <div className="flex justify-center py-20"><PageSpinner label="Loading memorials..." /></div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/admin" className="inline-flex items-center gap-1 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors"><Heart className="w-4 h-4" /> Admin</Link>
@@ -72,7 +72,7 @@ export default function AdminMemorialsPage() {
       <section className="space-y-3">
         <h2 className="font-title-md text-title-md text-on-surface flex items-center gap-2"><ShieldAlert className="w-5 h-5 text-error" /> Suspicious Deaths — Pending Review ({pending.filter((p) => p.category === "suspicious_death").length})</h2>
         {pending.filter((p) => p.category === "suspicious_death").length === 0 ? (
-          <Card className="p-6"><p className="text-sm text-on-surface-variant">No suspicious death submissions pending review.</p></Card>
+          <Card className="p-3 sm:p-6"><p className="text-sm text-on-surface-variant">No suspicious death submissions pending review.</p></Card>
         ) : (
           <div className="space-y-3">
             {pending.filter((p) => p.category === "suspicious_death").map((post) => (
@@ -104,7 +104,7 @@ export default function AdminMemorialsPage() {
         {natural.length === 0 ? (
           <Card className="p-6"><p className="text-sm text-on-surface-variant">No natural death memorials yet.</p></Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {natural.map((post) => (
               <Card key={post.id} className="p-4 space-y-2">
                 <div className="flex items-start justify-between gap-2">

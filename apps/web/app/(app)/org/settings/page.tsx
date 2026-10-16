@@ -83,7 +83,7 @@ export default function OrgSettingsPage() {
         </div>
       </div>
 
-      <Card className="p-6 space-y-5">
+      <Card className="p-4 sm:p-6 space-y-4 sm:space-y-5">
         <div className="rounded-lg border border-outline-variant p-4 bg-surface-container-low"><p className="text-xs uppercase tracking-wide font-bold text-on-surface-variant">Welfare Group Type</p><p className="font-bold text-on-surface mt-1">{settings.orgType === "rescue_collective" ? "Rescue Collective" : "NGO"}</p><p className="text-xs text-on-surface-variant mt-1">This type is fixed when the group is created.</p></div>
         <div className="space-y-4">
           <div>
@@ -94,7 +94,7 @@ export default function OrgSettingsPage() {
             <Label>Address</Label>
             <Input value={settings.address || ""} onChange={(e) => setSettings({ ...settings, address: e.target.value })} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label>City</Label>
               <Input value={settings.city || ""} onChange={(e) => setSettings({ ...settings, city: e.target.value })} />
@@ -153,7 +153,7 @@ export default function OrgSettingsPage() {
         </Button>
       </Card>
 
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <h3 className="font-headline-md text-headline-md text-on-surface mb-4">Verification Status</h3>
         <div className="flex items-center gap-2">
           {settings.isVerified ? (

@@ -156,7 +156,7 @@ export default function OrgDonationsPage() {
       {message && <div className="rounded-lg bg-primary/10 text-primary p-3 text-sm">{message}</div>}
 
       {!data?.settings ? (
-        <Card className="p-8">
+        <Card className="p-4 sm:p-8">
           <div className="max-w-2xl">
             <ShieldCheck className="w-10 h-10 text-primary mb-4" />
             <h2 className="text-xl font-black text-on-surface">Set up the collective&apos;s monthly UPI collection</h2>
@@ -172,8 +172,8 @@ export default function OrgDonationsPage() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="p-5"><p className="text-xs text-on-surface-variant">Verified this month</p><p className="text-2xl font-black text-on-surface mt-1">{formatCurrency(summary.verifiedAmountInr)}</p></Card>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+            <Card className="p-3 sm:p-5"><p className="text-xs text-on-surface-variant">Verified this month</p><p className="text-2xl font-black text-on-surface mt-1">{formatCurrency(summary.verifiedAmountInr)}</p></Card>
             <Card className="p-5"><p className="text-xs text-on-surface-variant">Contributors</p><p className="text-2xl font-black text-on-surface mt-1">{summary.verifiedCount}</p></Card>
             <Card className="p-5"><p className="text-xs text-on-surface-variant">Pending verification</p><p className="text-2xl font-black text-on-surface mt-1">{summary.pendingCount}</p></Card>
             <Card className="p-5"><p className="text-xs text-on-surface-variant">Monthly target</p><p className="text-2xl font-black text-on-surface mt-1">{summary.targetInr == null ? "—" : formatCurrency(summary.targetInr)}</p></Card>

@@ -43,9 +43,12 @@ export async function GET(req: NextRequest) {
     const animalId = url.searchParams.get("animalId");
     const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "20", 10), 200);
     const includeBanned = url.searchParams.get("includeBannedReporters") === "true" && ["admin", "govt", "ngo"].includes(authResult.user.role);
+    const publicFeed = url.searchParams.get("publicFeed") === "true";
 
     let query = supabaseAdmin().from("cases").select("*");
     if (orgId) query = query.eq("welfare_group_id", orgId);
+    // The Home feed must not expose held-for-review cases to unrelated users.
+    if (publicFeed) query = query.or(`held_for_review.is.null,held_for_review.eq.false,reporter_user_id.eq.${authResult.user.id},assigned_to_user_id.eq.${authResult.user.id}`);
     if (status) query = query.eq("status", status);
     if (animalId) query = query.eq("animal_id", animalId);
 

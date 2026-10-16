@@ -39,7 +39,7 @@ function LoginForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md p-8 shadow-xl">
+      <Card className="w-full max-w-md p-4 sm:p-8 shadow-xl">
         <div className="text-center mb-8">
           <LogoMark className="w-12 h-12 mx-auto mb-4" />
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Welcome back</h1>

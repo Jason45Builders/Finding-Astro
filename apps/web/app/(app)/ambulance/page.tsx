@@ -101,7 +101,7 @@ export default function AmbulancePage() {
   const cities = Array.from(new Set(services.map((s) => s.city).filter(Boolean))) as string[];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface flex items-center gap-2">
@@ -130,9 +130,9 @@ export default function AmbulancePage() {
       {loadingServices ? (
         <PageSpinner label="Loading ambulance services..." />
       ) : filteredServices.length === 0 ? (
-        <Card className="p-8"><EmptyState icon={Ambulance} title="No ambulance services found" description="Try adjusting filters or check back later." /></Card>
+        <Card className="p-4 sm:p-8"><EmptyState icon={Ambulance} title="No ambulance services found" description="Try adjusting filters or check back later." /></Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filteredServices.map((service) => (
             <Card key={service.id} className="p-4 sm:p-5 space-y-3">
               <div className="flex items-start justify-between gap-2">
@@ -160,7 +160,7 @@ export default function AmbulancePage() {
         {loadingRequests ? (
           <PageSpinner label="Loading requests..." />
         ) : myRequests.length === 0 ? (
-          <Card className="p-6 text-sm text-on-surface-variant">You haven&apos;t made any ambulance requests yet.</Card>
+          <Card className="p-4 sm:p-6 text-sm text-on-surface-variant">You haven&apos;t made any ambulance requests yet.</Card>
         ) : (
           <div className="space-y-3">
             {myRequests.map((req) => (

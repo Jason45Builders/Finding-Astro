@@ -748,10 +748,24 @@ class ApiClient {
     });
   }
 
-  async listCases(params?: { limit?: number; status?: string }): Promise<Case[]> {
+  async listCommunityStories(limit = 6): Promise<Array<{
+    id: string; title: string; body: string; category: string;
+    animal_name?: string | null; broad_location?: string | null;
+    author_name?: string; published_at?: string | null; created_at: string;
+  }>> {
+    const safeLimit = Math.max(1, Math.min(Math.floor(limit) || 6, 12));
+    return this.request<Array<{
+      id: string; title: string; body: string; category: string;
+      animal_name?: string | null; broad_location?: string | null;
+      author_name?: string; published_at?: string | null; created_at: string;
+    }>>(`/community-stories?limit=${safeLimit}`);
+  }
+
+  async listCases(params?: { limit?: number; status?: string; publicFeed?: boolean }): Promise<Case[]> {
     const sp = new URLSearchParams();
     if (params?.limit)  sp.append("limit",  params.limit.toString());
     if (params?.status) sp.append("status", params.status);
+    if (params?.publicFeed) sp.append("publicFeed", "true");
     const qs = sp.toString();
     return this.request<Case[]>(`/cases${qs ? `?${qs}` : ""}`);
   }

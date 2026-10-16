@@ -104,7 +104,7 @@ function RegularReportForm() {
 
   if (successCase) {
     return (
-      <Card className="max-w-xl mx-auto text-center p-8 space-y-6">
+      <Card className="max-w-xl mx-auto text-center p-4 sm:p-8 space-y-4 sm:space-y-6">
         <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
           <CheckCircle className="w-9 h-9 text-green-600" />
         </div>
@@ -151,7 +151,7 @@ function RegularReportForm() {
       <div className="space-y-2">
         <Label className="mb-0">Location Coordinates</Label>
         <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1 grid grid-cols-2 gap-2">
+          <div className="flex-1 grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
             <Input type="text" placeholder="Latitude" value={latitude !== null ? latitude.toFixed(6) : ""} readOnly className="rounded-md" />
             <Input type="text" placeholder="Longitude" value={longitude !== null ? longitude.toFixed(6) : ""} readOnly className="rounded-md" />
           </div>
@@ -205,7 +205,7 @@ function NewCaseForm() {
         </Link>
       </div>
 
-      <Card className="p-6 sm:p-8 space-y-6 shadow-xl">
+      <Card className="p-4 sm:p-8 space-y-4 sm:space-y-6 shadow-xl">
         <div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">File Case Report</h1>
           <p className="text-sm text-on-surface-variant">Report stray welfare needs, abuse conflicts, or lost dogs</p>
